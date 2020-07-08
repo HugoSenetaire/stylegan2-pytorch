@@ -121,7 +121,7 @@ def set_grad_none(model, targets):
             p.grad = None
 
 
-def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, device):
+def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
 
     pbar = range(args.iter)
@@ -160,18 +160,23 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
 
         if i > args.iter:
             print("Done!")
-
             break
 
-        label,real_img = next(loader)
+        real_label,real_img = next(loader)
         #print(label)
+        real_label = label.to(device)
         real_img = real_img.to(device)
 
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
+        if latent_label_dim>0 :
+            random_label = dataset.random_one_hot(args.batch)
+        else :
+            random_label = None
+
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        fake_img, _ = generator(noise)
+        fake_img, _ = generator(noise,labels= random_label)
 
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
@@ -229,9 +234,15 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
 
         requires_grad(generator, True)
         requires_grad(discriminator, False)
+        
+
+         if latent_label_dim>0 :
+            random_label = dataset.random_one_hot(args.batch)
+        else :
+            random_label = None
 
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        fake_img, _ = generator(noise)
+        fake_img, _ = generator(noise,labels = random_label)
 
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
@@ -411,9 +422,13 @@ if __name__ == "__main__":
         drop_last=True,
     )
 
+    latent_label_dim = dataset.get_len()
+
    
     generator = Generator(
-        args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
+        args.size, args.latent, args.n_mlp,
+         channel_multiplier=args.channel_multiplier,
+         latent_label_dim=latent_label_dim
     ).to(device)
     
     discriminator = Discriminator(
@@ -422,7 +437,9 @@ if __name__ == "__main__":
     
 
     g_ema = Generator(
-        args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
+        args.size, args.latent, args.n_mlp,
+         channel_multiplier=args.channel_multiplier,
+         latent_label_dim=latent_label_dim
     ).to(device)
     g_ema.eval()
     accumulate(g_ema, generator, 0)
@@ -482,4 +499,4 @@ if __name__ == "__main__":
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
 
-    train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, device)
+    train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device)

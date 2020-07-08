@@ -368,6 +368,7 @@ class Generator(nn.Module):
         size,
         style_dim,
         n_mlp,
+        latent_label_dim = 0,
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
@@ -377,7 +378,7 @@ class Generator(nn.Module):
         self.size = size
 
         self.style_dim = style_dim
-
+        self.latent_label_dim = latent_label_dim
         layers = [PixelNorm()]
 
         for i in range(n_mlp):
@@ -402,6 +403,7 @@ class Generator(nn.Module):
         }
 
         self.input = ConstantInput(self.channels[4])
+        
         self.conv1 = StyledConv(
             self.channels[4], self.channels[4], 3, style_dim, blur_kernel=blur_kernel
         )
@@ -470,9 +472,15 @@ class Generator(nn.Module):
     def get_latent(self, input):
         return self.style(input)
 
+    def forward_mixlabel(self,styles,labels):
+        labels = labels.unsqueeze(0)
+        labels = torch.cat([labels]*styles.shape[1], dim = 0).transpose(0,1)
+        neostyles = torch.cat((styles,labels),dim = 2)
+        return neostyles
     def forward(
         self,
         styles,
+        labels = None,
         return_latents=False,
         inject_index=None,
         truncation=1,
@@ -520,9 +528,15 @@ class Generator(nn.Module):
 
             latent = torch.cat([latent, latent2], 1)
 
+
+        if self.latent_label_dim>0 :
+            if labels is None :
+                print("Error label is None ")
+            latent = self.forward_mixlabel(styles,latent)
+
+        
         out = self.input(latent)
         out = self.conv1(out, latent[:, 0], noise=noise[0])
-
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
