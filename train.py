@@ -398,13 +398,17 @@ if __name__ == "__main__":
         drop_last=True,
     )
 
-
+    print("Generator Init")
     generator = Generator(
         args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
     ).to(device)
+    print("Discriminator Init")
+
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier
     ).to(device)
+    print("Generator EMA Init")
+
     g_ema = Generator(
         args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
     ).to(device)
@@ -425,6 +429,7 @@ if __name__ == "__main__":
         betas=(0 ** d_reg_ratio, 0.99 ** d_reg_ratio),
     )
 
+    print("Seems OK")
     if args.ckpt is not None:
         print("load model:", args.ckpt)
 
