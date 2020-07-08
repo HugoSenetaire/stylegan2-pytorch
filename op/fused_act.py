@@ -1,19 +1,20 @@
 import os
+import platform
 
 import torch
 from torch import nn
 from torch.autograd import Function
+import torch.nn.functional as F
 from torch.utils.cpp_extension import load
 
+use_fallback = False
 
-module_path = os.path.dirname(__file__)
-fused = load(
-    'fused',
-    sources=[
-        os.path.join(module_path, 'fused_bias_act.cpp'),
-        os.path.join(module_path, 'fused_bias_act_kernel.cu'),
-    ],
-)
+# Try loading precompiled, otherwise use native fallback
+try:
+    import fused
+except ModuleNotFoundError as e:
+    print('StyleGAN2: Optimized CUDA op FusedLeakyReLU not available, using native PyTorch fallback.')
+    use_fallback = True
 
 
 class FusedLeakyReLUFunctionBackward(Function):
@@ -83,4 +84,9 @@ class FusedLeakyReLU(nn.Module):
 
 
 def fused_leaky_relu(input, bias, negative_slope=0.2, scale=2 ** 0.5):
-    return FusedLeakyReLUFunction.apply(input, bias, negative_slope, scale)
+    if use_fallback or input.device.type == 'cpu':
+        return scale * F.leaky_relu(
+            input + bias.view((1, -1)+(1,)*(input.ndim-2)), negative_slope=negative_slope
+        )
+    else:
+        return FusedLeakyReLUFunction.apply(input, bias, negative_slope, scale)
