@@ -56,15 +56,6 @@ class MultiResolutionDataset(data.Dataset):
 
 
 
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
-
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
 
 class OneHot():
     def __init__(self, list_values):
@@ -104,13 +95,10 @@ class Dataset(data.Dataset):
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
             
-        convert_image_fn = convert_transparent_to_rgb
+        #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
         #num_channels = 3 if not transparent else 4
-        
-        self.transform = transforms.Compose([
-            convert_image_fn,
-            transform,
-        ])
+  
+        self.transform = transform
 
     def __len__(self):
         return len(self.df)
