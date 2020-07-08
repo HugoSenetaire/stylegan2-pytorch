@@ -236,7 +236,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(discriminator, False)
         
 
-         if latent_label_dim>0 :
+        if latent_label_dim>0 :
             random_label = dataset.random_one_hot(args.batch)
         else :
             random_label = None
