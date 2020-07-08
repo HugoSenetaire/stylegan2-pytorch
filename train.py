@@ -164,7 +164,7 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
             break
 
         label,real_img = next(loader)
-        print(label)
+        #print(label)
         real_img = real_img.to(device)
 
         requires_grad(generator, False)
@@ -335,6 +335,17 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
                 )
 
 
+
+def convert_rgb_to_transparent(image):
+    if image.mode == 'RGB':
+        return image.convert('RGBA')
+    return image
+
+def convert_transparent_to_rgb(image):
+    if image.mode == 'RGBA':
+        return image.convert('RGB')
+    return image
+
 if __name__ == "__main__":
     device = "cuda"
 
@@ -384,7 +395,8 @@ if __name__ == "__main__":
     args.start_iter = 0
 
     transform = transforms.Compose(
-        [
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
             transforms.RandomHorizontalFlip(),
             transforms.Resize(args.size),
             transforms.ToTensor(),
