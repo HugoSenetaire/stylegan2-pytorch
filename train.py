@@ -163,7 +163,8 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
 
             break
 
-        real_img = next(loader)
+        label,real_img = next(loader)
+        print(label)
         real_img = real_img.to(device)
 
         requires_grad(generator, False)
@@ -392,7 +393,7 @@ if __name__ == "__main__":
         drop_last=True,
     )
 
-    
+
     generator = Generator(
         args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
     ).to(device)
