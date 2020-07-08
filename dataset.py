@@ -107,7 +107,7 @@ class Dataset(data.Dataset):
         data = self.df.iloc[index]
         name = data.image_id
         path = os.path.join(self.folder,name+".jpg")
-        img = Image.open(path)
+        img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
         if len(self.columns)>0 :
             x = []
