@@ -6,7 +6,6 @@ import operator
 import torch
 from torch import nn
 from torch.nn import functional as F
-from torch.autograd import Function
 
 from op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
@@ -398,8 +397,8 @@ class Generator(nn.Module):
             64: 256 * channel_multiplier,
             128: 128 * channel_multiplier,
             256: 64 * channel_multiplier,
-            512: 32 * channel_multiplier,
-            1024: 16 * channel_multiplier,
+            #512: 32 * channel_multiplier,
+            #1024: 16 * channel_multiplier,
         }
 
         self.input = ConstantInput(self.channels[4])
