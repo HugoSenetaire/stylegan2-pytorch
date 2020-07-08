@@ -316,7 +316,7 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
                     sample, _ = g_ema([sample_z])
                     utils.save_image(
                         sample,
-                        f"sample/{str(i).zfill(6)}.png",
+                        os.path.join(args.output_prefix, f"sample/{str(i).zfill(6)}.png"),
                         nrow=int(args.n_sample ** 0.5),
                         normalize=True,
                         range=(-1, 1),
@@ -330,10 +330,8 @@ def train(args, loader, generator, discriminator, g_optim, d_optim, g_ema, devic
                         "g_ema": g_ema.state_dict(),
                         "g_optim": g_optim.state_dict(),
                         "d_optim": d_optim.state_dict(),
-                        "args": args,
-                        "ada_aug_p": ada_aug_p,
                     },
-                    f"checkpoint/{str(i).zfill(6)}.pt",
+                    os.path.join(args.output_prefix,f"checkpoint/{str(i).zfill(6)}.pt"),
                 )
 
 
@@ -362,11 +360,18 @@ if __name__ == "__main__":
     parser.add_argument("--augment_p", type=float, default=0)
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
+    parser.add_argument("--output_prefix", type=str, default = None)
 
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
     args.distributed = n_gpu > 1
+
+    if not os.path.exists(os.path.join(args.output_prefix, "sample")):
+        os.makedirs(os.path.join(args.output_prefix, "sample"))
+    if not os.path.exists(os.path.join(args.output_prefix, "checkpoint")):
+        os.makedirs(os.path.join(args.output_prefix, "checkpoint"))
+
 
     if args.distributed:
         torch.cuda.set_device(args.local_rank)
