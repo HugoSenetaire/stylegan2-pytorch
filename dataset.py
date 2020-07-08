@@ -2,10 +2,22 @@ from io import BytesIO
 
 import lmdb
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils import data
+
+import json
+from tqdm import tqdm
+from math import floor, log2
+from random import random
+from shutil import rmtree
+from functools import partial
+import multiprocessing
+
+import numpy as np
+import pandas as pd
+import copy
 
 
-class MultiResolutionDataset(Dataset):
+class MultiResolutionDataset(data.Dataset):
     def __init__(self, path, transform, resolution=256):
         self.env = lmdb.open(
             path,
@@ -38,3 +50,120 @@ class MultiResolutionDataset(Dataset):
         img = self.transform(img)
 
         return img
+
+
+
+class OneHot():
+    def __init__(self, list_values):
+        self.list_values = list_values
+        self.dic = {}
+        self.rev_dic = {}
+        for i,value in enumerate(self.list_values):
+            self.dic[value] = i
+            self.rev_dic[i] = value
+           
+        
+    def apply(self,value):
+        return self.dic[value]
+    
+    def reverse(self,i):
+        return self.rev_dic[i]
+
+class Dataset(data.Dataset):
+    #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
+    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], transparent = False):
+        super().__init__()
+        self.folder = folder
+        self.image_size = image_size
+        self.columns = columns
+        self.df = pd.read_csv(folder+".csv")
+        
+        # Get one Hot Encoder
+        self.dic = {}
+        self.encoder = {}
+        for column in columns :
+            list_possible_value = []
+            for k, value in enumerate(self.df[column].unique()):
+                print(value,type(value))
+                if self.df[column].value_counts()[value] > 200:
+                    list_possible_value.append(value)
+            self.dic[column] = copy.deepcopy(list_possible_value)
+            self.encoder[column] = OneHot(list_possible_value)
+            self.df = self.df[self.df[column].isin(self.dic[column])]
+            
+        #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
+        #num_channels = 3 if not transparent else 4
+  
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, index):
+        data = self.df.iloc[index]
+        name = data.image_id
+        path = os.path.join(self.folder,name+".jpg")
+        img = Image.open(path)
+        img_transform = self.transform(img)
+        if len(self.columns)>0 :
+            x = []
+            for column in self.columns:
+                aux = self.encoder[column].apply(data[column])
+                data_year_one_hot = torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)
+
+            x = data_year_one_hot.type(torch.float32)
+        else :
+            x = -1
+        return x,img_transform
+    
+    def get_len(self):
+        size = 0
+        for column in self.columns:
+            size+=len(self.dic[column])
+        return size
+    
+    
+    def get_onehot(self,value):
+        if len(self.columns)==0 :
+            return None
+        liste = []
+        for column in self.columns:
+            liste.append(self.encoder[column].apply(data[column]))
+        liste = torch.tensor(liste)
+        return liste
+    
+    def get_reverse(self,index):
+        if len(self.columns)==0 :
+            return None
+        liste = []
+        for i,column in enumerate(self.columns):
+            liste.append(self.encoder[column].reverse(index[i]))
+            
+        return liste
+    
+    def random_one_hot(self,batch_size):
+        
+        if len(self.columns)==0 :
+            return None
+        aux = np.random.randint(len(self.dic[self.columns[0]]))
+        data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        for i,column in enumerate(self.columns):
+            if i == 0 :
+                continue
+            aux = np.random.randint(len(self.dic[column]))
+            data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            
+        
+        data_year_one_hot = data_year_one_hot[None,:]
+        for k in range(batch_size-1):
+            aux = np.random.randint(len(self.dic[self.columns[0]]))
+            aux_data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            for i,column in enumerate(self.columns):
+                if i == 0 :
+                    continue
+
+                aux = np.random.randint(len(self.dic[column]))
+                aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
+        
+        return data_year_one_hot

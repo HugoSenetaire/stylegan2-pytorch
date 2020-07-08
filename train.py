@@ -19,7 +19,7 @@ except ImportError:
     wandb = None
 
 from model import Generator, Discriminator
-from dataset import MultiResolutionDataset
+from dataset import MultiResolutionDataset, Dataset
 from distributed import (
     get_rank,
     synchronize,
@@ -377,6 +377,22 @@ if __name__ == "__main__":
 
     args.start_iter = 0
 
+    transform = transforms.Compose(
+        [
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
+    dataset = Dataset(args.path, transform, args.size)
+    loader = data.DataLoader(
+        dataset,
+        batch_size=args.batch,
+        sampler=data_sampler(dataset, shuffle=True, distributed=args.distributed),
+        drop_last=True,
+    )
+
+    
     generator = Generator(
         args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
     ).to(device)
@@ -437,21 +453,9 @@ if __name__ == "__main__":
             broadcast_buffers=False,
         )
 
-    transform = transforms.Compose(
-        [
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-        ]
-    )
+    
 
-    dataset = MultiResolutionDataset(args.path, transform, args.size)
-    loader = data.DataLoader(
-        dataset,
-        batch_size=args.batch,
-        sampler=data_sampler(dataset, shuffle=True, distributed=args.distributed),
-        drop_last=True,
-    )
+    
 
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
