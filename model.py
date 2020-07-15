@@ -698,7 +698,7 @@ class Discriminator(nn.Module):
 
         out = out.view(batch, -1)
         if self.latent_label_dim >0 :
-            out = torch.cat(out,labels)
+            out = torch.cat([out,labels],dim=1)
 
         #out = self.pre_final_linear(out)
 

@@ -189,8 +189,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-        fake_pred = discriminator(fake_img,random_label)
-        real_pred = discriminator(real_img_aug, real_label)
+        fake_pred = discriminator(fake_img,labels = random_label)
+        real_pred = discriminator(real_img_aug, labels = real_label)
         d_loss = d_logistic_loss(real_pred, fake_pred)
 
         loss_dict["d"] = d_loss
@@ -226,7 +226,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if d_regularize:
             real_img.requires_grad = True
-            real_pred = discriminator(real_img,real_label)
+            real_pred = discriminator(real_img,labels = real_label)
             r1_loss = d_r1_loss(real_pred, real_img)
 
             discriminator.zero_grad()
