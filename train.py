@@ -155,6 +155,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
     sample_label = dataset.random_one_hot(args.n_sample).to(device)
+    print("The labels for the generation are the following :")
+    print(sample_label)
 
     for idx in pbar:
         i = idx + args.start_iter
@@ -187,8 +189,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-        fake_pred = discriminator(fake_img)
-        real_pred = discriminator(real_img_aug)
+        fake_pred = discriminator(fake_img,random_label)
+        real_pred = discriminator(real_img_aug, real_label)
         d_loss = d_logistic_loss(real_pred, fake_pred)
 
         loss_dict["d"] = d_loss
@@ -224,7 +226,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if d_regularize:
             real_img.requires_grad = True
-            real_pred = discriminator(real_img)
+            real_pred = discriminator(real_img,real_label)
             r1_loss = d_r1_loss(real_pred, real_img)
 
             discriminator.zero_grad()
@@ -250,7 +252,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
-        fake_pred = discriminator(fake_img)
+        fake_pred = discriminator(fake_img,labels = random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
 
         loss_dict["g"] = g_loss
@@ -436,7 +438,8 @@ if __name__ == "__main__":
     ).to(device)
     
     discriminator = Discriminator(
-        args.size, channel_multiplier=args.channel_multiplier
+        args.size, channel_multiplier=args.channel_multiplier,
+         latent_label_dim=latent_label_dim,
     ).to(device)
     
 
