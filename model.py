@@ -315,6 +315,7 @@ class StyledConv(nn.Module):
         demodulate=True,
     ):
         super().__init__()
+        
 
         self.conv = ModulatedConv2d(
             in_channel,
@@ -377,8 +378,12 @@ class Generator(nn.Module):
 
         self.size = size
 
-        self.style_dim = style_dim
+        self.style_dim = style_dim 
+        
         self.latent_label_dim = latent_label_dim
+        self.total_style_dim = self.style_dim + self.latent_label_dim
+        
+        
         layers = [PixelNorm()]
 
         for i in range(n_mlp):
@@ -391,8 +396,8 @@ class Generator(nn.Module):
         self.style = nn.Sequential(*layers)
 
         self.channels = {
-            4: 512,
-            8: 512,
+            4: 512 ,
+            8: 512 ,
             16: 512,
             32: 512,
             64: 256 * channel_multiplier,
@@ -405,13 +410,13 @@ class Generator(nn.Module):
         self.input = ConstantInput(self.channels[4])
         
         self.conv1 = StyledConv(
-            self.channels[4], self.channels[4], 3, style_dim, blur_kernel=blur_kernel
+            self.channels[4], self.channels[4], 3, self.total_style_dim, blur_kernel=blur_kernel
         )
-        self.to_rgb1 = ToRGB(self.channels[4], style_dim, upsample=False)
+        self.to_rgb1 = ToRGB(self.channels[4], self.total_style_dim, upsample=False)
 
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
-
+        
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
         self.to_rgbs = nn.ModuleList()
@@ -432,7 +437,7 @@ class Generator(nn.Module):
                     in_channel,
                     out_channel,
                     3,
-                    style_dim,
+                    self.total_style_dim,
                     upsample=True,
                     blur_kernel=blur_kernel,
                 )
@@ -440,11 +445,11 @@ class Generator(nn.Module):
 
             self.convs.append(
                 StyledConv(
-                    out_channel, out_channel, 3, style_dim, blur_kernel=blur_kernel
+                    out_channel, out_channel, 3, self.total_style_dim, blur_kernel=blur_kernel
                 )
             )
 
-            self.to_rgbs.append(ToRGB(out_channel, style_dim))
+            self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim))
 
             in_channel = out_channel
 
@@ -527,15 +532,17 @@ class Generator(nn.Module):
             latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
 
             latent = torch.cat([latent, latent2], 1)
-
-
+        
         if self.latent_label_dim>0 :
             if labels is None :
                 print("Error label is None ")
-            latent = self.forward_mixlabel(styles,latent)
+            latent = self.forward_mixlabel(latent,labels)
+
+        out = self.input(latent)
 
         
-        out = self.input(latent)
+
+        
         out = self.conv1(out, latent[:, 0], noise=noise[0])
         skip = self.to_rgb1(out, latent[:, 1])
 

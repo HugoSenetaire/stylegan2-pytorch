@@ -154,6 +154,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     r_t_stat = 0
 
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
+    sample_label = dataset.random_one_hot(args.n_sample).to(device)
 
     for idx in pbar:
         i = idx + args.start_iter
@@ -174,7 +175,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             random_label = dataset.random_one_hot(args.batch)
         else :
             random_label = None
-
+        
+        random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         fake_img, _ = generator(noise,labels= random_label)
 
@@ -241,6 +243,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else :
             random_label = None
 
+        random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         fake_img, _ = generator(noise,labels = random_label)
 
@@ -261,7 +264,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if g_regularize:
             path_batch_size = max(1, args.batch // args.path_batch_shrink)
             noise = mixing_noise(path_batch_size, args.latent, args.mixing, device)
-            fake_img, latents = generator(noise, return_latents=True)
+            random_label = random_label.to(device)
+            fake_img, latents = generator(noise, labels = random_label, return_latents=True)
 
             path_loss, mean_path_length, path_lengths = g_path_regularize(
                 fake_img, latents, mean_path_length
@@ -324,7 +328,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if i % 100 == 0:
                 with torch.no_grad():
                     g_ema.eval()
-                    sample, _ = g_ema([sample_z])
+                    sample, _ = g_ema([sample_z],labels = sample_label)
                     utils.save_image(
                         sample,
                         os.path.join(args.output_prefix, f"sample/{str(i).zfill(6)}.png"),
@@ -333,7 +337,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                         range=(-1, 1),
                     )
 
-            if i % 10000 == 0:
+            if i % 1000 == 0:
                 torch.save(
                     {
                         "g": g_module.state_dict(),
