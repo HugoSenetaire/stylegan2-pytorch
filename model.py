@@ -482,6 +482,8 @@ class Generator(nn.Module):
         labels = torch.cat([labels]*styles.shape[1], dim = 0).transpose(0,1)
         neostyles = torch.cat((styles,labels),dim = 2)
         return neostyles
+
+    
     def forward(
         self,
         styles,
@@ -636,7 +638,7 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
+    def __init__(self, size, latent_label_dim = 0, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
         super().__init__()
 
         channels = {
@@ -665,17 +667,21 @@ class Discriminator(nn.Module):
             in_channel = out_channel
 
         self.convs = nn.Sequential(*convs)
-
+        self.latent_label_dim = latent_label_dim
         self.stddev_group = 4
         self.stddev_feat = 1
 
         self.final_conv = ConvLayer(in_channel + 1, channels[4], 3)
         self.final_linear = nn.Sequential(
-            EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+            EqualLinear(channels[4] * 4 * 4+self.latent_label_dim, channels[4], activation='fused_lrelu'),
             EqualLinear(channels[4], 1),
         )
+        # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
+        # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
-    def forward(self, input):
+
+
+    def forward(self, input, labels):
         out = self.convs(input)
 
         batch, channel, height, width = out.shape
@@ -691,6 +697,11 @@ class Discriminator(nn.Module):
         out = self.final_conv(out)
 
         out = out.view(batch, -1)
+        if self.latent_label_dim >0 :
+            out = torch.cat(out,labels)
+
+        #out = self.pre_final_linear(out)
+
         out = self.final_linear(out)
 
         return out
