@@ -88,16 +88,18 @@ class Dataset(data.Dataset):
         for column in columns :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
-                print(value,type(value))
+                #print(value,type(value))
                 if self.df[column].value_counts()[value] > 200:
                     list_possible_value.append(value)
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
+            print(f"Saved value for column {column}")
+            print(list_possible_value)
             
         #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
         #num_channels = 3 if not transparent else 4
-  
+        
         self.transform = transform
 
     def __len__(self):
@@ -167,6 +169,36 @@ class Dataset(data.Dataset):
                     continue
 
                 aux = np.random.randint(len(self.dic[column]))
+                aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
+        
+        return data_year_one_hot
+
+
+    def listing_one_hot(self,batch_size):
+        if len(self.columns)==0 :
+            return None
+        #aux = np.random.randint(len(self.dic[self.columns[0]]))
+        aux = 0
+        data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        for i,column in enumerate(self.columns):
+            if i == 0 :
+                continue
+            #aux = np.random.randint(len(self.dic[column]))
+            aux = 0
+            data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            
+        
+        data_year_one_hot = data_year_one_hot[None,:]
+        for k in range(1,batch_size):
+            aux = k % len(self.dic[self.columns[0]])
+            #aux = np.random.randint(len(self.dic[self.columns[0]]))
+            aux_data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            for i,column in enumerate(self.columns):
+                if i == 0 :
+                    continue
+                aux = k % len(self.dic[column])
+                #aux = np.random.randint(len(self.dic[column]))
                 aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
         
