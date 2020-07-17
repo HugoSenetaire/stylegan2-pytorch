@@ -279,6 +279,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if g_regularize:
             path_batch_size = max(1, args.batch // args.path_batch_shrink)
             noise = mixing_noise(path_batch_size, args.latent, args.mixing, device)
+            if latent_label_dim>0 :
+                random_label = dataset.random_one_hot(path_batch_size)
+            else :
+                random_label = None
             random_label = random_label.to(device)
             fake_img, latents = generator(noise, labels = random_label, return_latents=True)
 
