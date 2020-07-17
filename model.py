@@ -414,9 +414,13 @@ class Generator(nn.Module):
         )
         self.to_rgb1 = ToRGB(self.channels[4], self.total_style_dim, upsample=False)
 
+     
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
-        
+        print(size)
+        print(self.log_size)
+        print(self.num_layers)
+
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
         self.to_rgbs = nn.ModuleList()

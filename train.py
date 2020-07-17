@@ -122,10 +122,7 @@ def set_grad_none(model, targets):
 
 def select_index_discriminator(output_discriminator, label):
     index = torch.ge(label,0.5)
-    print(output_discriminator)
-    print(label)
     filtered_output = output_discriminator.masked_select(index)
-    print(filtered_output)
     return filtered_output
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
