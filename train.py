@@ -121,16 +121,7 @@ def set_grad_none(model, targets):
             p.grad = None
 
 def select_index_discriminator(output_discriminator, label):
-    index = torch.ge(label,0.5)
-    shape_discriminator = output_discriminator.shape
-    new_shape = [shape_discriminator[i]for i in range(len(shape_discriminator))]
-    new_shape[1] = torch.tensor(1)
-    for i in range(2,len(shape_discriminator)):
-        index = index.unsqueeze(-1)
-    index = index.expand(shape_discriminator)
-    new_shape[1]=torch.tensor(1)
-    # IS reshape really necessary ?
-    filtered_output = output_discriminator.masked_select(index).reshape(new_shape)
+    filtered_output = output_discriminator.masked_select(label)
     return filtered_output
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
