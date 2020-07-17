@@ -667,7 +667,7 @@ class Discriminator(nn.Module):
         #     1024: 16 * channel_multiplier,
         # }
 
-        self.channels = {
+        channels = {
             4: 512 ,
             8: 512 ,
             16: 256,
