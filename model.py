@@ -673,7 +673,7 @@ class Discriminator(nn.Module):
 
         self.final_conv = ConvLayer(in_channel + 1, channels[4], 3)
         self.final_linear = nn.Sequential(
-            EqualLinear(channels[4] * 4 * 4+self.latent_label_dim, channels[4], activation='fused_lrelu'),
+            EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
             EqualLinear(channels[4], 1),
         )
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
@@ -697,10 +697,9 @@ class Discriminator(nn.Module):
         out = self.final_conv(out)
 
         out = out.view(batch, -1)
-        if self.latent_label_dim >0 :
-            out = torch.cat([out,labels],dim=1)
+        # if self.latent_label_dim >0 :
+        #     out = torch.cat([out,labels],dim=1)
 
-        #out = self.pre_final_linear(out)
 
         out = self.final_linear(out)
 

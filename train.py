@@ -120,6 +120,18 @@ def set_grad_none(model, targets):
         if n in targets:
             p.grad = None
 
+def select_index_discriminator(output_discriminator, label):
+    index = torch.ge(label,0.5)
+    shape_discriminator = output_discriminator.shape
+    new_shape = [shape_discriminator[i]for i in range(len(shape_discriminator))]
+    new_shape[1] = torch.tensor(1)
+    for i in range(2,len(shape_discriminator)):
+        index = index.unsqueeze(-1)
+    index = index.expand(shape_discriminator)
+    new_shape[1]=torch.tensor(1)
+    # IS reshape really necessary ?
+    filtered_output = output_discriminator.masked_select(index).reshape(new_shape)
+    return filtered_output
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
@@ -191,8 +203,12 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-        fake_pred = discriminator(fake_img,labels = random_label)
+    
+        fake_pred = discriminator(fake_img,labels = random_label) 
         real_pred = discriminator(real_img_aug, labels = real_label)
+        fake_pred = select_index_discriminator(fake_pred,random_label)
+        real_pred = select_index_discriminator(real_pred,real_label)
+
         d_loss = d_logistic_loss(real_pred, fake_pred)
 
         loss_dict["d"] = d_loss
@@ -255,6 +271,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             fake_img, _ = augment(fake_img, ada_aug_p)
 
         fake_pred = discriminator(fake_img,labels = random_label)
+        fake_pred = select_index_discriminator(fake_pred,random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
 
         loss_dict["g"] = g_loss
