@@ -417,9 +417,9 @@ class Generator(nn.Module):
      
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
-        print(size)
-        print(self.log_size)
-        print(self.num_layers)
+        print("size",size)
+        print("logsize",self.log_size)
+        print("num_layers",self.num_layers)
 
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
