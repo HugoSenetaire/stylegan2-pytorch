@@ -427,9 +427,7 @@ class Generator(nn.Module):
 
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
-        print("size",size)
-        print("logsize",self.log_size)
-        print("num_layers",self.num_layers)
+      
 
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
@@ -492,8 +490,6 @@ class Generator(nn.Module):
         return self.style(input)
 
     def forward_mixlabel(self,styles,labels):
-        print(styles.shape)
-        print(labels.shape)
         labels = labels.unsqueeze(0)
         labels = torch.cat([labels]*styles.shape[1], dim = 0).transpose(0,1)
         neostyles = torch.cat((styles,labels),dim = 2)
