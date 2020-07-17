@@ -395,16 +395,27 @@ class Generator(nn.Module):
 
         self.style = nn.Sequential(*layers)
 
+        # self.channels = {
+        #     4: 512 ,
+        #     8: 512 ,
+        #     16: 512,
+        #     32: 512,
+        #     64: 256 * channel_multiplier,
+        #     128: 128 * channel_multiplier,
+        #     256: 64 * channel_multiplier,
+        #     512: 32 * channel_multiplier,
+        #     1024: 16 * channel_multiplier,
+        # }
         self.channels = {
             4: 512 ,
             8: 512 ,
-            16: 512,
-            32: 512,
-            64: 256 * channel_multiplier,
-            128: 128 * channel_multiplier,
-            256: 64 * channel_multiplier,
-            512: 32 * channel_multiplier,
-            1024: 16 * channel_multiplier,
+            16: 256,
+            32: 256,
+            64: 128 * channel_multiplier,
+            128: 64 * channel_multiplier,
+            256: 32 * channel_multiplier,
+            512: 16 * channel_multiplier,
+            1024: 8 * channel_multiplier,
         }
 
         self.input = ConstantInput(self.channels[4])
@@ -414,7 +425,6 @@ class Generator(nn.Module):
         )
         self.to_rgb1 = ToRGB(self.channels[4], self.total_style_dim, upsample=False)
 
-     
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
         print("size",size)
@@ -645,16 +655,28 @@ class Discriminator(nn.Module):
     def __init__(self, size, latent_label_dim = 0, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
         super().__init__()
 
-        channels = {
-            4: 512,
-            8: 512,
-            16: 512,
-            32: 512,
-            64: 256 * channel_multiplier,
-            128: 128 * channel_multiplier,
-            256: 64 * channel_multiplier,
-            512: 32 * channel_multiplier,
-            1024: 16 * channel_multiplier,
+        # channels = {
+        #     4: 512,
+        #     8: 512,
+        #     16: 512,
+        #     32: 512,
+        #     64: 256 * channel_multiplier,
+        #     128: 128 * channel_multiplier,
+        #     256: 64 * channel_multiplier,
+        #     512: 32 * channel_multiplier,
+        #     1024: 16 * channel_multiplier,
+        # }
+
+        self.channels = {
+            4: 512 ,
+            8: 512 ,
+            16: 256,
+            32: 256,
+            64: 128 * channel_multiplier,
+            128: 64 * channel_multiplier,
+            256: 32 * channel_multiplier,
+            512: 16 * channel_multiplier,
+            1024: 8 * channel_multiplier,
         }
 
         convs = [ConvLayer(3, channels[size], 1)]
