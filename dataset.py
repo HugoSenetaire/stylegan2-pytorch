@@ -135,6 +135,10 @@ class Dataset(data.Dataset):
             x = data_year_one_hot.type(torch.float32)
         else :
             x = -1
+
+ 
+        torchvision.utils.save_image(img_transform,"real_img_data.jpg")
+        torchvision.utils.save_image(mask_transform,"real_mask_data.jpg")
         return x,img_transform,mask_transform
     
     def get_len(self):
