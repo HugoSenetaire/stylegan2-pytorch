@@ -226,7 +226,9 @@ class Dataset(data.Dataset):
         
         return data_year_one_hot
 
-    def random_mask(self,batch_size):
+    def random_mask(self,batch_size, return_name = False):
+        
+        list_name = []
         index = np.random.randint(0,len(self.df))
         data = self.df.iloc[index]
         name = data.image_id
@@ -234,7 +236,7 @@ class Dataset(data.Dataset):
         mask = Image.open(path_mask).convert('RGB')
         mask_transform = self.transform_mask(mask)
         total = mask_transform[None, :, :, :]
-        
+        list_name.append(name)
         for i in range(batch_size-1):
             index = np.random.randint(0,len(self.df))
             data = self.df.iloc[index]
@@ -243,8 +245,11 @@ class Dataset(data.Dataset):
             mask = Image.open(path_mask).convert('RGB')
             mask_transform = self.transform_mask(mask)[None,:,:,:]
             total = torch.cat([total,mask_transform],dim=0)
-        
+            list_name.append(name)
+        if return_name :
+            return total,list_name
         return total
+
 
 
 

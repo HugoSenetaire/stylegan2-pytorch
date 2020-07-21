@@ -309,7 +309,17 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             random_label = None
 
         if args.mask :
-            random_mask = dataset.random_mask(args.batch)
+            sample_mask, sample_name = dataset.random_mask(args.n_sample,True)
+            sample_mask = sample_mask.to(device)
+            utils.save_image(
+                            sample_mask,
+                            os.path.join(args.output_prefix, f"sample_mask.png"),
+                            nrow=int(args.n_sample ** 0.5),
+                            normalize=True,
+                            range=(-1, 1),
+            )
+            print("Sample for the generation")
+            print(sample_name)
         else :
             random_mask = None
 
