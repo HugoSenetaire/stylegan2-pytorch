@@ -397,7 +397,7 @@ def convert_transparent_to_rgb(image):
     return image
 
 if __name__ == "__main__":
-    device = "cuda"
+    device = "cuda-1"
 
     parser = argparse.ArgumentParser()
 
