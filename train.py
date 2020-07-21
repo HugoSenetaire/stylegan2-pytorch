@@ -164,7 +164,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         sample_label = dataset.listing_one_hot(args.n_sample).to(device)
 
     if args.mask :
-        sample_mask = dataset.random_mask(args.batch)
+        sample_mask = dataset.random_mask(args.batch).to(device)
     else :
         sample_mask = None
     print("The labels for the generation are the following :")
