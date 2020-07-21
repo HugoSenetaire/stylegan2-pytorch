@@ -120,6 +120,7 @@ class Dataset(data.Dataset):
         path = os.path.join(self.folder,name+".jpg")
         path_mask = os.path.join(self.folder_mask,name+".jpg")
         img = Image.open(path).convert('RGB')
+        torchvision.utils.save_image(img,"pretransform.jpg")
         img_transform = self.transform(img)
         if self.transform_mask is not None :
             mask = Image.open(path_mask).convert('RGB')
@@ -131,7 +132,6 @@ class Dataset(data.Dataset):
             for column in self.columns:
                 aux = self.encoder[column].apply(data[column])
                 data_year_one_hot = torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)
-
             x = data_year_one_hot.type(torch.float32)
         else :
             x = -1
