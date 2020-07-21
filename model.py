@@ -581,10 +581,14 @@ class Generator(nn.Module):
             latent = self.forward_mixlabel(latent,labels)
 
         if self.mask :
+            print("LATENT",latent.shape)
+            print("MASK INPUT",mask.shape)
             if mask is None :
                 print("Error mask is None")
             mask_output = self.mask_extractor(mask).flatten(1)
+            print("MASKOUTPUT",mask_output.shape)
             latent = self.forward_mixlabel(latent,mask_output)
+            print("LATENT", latent.shape)
 
 
         out = self.input(latent)
