@@ -464,6 +464,7 @@ if __name__ == "__main__":
         args.mask = True
     else :
         args.mask = False
+        transform_mask = None
 
 
     dataset = Dataset(args.path, transform, args.size, transform_mask = transform_mask)
@@ -482,7 +483,7 @@ if __name__ == "__main__":
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
     ).to(device)
-    
+    print("GPU DEVICE IS :",device)
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
