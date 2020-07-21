@@ -20,7 +20,7 @@ import torch
 from torch import nn
 from torch.utils import data
 import torch.nn.functional as F
-
+import torchvision
 
 
 class MultiResolutionDataset(data.Dataset):
