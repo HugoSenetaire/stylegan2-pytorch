@@ -293,7 +293,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         zero_noise = torch.zeros(noise.shape).to(device)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
-        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask))
+        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask)
 
 
 
