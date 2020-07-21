@@ -178,10 +178,16 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         real_label,real_img, real_mask = next(loader)
         #print(label)
+         print(real_label)
+        plt.imshow(real_img[0])
+        plt.show()
+        plt.imshow(real_mask[0])
+        plt.show()
+
         real_label = real_label.to(device)
         real_img = real_img.to(device)
         real_mask = real_mask.to(device)
-
+       
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
