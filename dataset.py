@@ -140,8 +140,8 @@ class Dataset(data.Dataset):
             x = -1
 
  
-        torchvision.utils.save_image(img_transform,"real_img_data.jpg")
-        torchvision.utils.save_image(mask_transform,"real_mask_data.jpg")
+        torchvision.utils.save_image(img_transform[9],"real_img_data.jpg")
+        torchvision.utils.save_image(mask_transform[0],"real_mask_data.jpg")
         return x,img_transform,mask_transform
     
     def get_len(self):
