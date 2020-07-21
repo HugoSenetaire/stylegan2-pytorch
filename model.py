@@ -383,7 +383,7 @@ class Generator(nn.Module):
         
         self.latent_label_dim = latent_label_dim
         self.total_style_dim = self.style_dim + self.latent_label_dim
-        log_size = int(math.log(size, 2))
+        
 
         self.channels_mask = {
             4: 512 ,
@@ -398,7 +398,7 @@ class Generator(nn.Module):
         }
 
         if mask :
-            self.total_style_dim += self.channels_mask[size]*size
+            self.total_style_dim += self.channels_mask[4]*4*4
         
         
 
