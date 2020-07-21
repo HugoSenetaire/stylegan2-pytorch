@@ -118,7 +118,9 @@ class Dataset(data.Dataset):
         data = self.df.iloc[index]
         name = data.image_id
         path = os.path.join(self.folder,name+".jpg")
+        print(path)
         path_mask = os.path.join(self.folder_mask,name+".jpg")
+        print(path_mask)
         img = Image.open(path).convert('RGB')
         torchvision.utils.save_image(img,"pretransform.jpg")
         img_transform = self.transform(img)
