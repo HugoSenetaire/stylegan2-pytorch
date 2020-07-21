@@ -82,6 +82,10 @@ def g_nonsaturating_loss(fake_pred):
 
     return loss
 
+def g_shape_loss(zero_pred,mask):
+    loss = torch.nn.L1Loss(reduction = 'sum')(zero_pred-mask)
+    return loss
+
 
 def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
     noise = torch.randn_like(fake_img) / math.sqrt(
@@ -287,14 +291,19 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         random_label = random_label.to(device)
         random_mask = random_mask.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
+        zero_noise = torch.zeros(noise.shape).to(device)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
+        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask))
+
+
 
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
         fake_pred = discriminator(fake_img,labels = random_label)
         fake_pred = select_index_discriminator(fake_pred,random_label)
-        g_loss = g_nonsaturating_loss(fake_pred)
+        g_loss = g_nonsaturating_loss(fake_pred) + g_shape_loss(zero_img, random_mask)
+        
 
         loss_dict["g"] = g_loss
 
