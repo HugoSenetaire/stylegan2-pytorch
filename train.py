@@ -83,8 +83,9 @@ def g_nonsaturating_loss(fake_pred):
     return loss
 
 def g_shape_loss(zero_pred,mask):
-    loss = torch.nn.L1Loss(reduction = 'sum')(zero_pred-mask)
-    return loss
+    loss = torch.nn.L1Loss(reduction = 'sum')
+    return loss(zero_pred-mask)
+    #return loss
 
 
 def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
