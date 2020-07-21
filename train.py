@@ -10,6 +10,7 @@ from torch.nn import functional as F
 from torch.utils import data
 import torch.distributed as dist
 from torchvision import transforms, utils
+import torchvision
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 try:
