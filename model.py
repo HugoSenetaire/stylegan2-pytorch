@@ -414,11 +414,11 @@ class Generator(nn.Module):
         self.style = nn.Sequential(*layers)
 
         if mask :
-            convs_mask = [ConvLayer(3, channels_mask[size], 1)]
-            in_channel_mask = channels_mask[size]
+            convs_mask = [ConvLayer(3, self.channels_mask[size], 1)]
+            in_channel_mask = self.channels_mask[size]
 
             for i in range(log_size, 2, -1):
-                out_channel_mask = channels_mask[2 ** (i - 1)]
+                out_channel_mask = self.channels_mask[2 ** (i - 1)]
 
                 convs_mask.append(ResBlock(in_channel_mask, out_channel_mask, blur_kernel))
 
