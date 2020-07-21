@@ -82,10 +82,10 @@ class Dataset(data.Dataset):
         super().__init__()
         self.folder = folder
 
-        if self.folder[:-1] == "\":
-            self.folder_mask = self.folder[:-1] + "_mask"
-        else :
-            self.folder_mask = self.folder + "_mask"
+        # if self.folder[:-1] == \":
+        #     self.folder_mask = self.folder[:-1] + "_mask"
+        # else :
+        self.folder_mask = self.folder + "_mask"
         self.image_size = image_size
         self.columns = columns
         self.df = pd.read_csv(folder+".csv")
