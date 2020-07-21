@@ -122,7 +122,8 @@ class Dataset(data.Dataset):
         path_mask = os.path.join(self.folder_mask,name+".jpg")
         print(path_mask)
         img = Image.open(path).convert('RGB')
-        torchvision.utils.save_image(img,"pretransform.jpg")
+        plt.imshow(img)
+        plt.show()
         img_transform = self.transform(img)
         if self.transform_mask is not None :
             mask = Image.open(path_mask).convert('RGB')
