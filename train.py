@@ -161,6 +161,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     if dataset.get_len()>0:
         #sample_label = dataset.random_one_hot(args.n_sample).to(device)
         sample_label = dataset.listing_one_hot(args.n_sample).to(device)
+
+    if args.mask :
+        sample_mask = dataset.random_mask(args.batch)
+    else :
+        sample_mask = None
     print("The labels for the generation are the following :")
     print(sample_label)
 
@@ -171,10 +176,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             print("Done!")
             break
 
-        real_label,real_img = next(loader)
+        real_label,real_img, real_mask = next(loader)
         #print(label)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
+        real_mask = real_mask.to(device)
 
         requires_grad(generator, False)
         requires_grad(discriminator, True)
@@ -183,6 +189,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             random_label = dataset.random_one_hot(args.batch)
         else :
             random_label = None
+
+        if args.mask :
+            random_mask = dataset.random_mask(args.batch)
+        else :
+            random_mask = None
         
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
@@ -256,6 +267,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             random_label = dataset.random_one_hot(args.batch)
         else :
             random_label = None
+
+        if args.mask :
+            random_mask = dataset.random_mask(args.batch)
+        else :
+            random_mask = None
 
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
@@ -406,6 +422,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--mask", type=str, default=None)
 
     args = parser.parse_args()
 
@@ -431,13 +448,25 @@ if __name__ == "__main__":
     transform = transforms.Compose(
         [   
             transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
+            #transforms.RandomHorizontalFlip(),
             transforms.Resize(args.size),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-    dataset = Dataset(args.path, transform, args.size)
+    if args.mask is not None :
+        transform_mask = transforms.Compose(
+            [
+                transforms.Resize(args.size),
+                transforms.ToTensor(),
+            ]
+        )
+        args.mask = True
+    else :
+        args.mask = False
+
+
+    dataset = Dataset(args.path, transform, args.size, transform_mask = transform_mask)
     loader = data.DataLoader(
         dataset,
         batch_size=args.batch,

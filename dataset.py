@@ -20,6 +20,9 @@ import torch
 from torch import nn
 from torch.utils import data
 import torch.nn.functional as F
+
+
+
 class MultiResolutionDataset(data.Dataset):
     def __init__(self, path, transform, resolution=256):
         self.env = lmdb.open(
@@ -75,9 +78,11 @@ class OneHot():
 
 class Dataset(data.Dataset):
     #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
-    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], transparent = False):
+    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], transparent = False, transform_mask = None):
         super().__init__()
         self.folder = folder
+        if
+        self.folder_mask = self.folder[:-1] + "_mask"
         self.image_size = image_size
         self.columns = columns
         self.df = pd.read_csv(folder+".csv")
@@ -101,6 +106,7 @@ class Dataset(data.Dataset):
         #num_channels = 3 if not transparent else 4
         
         self.transform = transform
+        self.transform_mask = transform_mask
 
     def __len__(self):
         return len(self.df)
@@ -109,8 +115,14 @@ class Dataset(data.Dataset):
         data = self.df.iloc[index]
         name = data.image_id
         path = os.path.join(self.folder,name+".jpg")
+        path_mask = os.path.join(self.folder_mask,name+".jpg")
         img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
+        if self.transform_mask is not None :
+            mask = Image.open(path_mask).convert('RGB')
+            mask_transform = self.transform_mask(mask)
+        else :
+            mask_transform = None
         if len(self.columns)>0 :
             x = []
             for column in self.columns:
@@ -120,7 +132,7 @@ class Dataset(data.Dataset):
             x = data_year_one_hot.type(torch.float32)
         else :
             x = -1
-        return x,img_transform
+        return x,img_transform,mask_transform
     
     def get_len(self):
         size = 0
@@ -203,3 +215,26 @@ class Dataset(data.Dataset):
             data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
         
         return data_year_one_hot
+
+    def random_mask(self,batch_size):
+        index = np.random.randint(0,self.batch_size)
+        data = self.df.iloc[index]
+        name = data.image_id
+        path_mask = os.path.join(self.folder_mask,name+".jpg")
+        mask = Image.open(path_mask).convert('RGB')
+        mask_transform = self.transform_mask(mask)
+        total = mask_transform[None, :, :, :]
+        
+        for i in range(batch_size-1):
+            index = np.random.randint(0,self.batch_size)
+            data = self.df.iloc[index]
+            name = data.image_id
+            path_mask = os.path.join(self.folder_mask,name+".jpg")
+            mask = Image.open(path_mask).convert('RGB')
+            mask_transform = self.transform_mask(mask)[None,:,:,:]
+            total.cat(mask_transform,dim=0)
+        
+        return total
+
+
+
