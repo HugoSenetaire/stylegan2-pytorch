@@ -420,7 +420,7 @@ class Generator(nn.Module):
                 out_channel_mask = self.channels_mask[2 ** (i - 1)]
                 convs_mask.append(ResBlock(in_channel_mask, out_channel_mask, blur_kernel))
                 in_channel_mask = out_channel_mask
-                
+
             self.mask_extractor = nn.Sequential(*convs_mask)
         # self.channels = {
         #     4: 512 ,
@@ -583,7 +583,7 @@ class Generator(nn.Module):
         if self.mask :
             if mask is None :
                 print("Error mask is None")
-            mask_output = self.mask_extractor(mask).flatten()
+            mask_output = self.mask_extractor(mask).flatten(1)
             latent = self.forward_mixlabel(latent,mask_output)
 
 

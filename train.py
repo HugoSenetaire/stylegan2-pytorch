@@ -208,7 +208,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        fake_img, _ = generator(noise,labels= random_label)
+        fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
 
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
@@ -286,7 +286,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        fake_img, _ = generator(noise,labels = random_label)
+        fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
 
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
@@ -310,8 +310,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 random_label = dataset.random_one_hot(path_batch_size)
             else :
                 random_label = None
+
+            if args.mask :
+                random_mask = dataset.random_mask(path_batch_size)
+            else :
+                random_mask = None
             random_label = random_label.to(device)
-            fake_img, latents = generator(noise, labels = random_label, return_latents=True)
+            fake_img, latents = generator(noise, labels = random_label, return_latents=True, mask = random_mask)
 
             path_loss, mean_path_length, path_lengths = g_path_regularize(
                 fake_img, latents, mean_path_length
@@ -374,7 +379,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if i % 100 == 0:
                 with torch.no_grad():
                     g_ema.eval()
-                    sample, _ = g_ema([sample_z],labels = sample_label)
+                    sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask)
                     utils.save_image(
                         sample,
                         os.path.join(args.output_prefix, f"sample/{str(i).zfill(6)}.png"),
