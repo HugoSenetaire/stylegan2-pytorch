@@ -400,6 +400,7 @@ class Generator(nn.Module):
         if mask :
             self.total_style_dim += self.channels_mask[size]*size
         
+        
 
         
         layers = [PixelNorm()]
@@ -585,8 +586,10 @@ class Generator(nn.Module):
             print("MASK INPUT",mask.shape)
             if mask is None :
                 print("Error mask is None")
-            mask_output = self.mask_extractor(mask).flatten(1)
+            mask_output = self.mask_extractor(mask)
             print("MASKOUTPUT",mask_output.shape)
+            mask_output = mask_output.flatten(1)
+            print("MASKOUTPUT FLATTEN", mask_output.shape)
             latent = self.forward_mixlabel(latent,mask_output)
             print("LATENT", latent.shape)
 
