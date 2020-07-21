@@ -216,7 +216,7 @@ class Dataset(data.Dataset):
         return data_year_one_hot
 
     def random_mask(self,batch_size):
-        index = np.random.randint(0,self.len())
+        index = np.random.randint(0,len(self.df))
         data = self.df.iloc[index]
         name = data.image_id
         path_mask = os.path.join(self.folder_mask,name+".jpg")
@@ -225,7 +225,7 @@ class Dataset(data.Dataset):
         total = mask_transform[None, :, :, :]
         
         for i in range(batch_size-1):
-            index = np.random.randint(0,self.len())
+            index = np.random.randint(0,len(self.df))
             data = self.df.iloc[index]
             name = data.image_id
             path_mask = os.path.join(self.folder_mask,name+".jpg")
