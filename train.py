@@ -184,10 +184,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         # torchvision.utils.save_image(real_img[0],"real_img.jpg")
         # torchvision.utils.save_image(real_mask[0],"real_mask.jpg")
         # break
-        plt.imshow(real_img[0])
-        plt.show()
-        plt.imshow(real_mask[0])
-        plt.show()
+        # plt.imshow(real_img[0])
+        # plt.show()
+        # plt.imshow(real_mask[0])
+        # plt.show()
 
         real_label = real_label.to(device)
         real_img = real_img.to(device)
