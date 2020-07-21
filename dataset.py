@@ -12,6 +12,7 @@ from shutil import rmtree
 from functools import partial
 import multiprocessing
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import copy
