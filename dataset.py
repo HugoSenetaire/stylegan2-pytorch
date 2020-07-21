@@ -242,7 +242,7 @@ class Dataset(data.Dataset):
             path_mask = os.path.join(self.folder_mask,name+".jpg")
             mask = Image.open(path_mask).convert('RGB')
             mask_transform = self.transform_mask(mask)[None,:,:,:]
-            total.cat(mask_transform,dim=0)
+            total = torch.cat([total,mask_transform],dim=0)
         
         return total
 
