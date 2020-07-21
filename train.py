@@ -11,7 +11,7 @@ from torch.utils import data
 import torch.distributed as dist
 from torchvision import transforms, utils
 from tqdm import tqdm
-
+import matplotlib.pyplot as plt
 try:
     import wandb
 
@@ -177,8 +177,12 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             break
 
         real_label,real_img, real_mask = next(loader)
-        #print(label)
-         print(real_label)
+        print(real_label)
+        print(real_img.shape)
+        print(real_mask.shape)
+        torchvision.utils.save_image(real_img,"real_img.jpg")
+        torchvision.utils.save_image(real_mask,"real_mask.jpg")
+        break
         plt.imshow(real_img[0])
         plt.show()
         plt.imshow(real_mask[0])
@@ -454,7 +458,7 @@ if __name__ == "__main__":
     transform = transforms.Compose(
         [   
             transforms.Lambda(convert_transparent_to_rgb),
-            #transforms.RandomHorizontalFlip(),
+            transforms.RandomHorizontalFlip(),
             transforms.Resize(args.size),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
@@ -473,7 +477,7 @@ if __name__ == "__main__":
         transform_mask = None
 
 
-    dataset = Dataset(args.path, transform, args.size, transform_mask = transform_mask)
+    dataset = Dataset(args.path, transform, args.size, transform_mask = transform)
     loader = data.DataLoader(
         dataset,
         batch_size=args.batch,
