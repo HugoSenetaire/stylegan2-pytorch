@@ -178,12 +178,12 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             break
 
         real_label,real_img, real_mask = next(loader)
-        print(real_label)
-        print(real_img.shape)
-        print(real_mask.shape)
-        torchvision.utils.save_image(real_img[0],"real_img.jpg")
-        torchvision.utils.save_image(real_mask[0],"real_mask.jpg")
-        break
+        # print(real_label)
+        # print(real_img.shape)
+        # print(real_mask.shape)
+        # torchvision.utils.save_image(real_img[0],"real_img.jpg")
+        # torchvision.utils.save_image(real_mask[0],"real_mask.jpg")
+        # break
         plt.imshow(real_img[0])
         plt.show()
         plt.imshow(real_mask[0])

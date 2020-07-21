@@ -119,9 +119,9 @@ class Dataset(data.Dataset):
         data = self.df.iloc[index]
         name = data.image_id
         path = os.path.join(self.folder,name+".jpg")
-        print(path)
+        # print(path)
         path_mask = os.path.join(self.folder_mask,name+".jpg")
-        print(path_mask)
+        # print(path_mask)
         img = Image.open(path).convert('RGB')
         img.save("test_save.jpg")
         img_transform = self.transform(img)
@@ -140,8 +140,8 @@ class Dataset(data.Dataset):
             x = -1
 
  
-        torchvision.utils.save_image(img_transform[0],"real_img_data.jpg")
-        torchvision.utils.save_image(mask_transform[0],"real_mask_data.jpg")
+        # torchvision.utils.save_image(img_transform[0],"real_img_data.jpg")
+        # torchvision.utils.save_image(mask_transform[0],"real_mask_data.jpg")
         return x,img_transform,mask_transform
     
     def get_len(self):

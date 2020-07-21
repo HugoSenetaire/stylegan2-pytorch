@@ -373,16 +373,34 @@ class Generator(nn.Module):
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
+        mask = False,
     ):
         super().__init__()
 
         self.size = size
-
+        self.mask = mask
         self.style_dim = style_dim 
         
         self.latent_label_dim = latent_label_dim
         self.total_style_dim = self.style_dim + self.latent_label_dim
+        log_size = int(math.log(size, 2))
+
+        self.channels_mask = {
+            4: 512 ,
+            8: 256 ,
+            16: 128,
+            32: 64,
+            64: 64 * channel_multiplier,
+            128: 32 * channel_multiplier,
+            256: 16 * channel_multiplier,
+            512: 8 * channel_multiplier,
+            1024: 4 * channel_multiplier,
+        }
+
+        if mask :
+            self.total_style_dim += self.channels_mask[size]*size
         
+
         
         layers = [PixelNorm()]
 
@@ -395,6 +413,18 @@ class Generator(nn.Module):
 
         self.style = nn.Sequential(*layers)
 
+        if mask :
+            convs_mask = [ConvLayer(3, channels_mask[size], 1)]
+            in_channel_mask = channels_mask[size]
+
+            for i in range(log_size, 2, -1):
+                out_channel_mask = channels_mask[2 ** (i - 1)]
+
+                convs_mask.append(ResBlock(in_channel_mask, out_channel_mask, blur_kernel))
+
+                in_channel_mask = out_channel_mask
+
+            self.mask_extractor = nn.Sequential(*convs_mask)
         # self.channels = {
         #     4: 512 ,
         #     8: 512 ,
@@ -500,6 +530,7 @@ class Generator(nn.Module):
         self,
         styles,
         labels = None,
+        mask = None,
         return_latents=False,
         inject_index=None,
         truncation=1,
@@ -552,6 +583,13 @@ class Generator(nn.Module):
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
 
+        if self.mask :
+            if mask is None :
+                print("Error mask is None")
+            mask_output = self.mask_extractor(mask).flatten()
+            latent = self.forward_mixlabel(latent,mask_output)
+
+
         out = self.input(latent)
 
         
@@ -577,6 +615,7 @@ class Generator(nn.Module):
 
         else:
             return image, None
+
 
 
 class ConvLayer(nn.Sequential):
