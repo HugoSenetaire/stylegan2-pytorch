@@ -397,7 +397,7 @@ def convert_transparent_to_rgb(image):
     return image
 
 if __name__ == "__main__":
-    device = "cuda-1"
+    device = "cuda"
 
     parser = argparse.ArgumentParser()
 
@@ -434,7 +434,7 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(args.output_prefix, "checkpoint")):
         os.makedirs(os.path.join(args.output_prefix, "checkpoint"))
 
-
+    torch.cuda.set_device(args.local_rank)
     if args.distributed:
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
@@ -483,7 +483,6 @@ if __name__ == "__main__":
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
     ).to(device)
-    print("GPU DEVICE IS :",device)
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
