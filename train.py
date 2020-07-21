@@ -111,13 +111,30 @@ def make_noise(batch, latent_dim, n_noise, device):
 
     return noises
 
+def make_zero_noise(batch, latent_dim, n_noise, device):
+    if n_noise == 1:
+        return torch.zeros(batch, latent_dim, device=device)
 
-def mixing_noise(batch, latent_dim, prob, device):
-    if prob > 0 and random.random() < prob:
-        return make_noise(batch, latent_dim, 2, device)
+    noises = torch.zeros(n_noise, batch, latent_dim, device=device).unbind(0)
 
-    else:
-        return [make_noise(batch, latent_dim, 1, device)]
+    return noises
+
+
+
+def mixing_noise(batch, latent_dim, prob, device, zero = False):
+    if not zero :
+        if prob > 0 and random.random() < prob:
+            return make_noise(batch, latent_dim, 2, device)
+
+        else:
+            return [make_noise(batch, latent_dim, 1, device)]
+    else :
+        if prob > 0 and random.random() < prob:
+            return make_zero_noise(batch, latent_dim, 2, device)
+
+        else:
+            return [make_zero_noise(batch, latent_dim, 1, device)]
+
 
 
 def set_grad_none(model, targets):
@@ -291,7 +308,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         random_label = random_label.to(device)
         random_mask = random_mask.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        zero_noise = torch.zeros(noise.shape).to(device)
+        zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
         zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask)
 
