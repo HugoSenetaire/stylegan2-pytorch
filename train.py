@@ -84,7 +84,7 @@ def g_nonsaturating_loss(fake_pred):
 
 def g_shape_loss(zero_pred,mask):
     loss = torch.nn.L1Loss(reduction = 'sum')
-    return loss(zero_pred-mask)
+    return loss(zero_pred,mask)
     #return loss
 
 
