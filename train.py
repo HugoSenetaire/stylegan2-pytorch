@@ -82,6 +82,10 @@ def g_nonsaturating_loss(fake_pred):
     return loss
 
 
+def classification_loss(pred, label):
+    loss = nn.CrossEntropyLoss()
+    return loss(pred,label)
+    
 def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
     noise = torch.randn_like(fake_img) / math.sqrt(
         fake_img.shape[2] * fake_img.shape[3]
@@ -160,7 +164,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
     if dataset.get_len()>0:
         #sample_label = dataset.random_one_hot(args.n_sample).to(device)
-        sample_label = dataset.listing_one_hot(args.n_sample).to(device)
+        sample_label,dic_label = dataset.listing_one_hot(args.n_sample).to(device)
     print("The labels for the generation are the following :")
     print(sample_label)
 
@@ -171,7 +175,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             print("Done!")
             break
 
-        real_label,real_img = next(loader)
+        real_label,real_img,real_dic_label = next(loader)
         #print(label)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
@@ -180,9 +184,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(discriminator, True)
 
         if latent_label_dim>0 :
-            random_label = dataset.random_one_hot(args.batch)
+            random_label,random_dic_label = dataset.random_one_hot(args.batch)
         else :
             random_label = None
+            random_dic_label = None
         
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
@@ -196,12 +201,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             real_img_aug = real_img
 
     
-        fake_pred = discriminator(fake_img,labels = random_label) 
-        real_pred = discriminator(real_img_aug, labels = real_label)
-        fake_pred = select_index_discriminator(fake_pred,random_label)
-        real_pred = select_index_discriminator(real_pred,real_label)
+        fake_pred, fake_classification = discriminator(fake_img,labels = random_label) 
+        real_pred, real_classification = discriminator(real_img_aug, labels = real_label)
+        #fake_pred = select_index_discriminator(fake_pred,random_label)
+        #real_pred = select_index_discriminator(real_pred,real_label)
 
         d_loss = d_logistic_loss(real_pred, fake_pred)
+        if latent_label_dim>0 :
+            for column in dataset.columns :
+                d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
 
         loss_dict["d"] = d_loss
         loss_dict["real_score"] = real_pred.mean()
@@ -236,8 +244,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if d_regularize:
             real_img.requires_grad = True
-            real_pred = discriminator(real_img,labels = real_label)
-            real_pred = select_index_discriminator(real_pred,real_label)
+            real_pred, real_classification = discriminator(real_img,labels = real_label)
+            #real_pred = select_index_discriminator(real_pred,real_label)
             r1_loss = d_r1_loss(real_pred, real_img)
             
             
@@ -253,9 +261,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         
 
         if latent_label_dim>0 :
-            random_label = dataset.random_one_hot(args.batch)
+            random_label,random_dic_label = dataset.random_one_hot(args.batch)
         else :
             random_label = None
+            random_dic_label = None
 
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
@@ -264,9 +273,18 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
-        fake_pred = discriminator(fake_img,labels = random_label)
-        fake_pred = select_index_discriminator(fake_pred,random_label)
+        fake_pred, fake_classification = discriminator(fake_img,labels = random_label)
+        
+
+
+        # fake_pred = select_index_discriminator(fake_pred,random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
+
+        # Not sure it is really necessary if no conditionning, would be for the creativity loss :
+        if latent_label_dim>0 :
+            for column in dataset.columns :
+                g_loss += classification_loss(fake_classification[column], random_dic_label[column].to(device))
+            
 
         loss_dict["g"] = g_loss
 
@@ -280,9 +298,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             path_batch_size = max(1, args.batch // args.path_batch_shrink)
             noise = mixing_noise(path_batch_size, args.latent, args.mixing, device)
             if latent_label_dim>0 :
-                random_label = dataset.random_one_hot(path_batch_size)
+                random_label,random_dic_label = dataset.random_one_hot(path_batch_size)
             else :
                 random_label = None
+                random_dic_label = None
             random_label = random_label.to(device)
             fake_img, latents = generator(noise, labels = random_label, return_latents=True)
 
@@ -456,7 +475,7 @@ if __name__ == "__main__":
     
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim,
+         dic_latent_label_dim=dataset.dic_column_dim,
     ).to(device)
     
 

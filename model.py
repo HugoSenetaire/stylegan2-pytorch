@@ -650,7 +650,7 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, latent_label_dim = 0, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
+    def __init__(self, size, dic_latent_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
         super().__init__()
 
         # channels = {
@@ -691,15 +691,26 @@ class Discriminator(nn.Module):
             in_channel = out_channel
 
         self.convs = nn.Sequential(*convs)
-        self.latent_label_dim = latent_label_dim
+        self.dic_latent_label_dim = dic_latent_label_dim
+        self.columns = list(self.dic_latent_label_dim.keys())
         self.stddev_group = 4
         self.stddev_feat = 1
 
         self.final_conv = ConvLayer(in_channel + 1, channels[4], 3)
+
         self.final_linear = nn.Sequential(
-            EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
-            EqualLinear(channels[4], self.latent_label_dim),
-        )
+                EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                EqualLinear(channels[4], 1),
+            )
+        if self.dic_latent_label_dim is not None:
+            self.final_linear_label = {}
+            for column in self.columns:
+                self.final_linear_label[column] = nn.Sequential(
+                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                    EqualLinear(channels[4], self.dic_latent_label_dim[column]),
+                    nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
+                )
+
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
         # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
@@ -718,14 +729,17 @@ class Discriminator(nn.Module):
         stddev = stddev.repeat(group, 1, height, width)
         out = torch.cat([out, stddev], 1)
 
-        out = self.final_conv(out)
+        out_conv = self.final_conv(out)
+        out_conv = out_conv.view(batch, -1)
 
-        out = out.view(batch, -1)
-        # if self.latent_label_dim >0 :
-        #     out = torch.cat([out,labels],dim=1)
+        out_real_fake = self.final_linear(out_conv)
+        
+        if self.dic_latent_label_dim is not None:
+            out_classification = {}
+            for column in self.columns:
+                out_classification[column] = self.final_linear_label(out_conv)
+        else :
+            out_classification = None
 
-
-        out = self.final_linear(out)
-
-        return out
+        return out_real_fake, out_classification
 
