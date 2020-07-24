@@ -194,6 +194,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         
         random_label = random_label.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
+        print(noise)
         fake_img, _ = generator(noise,labels= random_label)
 
         if args.augment:
@@ -445,6 +446,7 @@ if __name__ == "__main__":
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
 
+    torch.cuda.set_device(args.local_rank)
     args.latent = 512
     args.n_mlp = 8
 

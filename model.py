@@ -731,6 +731,7 @@ class Discriminator(nn.Module):
 
         out_conv = self.final_conv(out)
         out_conv = out_conv.view(batch, -1)
+        print(out_conv)
 
         out_real_fake = self.final_linear(out_conv)
         
