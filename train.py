@@ -211,8 +211,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         #real_pred = select_index_discriminator(real_pred,real_label)
 
         d_loss = d_logistic_loss(real_pred, fake_pred)
-        print("Real Classification", real_classification)
-        print("REAL DIC LABEL", real_dic_label)
         if latent_label_dim>0 :
             for column in dataset.columns :
                 d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
