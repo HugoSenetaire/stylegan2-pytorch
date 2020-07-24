@@ -118,7 +118,7 @@ class Dataset(data.Dataset):
         if len(self.columns)>0 :
             x = []
             # data_year_one_hot = torch.empty()
-            aux = self.encoder[self.columns[0]].apply(data[columns[0]])
+            aux = self.encoder[self.columns[0]].apply(data[self.columns[0]])
             data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
             for i,column in enumerate(self.columns):
                 if i == 0 :
