@@ -475,12 +475,13 @@ if __name__ == "__main__":
     generator = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim
+         latent_label_dim=latent_label_dim,
     ).to(device)
     
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
+         device=device
     ).to(device)
     
 

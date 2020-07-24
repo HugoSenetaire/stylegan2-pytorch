@@ -650,7 +650,7 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, dic_latent_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
+    def __init__(self, size, dic_latent_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None):
         super().__init__()
 
         # channels = {
@@ -709,7 +709,7 @@ class Discriminator(nn.Module):
                     EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
                     EqualLinear(channels[4], self.dic_latent_label_dim[column]),
                     nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
-                )
+                ).to(device)
 
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
         # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
@@ -731,7 +731,6 @@ class Discriminator(nn.Module):
 
         out_conv = self.final_conv(out)
         out_conv = out_conv.view(batch, -1)
-        print(out_conv)
 
         out_real_fake = self.final_linear(out_conv)
         
