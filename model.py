@@ -737,7 +737,7 @@ class Discriminator(nn.Module):
         if self.dic_latent_label_dim is not None:
             out_classification = {}
             for column in self.columns:
-                out_classification[column] = self.final_linear_label(out_conv)
+                out_classification[column] = self.final_linear_label[column](out_conv)
         else :
             out_classification = None
 
