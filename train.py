@@ -164,7 +164,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
     if dataset.get_len()>0:
         #sample_label = dataset.random_one_hot(args.n_sample).to(device)
-        sample_label,dic_label = dataset.listing_one_hot(args.n_sample).to(device)
+        sample_label,dic_label = dataset.listing_one_hot(args.n_sample)
+        sample_label = sample_label.to(device)
+        for column in dataset.columns :
+            dic_label[column] = dic_label[column].to(device)
     print("The labels for the generation are the following :")
     print(sample_label)
 

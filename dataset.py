@@ -85,6 +85,7 @@ class Dataset(data.Dataset):
         # Get one Hot Encoder
         self.dic = {}
         self.encoder = {}
+        self.dic_column_dim = {}
         for column in columns :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
