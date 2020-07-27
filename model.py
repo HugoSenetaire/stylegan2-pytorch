@@ -420,7 +420,7 @@ class Generator(nn.Module):
             convs_mask = [nn.Conv2d(3, 64, (5, 5), stride=(2, 2), padding=(2, 2)]
             convs_mask.append(nn.Conv2d(64, 128, (5, 5), stride=(2, 2), padding=(2, 2))
             convs_mask.append(nn.Conv2d(128, 256, (5, 5), stride=(2, 2), padding=(2, 2))
-            convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1))
+            #convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1))
             # in_channel_mask = self.channels_mask[size]
             # convs_mask = [ConvLayer(3, self.channels_mask[size], 1)]
             # in_channel_mask = self.channels_mask[size]
