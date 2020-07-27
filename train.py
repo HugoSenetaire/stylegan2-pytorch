@@ -337,11 +337,16 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         fake_pred = discriminator(fake_img,labels = random_label)
         fake_pred = select_index_discriminator(fake_pred,random_label)
-        g_loss = g_nonsaturating_loss(fake_pred) + g_shape_loss(zero_img, random_mask)
-        
+        if args.mask :
+            shape_loss = g_shape_loss(zero_img, random_mask)
+            non_saturating_loss = g_nonsaturating_loss(fake_pred)
+            g_loss =non_saturating_loss + shape_loss
+            loss_dict["gmask"] = shape_loss
+            loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
+        else :
+            g_loss = g_nonsaturating_loss(fake_pred)
 
         loss_dict["g"] = g_loss
-
         generator.zero_grad()
         g_loss.backward()
         g_optim.step()
@@ -391,6 +396,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         d_loss_val = loss_reduced["d"].mean().item()
         g_loss_val = loss_reduced["g"].mean().item()
+        if args.mask :
+            g_classic_loss = loss_reduced["gclassic"].mean().item()
+            g_mask_loss = loss_reduced["gmask"].mean().item
         r1_val = loss_reduced["r1"].mean().item()
         path_loss_val = loss_reduced["path"].mean().item()
         real_score_val = loss_reduced["real_score"].mean().item()
@@ -410,6 +418,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 wandb.log(
                     {
                         "Generator": g_loss_val,
+                        "Classic Generator": g_classic_loss,
+                        "Mask Generator": g_mask_loss,
                         "Discriminator": d_loss_val,
                         "Augment": ada_aug_p,
                         "Rt": r_t_stat,
