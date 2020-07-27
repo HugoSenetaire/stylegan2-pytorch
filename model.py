@@ -399,7 +399,7 @@ class Generator(nn.Module):
         }
 
         if mask :
-            self.total_style_dim += self.channels_mask[4]*4*4
+            self.total_style_dim += 256*4*4
         
         
 
@@ -416,12 +416,18 @@ class Generator(nn.Module):
         self.style = nn.Sequential(*layers)
 
         if mask :
-            convs_mask = [ConvLayer(3, self.channels_mask[size], 1)]
-            in_channel_mask = self.channels_mask[size]
-            for i in range(log_size, 2, -1):
-                out_channel_mask = self.channels_mask[2 ** (i - 1)]
-                convs_mask.append(ResBlock(in_channel_mask, out_channel_mask, blur_kernel))
-                in_channel_mask = out_channel_mask
+
+            convs_mask = [nn.Conv2d(3, 64, (5, 5), stride=(2, 2), padding=(2, 2)]
+            convs_mask.append(nn.Conv2d(64, 128, (5, 5), stride=(2, 2), padding=(2, 2))
+            convs_mask.append(nn.Conv2d(128, 256, (5, 5), stride=(2, 2), padding=(2, 2))
+            convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1))
+            # in_channel_mask = self.channels_mask[size]
+            # convs_mask = [ConvLayer(3, self.channels_mask[size], 1)]
+            # in_channel_mask = self.channels_mask[size]
+            # for i in range(log_size, 2, -1):
+            #     out_channel_mask = self.channels_mask[2 ** (i - 1)]
+            #     convs_mask.append(ResBlock(in_channel_mask, out_channel_mask, blur_kernel))
+            #     in_channel_mask = out_channel_mask
 
             self.mask_extractor = nn.Sequential(*convs_mask)
         # self.channels = {
