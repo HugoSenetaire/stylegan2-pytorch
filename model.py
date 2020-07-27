@@ -387,8 +387,8 @@ class Generator(nn.Module):
         self.log_size = log_size
 
         self.channels_mask = {
-            4: 512 ,
-            8: 256 ,
+            4: 256,
+            8: 128 ,
             16: 128,
             32: 64,
             64: 64 * channel_multiplier,
@@ -586,23 +586,23 @@ class Generator(nn.Module):
             latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
 
             latent = torch.cat([latent, latent2], 1)
-        print("")
+        # print("")
         if self.latent_label_dim>0 :
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
 
         if self.mask :
-            print("LATENT",latent.shape)
-            print("MASK INPUT",mask.shape)
+            # print("LATENT",latent.shape)
+            # print("MASK INPUT",mask.shape)
             if mask is None :
                 print("Error mask is None")
             mask_output = self.mask_extractor(mask)
-            print("MASKOUTPUT",mask_output.shape)
+            # print("MASKOUTPUT",mask_output.shape)
             mask_output = mask_output.flatten(1)
-            print("MASKOUTPUT FLATTEN", mask_output.shape)
+            # print("MASKOUTPUT FLATTEN", mask_output.shape)
             latent = self.forward_mixlabel(latent,mask_output)
-            print("LATENT", latent.shape)
+            # print("LATENT", latent.shape)
 
 
         out = self.input(latent)
