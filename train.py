@@ -398,7 +398,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         g_loss_val = loss_reduced["g"].mean().item()
         if args.mask :
             g_classic_loss = loss_reduced["gclassic"].mean().item()
-            g_mask_loss = loss_reduced["gmask"].mean().item
+            g_mask_loss = loss_reduced["gmask"].mean().item()
         r1_val = loss_reduced["r1"].mean().item()
         path_loss_val = loss_reduced["path"].mean().item()
         real_score_val = loss_reduced["real_score"].mean().item()
@@ -408,9 +408,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if get_rank() == 0:
             pbar.set_description(
                 (
-                    f"d: {d_loss_val:.4f}; g: {g_loss_val:.4f}; r1: {r1_val:.4f}; "
-                    f"path: {path_loss_val:.4f}; mean path: {mean_path_length_avg:.4f}; "
-                    f"augment: {ada_aug_p:.4f}; gmask:{g_mask_loss:.4f}; gclassic:{g_classic_loss:.4f}; "
+                    f"d: {d_loss_val:.4f}; g: {g_loss_val:.4f}; r1: {r1_val:.4f};"
+                    f"path: {path_loss_val:.4f}; mean path: {mean_path_length_avg:.4f};"
+                    f"augment: {ada_aug_p:.4f}; gmask:{g_mask_loss:.4f}; gclassic:{g_classic_loss:.4f};"
                 )
             )
 
