@@ -227,7 +227,6 @@ class Dataset(data.Dataset):
         return data_year_one_hot
 
     def random_mask(self,batch_size, return_name = False):
-        
         list_name = []
         index = np.random.randint(0,len(self.df))
         data = self.df.iloc[index]

@@ -318,8 +318,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                             normalize=True,
                             range=(-1, 1),
             )
-            print("Sample for the generation")
-            print(sample_name)
+            #print("Sample for the generation")
+            #print(sample_name)
         else :
             random_mask = None
 
