@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..networks.constant_net import FeatureTransform
 
 
 
