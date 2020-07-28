@@ -279,13 +279,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("path", type=str)
-    parser.add_argument("--iter", type=int, default=800000)
     parser.add_argument("--batch", type=int, default=16)
-    parser.add_argument("--n_sample", type=int, default=64)
     parser.add_argument("--size", type=int, default=256)
     parser.add_argument("--r1", type=float, default=10)
     parser.add_argument("--ckpt", type=str, default=None)
-    parser.add_argument("--channel_multiplier", type=int, default=2)
+    parser.add_argument("--channel_multiplier", type=int, default=1)
     parser.add_argument("--wandb", action="store_true")
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--augment", action="store_true")
@@ -295,7 +293,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_prefix", type=str, default = None)
 
 
-     parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
+    parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
                         extractor", nargs='*',
                         type=str, dest="featureExtractor")
     parser.add_argument('--input_image', type=str, dest="inputImage",
