@@ -126,7 +126,7 @@ def gradientDescentOnInput(model,
     if visualizer is not None:
         visualizer.publishTensors(input, (128, 128))
 
-    # Detect categories
+   
     varNoise = torch.randn((input.size(0),
                             model.style_dim,
                             ),
@@ -139,7 +139,7 @@ def gradientDescentOnInput(model,
     label = dataset.random_one_hot(input.size(0))
     print(varNoise.shape)
     print(label.shape)
-    noiseOut = model.forward(varNoise,labels = label)
+    noiseOut = model(varNoise,labels = label)
 
     if not isinstance(featureExtractors, list):
         featureExtractors = [featureExtractors]
@@ -228,7 +228,7 @@ def gradientDescentOnInput(model,
                 varNoise.requires_grad = True
                 varNoise.to(device)
 
-        noiseOut = model.forward(varNoise)
+        noiseOut = model(varNoise)
         sumLoss = torch.zeros(nImages, device=device)
 
         loss = (((varNoise**2).mean(dim=1) - 1)**2)
@@ -290,7 +290,7 @@ def gradientDescentOnInput(model,
             resetVar(optimalVector)
 
     # output = model.test(optimalVector, getAvG=True, toCPU=True).detach()
-    output = model.forward(optimalVector,labels = label).detach()
+    output = model(optimalVector,labels = label).detach()
 
     if visualizer is not None:
         visualizer.publishTensors(
