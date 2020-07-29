@@ -387,6 +387,7 @@ if __name__ == "__main__":
     args.n_mlp = 8
 
     args.start_iter = 0
+    size = args.size
 
     transform = transforms.Compose(
         [   
