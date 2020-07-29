@@ -60,7 +60,7 @@ def data_sampler(dataset, shuffle, distributed):
     else:
         return data.SequentialSampler(dataset)
 
-        
+
 def gradientDescentOnInput(model,
                            input,
                            featureExtractors,
@@ -413,6 +413,9 @@ if __name__ == "__main__":
     ).to(device)
     g_ema.eval()
 
+
+    print(generator)
+    print(dataset)
 
     if args.ckpt is not None:
         print("load model:", args.ckpt)
