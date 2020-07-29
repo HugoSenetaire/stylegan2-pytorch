@@ -318,7 +318,6 @@ if __name__ == "__main__":
     parser.add_argument("--channel_multiplier", type=int, default=1)
     parser.add_argument("--wandb", action="store_true")
     parser.add_argument("--local_rank", type=int, default=0)
-    parser.add_argument("--wandb", action="store_true")
     parser.add_argument("--augment", action="store_true")
     parser.add_argument("--augment_p", type=float, default=0)
     parser.add_argument("--ada_target", type=float, default=0.6)
@@ -450,8 +449,8 @@ if __name__ == "__main__":
         )
 
 
-    if get_rank() == 0 and wandb is not None and args.wandb:
-        wandb.init(project="stylegan 2")
+    # if get_rank() == 0 and wandb is not None and args.wandb:
+    #     wandb.init(project="stylegan 2")
 
     # Get name for experience
     name = getVal(args, "name", None)
