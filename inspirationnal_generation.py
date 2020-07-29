@@ -458,7 +458,8 @@ if __name__ == "__main__":
     #     wandb.init(project="stylegan 2")
 
     # Get name for experience
-    name = getVal(args, "name", None)
+    # name = getVal(args, "name", None)
+    name = args.name
     if name is None:
         raise ValueError("You need to input a name")
 
