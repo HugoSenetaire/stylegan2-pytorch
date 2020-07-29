@@ -520,7 +520,7 @@ if __name__ == "__main__":
         raise ValueError("Need to input a feature extractor model")
 
 
-    basePath = os.path.join(args.output_prefix, args.suffix)
+    basePath = os.path.join(args.output_prefix, args.su)
 
     if not os.path.isdir(basePath):
         os.mkdir(basePath)
@@ -533,7 +533,7 @@ if __name__ == "__main__":
 
     fullInputs = torch.cat([input for x in range(nRuns)], dim=0)
 
-    if kwargs['save_descent']:
+    if args.save_descent:
         outPathDescent = os.path.join(
             os.path.dirname(basePath), "descent")
         if not os.path.isdir(outPathDescent):
@@ -545,12 +545,12 @@ if __name__ == "__main__":
                                                    imgTransforms,
                                                    dataset,
                                                    visualizer=visualisation,
-                                                   lambdaD=kwargs['lambdaD'],
-                                                   nSteps=kwargs['nSteps'],
+                                                   lambdaD=args.lambdaD,
+                                                   nSteps=args.nSteps,
                                                    weights=weights,
-                                                   randomSearch=kwargs['random_search'],
-                                                   nevergrad=kwargs['nevergrad'],
-                                                   lr=kwargs['learningRate'],
+                                                   randomSearch=args.random_search,
+                                                   nevergrad=args.nevergrad,
+                                                   lr=args.learningRate,
                                                    outPathSave=outPathDescent)
 
     pathVectors = basePath + "vector.pt"
