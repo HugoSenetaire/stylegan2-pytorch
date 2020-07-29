@@ -472,7 +472,7 @@ if __name__ == "__main__":
     # scale = getVal(args, "scale", None)
     # iter = getVal(args, "iter", None)
     # nRuns = getVal(args, "nRuns", 1)
-    scale = args.scale
+    # scale = args.scale
     iter = args.iter
     nRuns = args.nRuns
 
