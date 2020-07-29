@@ -88,7 +88,7 @@ class Dataset(data.Dataset):
         for column in columns :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
-                if value in ["HANDBAGS", "CROSS SHOULDER BAGS"; "SHOULDER BAGS"]:
+                if value in ["HANDBAGS", "CROSS SHOULDER BAGS", "SHOULDER BAGS"]:
                     list_possible_value.append(value)
                 # if self.df[column].value_counts()[value] > 200:
                     # list_possible_value.append(value)
