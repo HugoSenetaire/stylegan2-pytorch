@@ -499,7 +499,7 @@ if __name__ == "__main__":
     pathsModel = args.featureExtractor
     featureExtractors = []
     imgTransforms = []
-    visualisation = False
+    visualisation = None
 
     # if weights is not None:
     #     if pathsModel is None or len(pathsModel) != len(weights):
