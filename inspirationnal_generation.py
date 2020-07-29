@@ -10,6 +10,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
+import torch
+from torch import nn, autograd, optim
+from torch.nn import functional as F
+from torch.utils import data
+import torch.distributed as dist
+from torchvision import transforms, utils
+from tqdm import tqdm
 
 
 from model import Generator, Discriminator
@@ -280,7 +288,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("path", type=str)
+    # parser.add_argument("path", type=str)
     parser.add_argument("--batch", type=int, default=16)
     parser.add_argument("--size", type=int, default=256)
     parser.add_argument("--r1", type=float, default=10)
