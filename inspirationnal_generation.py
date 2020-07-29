@@ -487,7 +487,8 @@ if __name__ == "__main__":
     #     pathModel, modelConfig, modelType, visualisation)
 
     # Treating image
-    imgPath = getVal(args, "inputImage", None)
+    # imgPath = getVal(args, "inputImage", None)
+    imgPath = args.inputImage
     if imgPath is None:
         raise ValueError("You need to input an image path")
     img = pil_loader(imgPath)
