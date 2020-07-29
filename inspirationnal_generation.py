@@ -19,7 +19,7 @@ import torch.distributed as dist
 from torchvision import transforms, utils
 from tqdm import tqdm
 
-
+from create_feature_extractor import *
 from model import Generator, Discriminator
 from dataset import MultiResolutionDataset, Dataset
 from distributed import (
