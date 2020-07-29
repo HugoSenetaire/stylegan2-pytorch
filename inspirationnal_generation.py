@@ -318,6 +318,7 @@ if __name__ == "__main__":
     parser.add_argument("--channel_multiplier", type=int, default=1)
     parser.add_argument("--wandb", action="store_true")
     parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument("--wandb", action="store_true")
     parser.add_argument("--augment", action="store_true")
     parser.add_argument("--augment_p", type=float, default=0)
     parser.add_argument("--ada_target", type=float, default=0.6)
