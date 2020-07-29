@@ -38,6 +38,9 @@ def getVal(kwargs, key, default):
     # out = kwargs.get(key, default)
     # if out is None:
     #     return default
+    print(kwargs)
+    print(key)
+    print(default)
     out = kwargs[key]
     if out is None :
         out = default
