@@ -88,10 +88,10 @@ class Dataset(data.Dataset):
         for column in columns :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
-                print(value,type(value))
-                print( self.df[column].value_counts()[value])
-                if self.df[column].value_counts()[value] > 200:
+                if value in ["HANDBAGS", "CROSS SHOULDER BAGS"; "SHOULDER BAGS"]:
                     list_possible_value.append(value)
+                # if self.df[column].value_counts()[value] > 200:
+                    # list_possible_value.append(value)
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
