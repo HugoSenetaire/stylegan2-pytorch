@@ -500,10 +500,10 @@ if __name__ == "__main__":
     featureExtractors = []
     imgTransforms = []
 
-    if weights is not None:
-        if pathsModel is None or len(pathsModel) != len(weights):
-            raise AttributeError(
-                "The number of weights must match the number of models")
+    # if weights is not None:
+    #     if pathsModel is None or len(pathsModel) != len(weights):
+    #         raise AttributeError(
+    #             "The number of weights must match the number of models")
 
     if pathsModel is not None:
         for path in pathsModel:
