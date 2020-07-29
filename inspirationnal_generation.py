@@ -504,13 +504,16 @@ if __name__ == "__main__":
     #     if pathsModel is None or len(pathsModel) != len(weights):
     #         raise AttributeError(
     #             "The number of weights must match the number of models")
+    
+
+    weights=None
 
     if pathsModel is not None:
         for path in pathsModel:
            
             featureExtractor, mean, std = buildFeatureExtractor(
                 path, resetGrad=True)
-            imgTransform = FeatureTransform(mean, std, size=kwargs["size"])
+            imgTransform = FeatureTransform(mean, std, size=args.size)
             featureExtractors.append(featureExtractor)
             imgTransforms.append(imgTransform)
     else :
