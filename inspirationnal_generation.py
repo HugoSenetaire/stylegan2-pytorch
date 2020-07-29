@@ -162,14 +162,14 @@ def gradientDescentOnInput(model,
 
         if len(featureExtractors[i]._modules) > 0:
             featureExtractors[i] = nn.DataParallel(
-                featureExtractors[i]).train().to(model.device)
+                featureExtractors[i]).train().to(device)
 
         featureExtractors[i].eval()
         imageTransforms[i] = nn.DataParallel(
-            imageTransforms[i]).to(model.device)
+            imageTransforms[i]).to(device)
 
         featuresIn.append(featureExtractors[i](
-            imageTransforms[i](input.to(model.device))).detach())
+            imageTransforms[i](input.to(device))).detach())
 
         if nevergrad is None:
             featureExtractors[i].train()
@@ -213,7 +213,7 @@ def gradientDescentOnInput(model,
         if randomSearch:
             varNoise = torch.randn((nImages,
                                     model.style_dim),
-                                   device=model.device)
+                                   device=device)
             if nevergrad:
                 inps = [] # inputs ?
                 for i in range(nImages):
@@ -221,12 +221,12 @@ def gradientDescentOnInput(model,
                     npinps = np.array(inps)
 
                 varNoise = torch.tensor(
-                    npinps, dtype=torch.float32, device=model.device)
+                    npinps, dtype=torch.float32, device=device)
                 varNoise.requires_grad = True
-                varNoise.to(model.device)
+                varNoise.to(device)
 
         noiseOut = model.forward(varNoise)
-        sumLoss = torch.zeros(nImages, device=model.device)
+        sumLoss = torch.zeros(nImages, device=device)
 
         loss = (((varNoise**2).mean(dim=1) - 1)**2)
         sumLoss += loss.view(nImages)
