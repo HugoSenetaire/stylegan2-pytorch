@@ -520,7 +520,7 @@ if __name__ == "__main__":
         raise ValueError("Need to input a feature extractor model")
 
 
-    basePath = os.path.join(args.output_prefix, args.su)
+    basePath = os.path.join(args.output_prefix, args.suffix)
 
     if not os.path.isdir(basePath):
         os.mkdir(basePath)
