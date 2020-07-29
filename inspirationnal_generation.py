@@ -130,7 +130,7 @@ def gradientDescentOnInput(model,
     varNoise = torch.randn((input.size(0),
                             model.style_dim,
                             ),
-                           requires_grad=True, device=model.device)
+                           requires_grad=True, device=device)
 
     optimNoise = optim.Adam([varNoise],
                             betas=[0., 0.99], lr=lr)
