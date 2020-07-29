@@ -483,8 +483,8 @@ if __name__ == "__main__":
     targetSize = size
     ## baseTransform = standardTransform(targetSize)
     baseTransform = transform
-    visualizer = GANVisualizer(
-        pathModel, modelConfig, modelType, visualisation)
+    # visualizer = GANVisualizer(
+    #     pathModel, modelConfig, modelType, visualisation)
 
     # Treating image
     imgPath = getVal(args, "inputImage", None)
