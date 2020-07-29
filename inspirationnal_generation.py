@@ -495,8 +495,8 @@ if __name__ == "__main__":
     input = baseTransform(img)
     input = input.view(1, input.size(0), input.size(1), input.size(2))
 
-    pathsModel = getVal(kwargs, "featureExtractor", None)
-
+    # pathsModel = getVal(kwargs, "featureExtractor", None)
+    pathsModel = args.featureExtractor
     featureExtractors = []
     imgTransforms = []
 
