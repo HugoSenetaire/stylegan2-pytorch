@@ -328,6 +328,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
+    
 
 
     parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
@@ -459,18 +460,21 @@ if __name__ == "__main__":
 
     # Get name for experience
     # name = getVal(args, "name", None)
-    name = args.name
-    if name is None:
-        raise ValueError("You need to input a name")
+    # name = args.name
+    # if name is None:
+        # raise ValueError("You need to input a name")
 
     
 
 
 
     # Get options
-    scale = getVal(args, "scale", None)
-    iter = getVal(args, "iter", None)
-    nRuns = getVal(args, "nRuns", 1)
+    # scale = getVal(args, "scale", None)
+    # iter = getVal(args, "iter", None)
+    # nRuns = getVal(args, "nRuns", 1)
+    scale = args.scale
+    iter = args.iter
+    nRuns = args.nRuns
 
     # Load the image
     ## targetSize = visualizer.model.getSize()
