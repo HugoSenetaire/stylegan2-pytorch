@@ -328,6 +328,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--iter", type=int, default = 2000)
     
 
 
