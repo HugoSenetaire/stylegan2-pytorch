@@ -290,7 +290,8 @@ def gradientDescentOnInput(model,
             resetVar(optimalVector)
 
     # output = model.test(optimalVector, getAvG=True, toCPU=True).detach()
-    output,_ = model([optimalVector],labels = label).detach()
+    output,_ = model([optimalVector],labels = label)
+    output = output.detach()
 
     if visualizer is not None:
         visualizer.publishTensors(
