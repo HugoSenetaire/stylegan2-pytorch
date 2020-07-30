@@ -268,6 +268,7 @@ def gradientDescentOnInput(model,
                                       sumLoss, optimalLoss).detach()
 
         if iter % 100 == 0:
+            index_str = str(int(iter/100))
             utils.save_image(
                     noiseOut.detach(),
                     os.path.join(outPathSave, index_str + ".jpg"),
