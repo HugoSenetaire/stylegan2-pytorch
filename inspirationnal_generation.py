@@ -228,9 +228,9 @@ def gradientDescentOnInput(model,
                 varNoise.requires_grad = True
                 varNoise.to(device)
 
-        noiseOut = model(varNoise,labels = label)
+        noiseOut,_ = model(varNoise,labels = label)
         sumLoss = torch.zeros(nImages, device=device)
-
+        print(noiseOut.shape)
         loss = (((varNoise[0]**2).mean(dim=1) - 1)**2)
         sumLoss += loss.view(nImages)
         loss.sum(dim=0).backward(retain_graph=True)
@@ -290,7 +290,7 @@ def gradientDescentOnInput(model,
             resetVar(optimalVector)
 
     # output = model.test(optimalVector, getAvG=True, toCPU=True).detach()
-    output = model(optimalVector,labels = label).detach()
+    output,_ = model(optimalVector,labels = label).detach()
 
     if visualizer is not None:
         visualizer.publishTensors(
