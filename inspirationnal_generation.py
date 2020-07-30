@@ -542,7 +542,7 @@ if __name__ == "__main__":
     print("All results will be saved in " + basePath)
 
     outDictData = {}
-    outPathDescent = None
+    outPathDescent = basePath
 
     fullInputs = torch.cat([input for x in range(nRuns)], dim=0)
 
