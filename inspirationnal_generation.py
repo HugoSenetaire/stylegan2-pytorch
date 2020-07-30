@@ -137,8 +137,6 @@ def gradientDescentOnInput(model,
 
     #noiseOut = model.test(varNoise, getAvG=True, toCPU=False)
     label = dataset.random_one_hot(input.size(0)).to(device)
-    # print(varNoise.shape)
-    # print(label.shape)
     noiseOut = model(varNoise,labels = label)
 
     if not isinstance(featureExtractors, list):
@@ -270,6 +268,13 @@ def gradientDescentOnInput(model,
                                       sumLoss, optimalLoss).detach()
 
         if iter % 100 == 0:
+            utils.save_image(
+                    noiseOut.detach(),
+                    os.path.join(outPathSave, index_str + ".jpg"),
+                    nrow=1,
+                    normalize=True,
+                    range=(-1, 1),
+                )
             if visualizer is not None:
                 visualizer.publishTensors(noiseOut.cpu(), (128, 128))
 
@@ -289,7 +294,6 @@ def gradientDescentOnInput(model,
             lr *= gradientDecay
             resetVar(optimalVector)
 
-    # output = model.test(optimalVector, getAvG=True, toCPU=True).detach()
     output,_ = model([optimalVector],labels = label)
     output = output.detach()
 
@@ -333,9 +337,6 @@ if __name__ == "__main__":
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--iter", type=int, default = 2000)
-    
-
-
     parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
                         extractor", nargs='*',
                         type=str, dest="featureExtractor")
