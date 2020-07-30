@@ -352,7 +352,7 @@ if __name__ == "__main__":
     parser.add_argument('-R', '--rLoss', type=float, dest='lambdaD',
                         help="Realism penalty", default=0.03)
     parser.add_argument('--nSteps', type=int, dest='nSteps',
-                        help="Number of steps", default=6000)
+                        help="Number of steps", default=1000)
     parser.add_argument('--weights', type=float, dest='weights',
                         nargs='*', help="Weight of each classifier. Default \
                         value is one. If specified, the number of weights must\
