@@ -571,6 +571,7 @@ if __name__ == "__main__":
 
     path = basePath + ".jpg"
     # visualisation.saveTensor(img, (img.size(2), img.size(3)), path)
+    torch.save(image, open(path,'wb'))
     outDictData[os.path.splitext(os.path.basename(path))[0]] = \
         [x.item() for x in loss]
 
@@ -586,7 +587,7 @@ if __name__ == "__main__":
                                  "meanAngles": meanAngles.mean().item()}
 
     path = basePath + "_data.json"
-    outDictData["kwargs"] = kwargs
+    outDictData["args"] = args
 
     with open(path, 'w') as file:
         json.dump(outDictData, file, indent=2)
