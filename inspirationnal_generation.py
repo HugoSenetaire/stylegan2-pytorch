@@ -127,12 +127,11 @@ def gradientDescentOnInput(model,
         visualizer.publishTensors(input, (128, 128))
 
    
-    varNoise = torch.randn((input.size(0),
+    varNoise = [torch.randn(input.size(0),
                             model.style_dim,
-                            ),
-                           requires_grad=True, device=device)
+                           requires_grad=True, device=device)]
 
-    optimNoise = optim.Adam([varNoise],
+    optimNoise = optim.Adam(varNoise,
                             betas=[0., 0.99], lr=lr)
 
     #noiseOut = model.test(varNoise, getAvG=True, toCPU=False)
