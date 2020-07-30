@@ -230,7 +230,7 @@ def gradientDescentOnInput(model,
 
         noiseOut,_ = model(varNoise,labels = label)
         sumLoss = torch.zeros(nImages, device=device)
-        print(noiseOut.shape)
+        # print(noiseOut.shape)
         loss = (((varNoise[0]**2).mean(dim=1) - 1)**2)
         sumLoss += loss.view(nImages)
         loss.sum(dim=0).backward(retain_graph=True)

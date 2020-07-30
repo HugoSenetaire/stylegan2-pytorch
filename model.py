@@ -15,8 +15,6 @@ class PixelNorm(nn.Module):
         super().__init__()
 
     def forward(self, input):
-        print(input.shape)
-        print(torch.rsqrt(torch.mean(input ** 2, dim=1, keepdim=True)).shape)
         return input * torch.rsqrt(torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
 
 
