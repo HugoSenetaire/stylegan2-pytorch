@@ -573,7 +573,15 @@ if __name__ == "__main__":
     # visualisation.saveTensor(img, (img.size(2), img.size(3)), path)
     print(type(img))
     print(img.shape)
-    torch.save(img, open(path,'wb'))
+    # torch.save(img, open(path,'wb'))
+
+    utils.save_image(
+                        img,
+                        path,
+                        nrow=1,
+                        normalize=True,
+                        range=(-1, 1),
+                    )
     outDictData[os.path.splitext(os.path.basename(path))[0]] = \
         [x.item() for x in loss]
 
