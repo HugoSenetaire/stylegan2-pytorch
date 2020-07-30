@@ -67,6 +67,7 @@ def data_sampler(dataset, shuffle, distributed):
 
 
 def gradientDescentOnInput(model,
+                           discriminator,
                            input,
                            featureExtractors,
                            imageTransforms,
@@ -209,8 +210,8 @@ def gradientDescentOnInput(model,
     for iter in range(nSteps):
 
         optimNoise.zero_grad()
-        model.netG.zero_grad()
-        model.netD.zero_grad()
+        model.zero_grad()
+        discriminator.zero_grad()
 
         if randomSearch:
             varNoise = torch.randn((nImages,
@@ -246,7 +247,7 @@ def gradientDescentOnInput(model,
 
         if lambdaD > 0:
 
-            loss = -lambdaD * model.netD(noiseOut)[:, 0]
+            loss = -lambdaD * discriminator(noiseOut)[:, 0]
             sumLoss += loss
 
             if not randomSearch:
@@ -415,7 +416,12 @@ if __name__ == "__main__":
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
     ).to(device)
- 
+     
+    discriminator = Discriminator(
+        args.size, channel_multiplier=args.channel_multiplier,
+         latent_label_dim=latent_label_dim,
+    ).to(device)
+    
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
@@ -441,6 +447,7 @@ if __name__ == "__main__":
 
         generator.load_state_dict(ckpt["g"])
         g_ema.load_state_dict(ckpt["g_ema"])
+        discriminator.load_state_dict(ckpt["d"])
 
 
     if args.distributed:
@@ -543,6 +550,7 @@ if __name__ == "__main__":
             os.mkdir(outPathDescent)
 
     img, outVectors, loss = gradientDescentOnInput(g_ema,
+                                                   discriminator,
                                                    fullInputs,
                                                    featureExtractors,
                                                    imgTransforms,
