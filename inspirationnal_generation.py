@@ -228,7 +228,7 @@ def gradientDescentOnInput(model,
                 varNoise.requires_grad = True
                 varNoise.to(device)
 
-        noiseOut = model(varNoise)
+        noiseOut = model(varNoise,labels = label)
         sumLoss = torch.zeros(nImages, device=device)
 
         loss = (((varNoise**2).mean(dim=1) - 1)**2)
