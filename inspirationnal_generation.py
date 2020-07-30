@@ -231,7 +231,7 @@ def gradientDescentOnInput(model,
         noiseOut = model(varNoise,labels = label)
         sumLoss = torch.zeros(nImages, device=device)
 
-        loss = (((varNoise**2).mean(dim=1) - 1)**2)
+        loss = (((varNoise[0]**2).mean(dim=1) - 1)**2)
         sumLoss += loss.view(nImages)
         loss.sum(dim=0).backward(retain_graph=True)
 
@@ -260,12 +260,12 @@ def gradientDescentOnInput(model,
             optimNoise.step()
 
         if optimalLoss is None:
-            optimalVector = deepcopy(varNoise)
+            optimalVector = deepcopy(varNoise[0])
             optimalLoss = sumLoss
 
         else:
             optimalVector = torch.where(sumLoss.view(-1, 1) < optimalLoss.view(-1, 1),
-                                        varNoise, optimalVector).detach()
+                                        varNoise[0], optimalVector).detach()
             optimalLoss = torch.where(sumLoss < optimalLoss,
                                       sumLoss, optimalLoss).detach()
 
