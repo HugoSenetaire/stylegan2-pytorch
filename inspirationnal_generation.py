@@ -247,7 +247,7 @@ def gradientDescentOnInput(model,
 
         if lambdaD > 0:
 
-            loss = -lambdaD * discriminator(noiseOut)[:, 0]
+            loss = -lambdaD * discriminator(noiseOut,labels = label)[:, 0]
             sumLoss += loss
 
             if not randomSearch:
