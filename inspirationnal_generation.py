@@ -136,8 +136,8 @@ def gradientDescentOnInput(model,
 
     #noiseOut = model.test(varNoise, getAvG=True, toCPU=False)
     label = dataset.random_one_hot(input.size(0))
-    print(varNoise.shape)
-    print(label.shape)
+    # print(varNoise.shape)
+    # print(label.shape)
     noiseOut = model(varNoise,labels = label)
 
     if not isinstance(featureExtractors, list):
