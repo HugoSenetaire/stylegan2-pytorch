@@ -214,9 +214,12 @@ def gradientDescentOnInput(model,
             #     dimension=model.config.noiseVectorDim +
             #     model.config.categoryVectorDim,
             #     budget=nSteps)]
+            # optimizers += [optimizerlib.registry[nevergrad](
+            #     dimension=model.style_dim,
+            #     budget=nSteps)]
             optimizers += [optimizerlib.registry[nevergrad](
-                dimension=model.style_dim,
                 budget=nSteps)]
+            
 
     def resetVar(newVal):
         newVal.requires_grad = True
