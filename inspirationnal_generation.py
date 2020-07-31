@@ -65,6 +65,28 @@ def data_sampler(dataset, shuffle, distributed):
     else:
         return data.SequentialSampler(dataset)
 
+def buildFeatureExtractor(pathModel, resetGrad=True):
+
+    modelData = torch.load(pathModel)
+
+    fullDump = modelData.get("fullDump", False)
+    if fullDump:
+        model = modelData['model']
+    else:
+        modelType = loadmodule(
+            modelData['package'], modelData['network'], prefix='')
+        model = modelType(**modelData['kwargs'])
+        model = cutModelHead(model)
+        model.load_state_dict(modelData['data'])
+
+    for param in model.parameters():
+        param.requires_grad = resetGrad
+
+    mean = modelData['mean']
+    std = modelData['std']
+
+    return model, mean, std
+
 
 def gradientDescentOnInput(model,
                            discriminator,
