@@ -247,7 +247,7 @@ def gradientDescentOnInput(model,
                     inps += [optimizers[i].ask()]
                     npinps = np.array(inps)
                 
-                print(npinps)
+                print(type(npinps),type(npinps[0]))
                 print(inps)
 
                 varNoise = [torch.tensor(
