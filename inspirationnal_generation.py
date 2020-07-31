@@ -251,7 +251,7 @@ def gradientDescentOnInput(model,
                 # print(inps[0].args[0])
 
                 varNoise = [torch.tensor(
-                    inps[0].args[0], dtype=torch.float32, device=device)]
+                    inps[0].args[0], dtype=torch.float32, device=device)[None,:]]
                 varNoise[0].requires_grad = True
                 varNoise[0].to(device)
 
