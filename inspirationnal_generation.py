@@ -218,7 +218,7 @@ def gradientDescentOnInput(model,
             #     dimension=model.style_dim,
             #     budget=nSteps)]
             optimizers += [optimizerlib.registry[nevergrad](
-                parametrisation = model.style_dim
+                parametrisation = model.style_dim,
                 budget=nSteps)]
             
 
