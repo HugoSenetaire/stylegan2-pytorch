@@ -238,19 +238,19 @@ def gradientDescentOnInput(model,
         discriminator.zero_grad()
 
         if randomSearch:
-            varNoise = torch.randn((nImages,
+            varNoise = [torch.randn((nImages,
                                     model.style_dim),
-                                   device=device)
+                                   device=device)]
             if nevergrad:
                 inps = [] # inputs ?
                 for i in range(nImages):
                     inps += [optimizers[i].ask()]
                     npinps = np.array(inps)
 
-                varNoise = torch.tensor(
-                    npinps, dtype=torch.float32, device=device)
-                varNoise.requires_grad = True
-                varNoise.to(device)
+                varNoise = [torch.tensor(
+                    npinps, dtype=torch.float32, device=device)]
+                varNoise[0].requires_grad = True
+                varNoise[0].to(device)
 
         noiseOut,_ = model(varNoise,labels = label)
         sumLoss = torch.zeros(nImages, device=device)
