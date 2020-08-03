@@ -194,9 +194,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<1024:
-                print(discriminator.parameters())
+                print(discriminator)
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
-                print(discriminator.parameters())
+                print(discriminator)
 
         real_label,real_img = next(loader)
         real_label = real_label.to(device)
