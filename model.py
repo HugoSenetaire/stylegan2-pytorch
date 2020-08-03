@@ -488,6 +488,9 @@ class Generator(nn.Module):
                 )
             )
         if optim is not None :
+            print("DEBUG")
+            print("Self COnv",self.convs)
+            print(self.convs[-1].parameters())
             optim.add_param_group(self.convs[-1].parameters())
 
         self.convs.append(
