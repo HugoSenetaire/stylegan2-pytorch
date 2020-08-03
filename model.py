@@ -721,7 +721,7 @@ class Discriminator(nn.Module):
         }
         self.channels = channels
         self.blur_kernel = blur_kernel
-        convs = [ConvLayer(3, channels[size], 1)]
+       
         self.size = size
         log_size = int(math.log(size, 2))
         self.log_size = log_size
@@ -729,6 +729,7 @@ class Discriminator(nn.Module):
         in_channel = channels[size]
 
         self.convs = nn.ModuleList()
+        self.convs.append(ConvLayer(3, channels[size], 1))
         for i in range(log_size, 2, -1):
             out_channel = channels[2 ** (i - 1)]
 
