@@ -387,23 +387,23 @@ class Generator(nn.Module):
         log_size = int(math.log(size, 2))
         self.log_size = log_size
 
-        self.channels_mask = {
-            4: 256,
-            8: 128 ,
-            16: 128,
-            32: 64,
-            64: 64 * channel_multiplier,
-            128: 32 * channel_multiplier,
-            256: 16 * channel_multiplier,
-            512: 8 * channel_multiplier,
-            1024: 4 * channel_multiplier,
-        }
 
         # if mask :
             # self.total_style_dim += 4*4*self.channels_mask[4]
         
         # self.total_style_dim = 4*4*self.channels_mask[4]
-
+        self.channels = {
+            4: 512 ,
+            8: 512 ,
+            16: 256,
+            32: 256,
+            64: 128 * channel_multiplier,
+            128: 64 * channel_multiplier,
+            256: 32 * channel_multiplier,
+            512: 16 * channel_multiplier,
+            1024: 8 * channel_multiplier,
+        }
+        self.channels_mask = self.channels
         
         layers = [PixelNorm()]
 
@@ -446,17 +446,7 @@ class Generator(nn.Module):
         #     512: 32 * channel_multiplier,
         #     1024: 16 * channel_multiplier,
         # }
-        self.channels = {
-            4: 512 ,
-            8: 512 ,
-            16: 256,
-            32: 256,
-            64: 128 * channel_multiplier,
-            128: 64 * channel_multiplier,
-            256: 32 * channel_multiplier,
-            512: 16 * channel_multiplier,
-            1024: 8 * channel_multiplier,
-        }
+ 
         if not self.mask :
             self.input = ConstantInput(self.channels[4])
         
