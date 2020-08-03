@@ -756,7 +756,7 @@ class Discriminator(nn.Module):
         self.log_size = int(math.log(self.size,2))
         in_channel = self.channels[self.size]
         print(optim)
-        self.convs[0] = ConvLayer(3, self.channels[self.size], 1)
+        self.convs[0] = ConvLayer(3, self.channels[self.size], 1).to(device)
         optim.add_param_group({"params":self.convs[0].parameters()})
         print(optim)
         toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel).to(device)
