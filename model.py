@@ -755,6 +755,10 @@ class Discriminator(nn.Module):
         self.size = self.size * 2
         self.log_size = int(math.log(self.size,2))
         in_channel = self.channels[self.size]
+        print(optim)
+        self.convs[0] = ConvLayer(3, channels[self.size], 1)
+        optim.add_param_group({"params":self.convs[0].parameters()})
+        print(optim)
         toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel).to(device)
         # print(toadd_conv)
         # print(self.convs)
@@ -762,8 +766,8 @@ class Discriminator(nn.Module):
         #     toadd_conv,
         #     self.convs,
         # ])
-        self.convs.insert(0,toadd_conv)
-        optim.add_param_group({"params":self.convs[0].parameters()})
+        self.convs.insert(1,toadd_conv)
+        optim.add_param_group({"params":self.convs[1].parameters()})
 
 
     def forward(self, input, labels):
