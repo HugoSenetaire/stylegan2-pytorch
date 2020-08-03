@@ -184,9 +184,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     if dataset.get_len()>0:
         #sample_label = dataset.random_one_hot(args.n_sample).to(device)
         sample_label = dataset.listing_one_hot(args.n_sample).to(device)
+        print(sample_label.shape)
 
     if args.mask :
         sample_mask = dataset.random_mask(args.n_sample).to(device)
+        print(sample_mask.shape)
         utils.save_image(
                         sample_mask,
                         os.path.join(args.output_prefix, f"sample_mask.png"),
@@ -232,6 +234,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.mask :
             random_mask = dataset.random_mask(args.batch)
+            print(random_mask.shape)
         else :
             random_mask = None
         random_mask = random_mask.to(device)
