@@ -488,9 +488,9 @@ class Generator(nn.Module):
                 ).to(device)
             )
         if optim is not None :
-            print("DEBUG")
-            print("Self COnv",self.convs)
-            print(self.convs[-1].parameters())
+            # print("DEBUG")
+            # print("Self COnv",self.convs)
+            # print(self.convs[-1].parameters())
             optim.add_param_group({"params":self.convs[-1].parameters()})
 
         self.convs.append(
