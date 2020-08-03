@@ -467,7 +467,7 @@ class Generator(nn.Module):
 
         self.n_latent = self.log_size * 2 - 2
 
-    def add_scale(self, optim):
+    def add_scale(self, optim = None):
         if self.size >= 1024 :
             raise ValueError("Size cannot be increased anymore")
         in_channel = self.channels[self.size]
@@ -487,17 +487,20 @@ class Generator(nn.Module):
                     blur_kernel=blur_kernel,
                 )
             )
-        optim.add_param_group(self.convs[-1].parameters())
+        if optim is not None :
+            optim.add_param_group(self.convs[-1].parameters())
 
         self.convs.append(
             StyledConv(
                 out_channel, out_channel, 3, self.total_style_dim, blur_kernel=blur_kernel
             )
         )
-        optim.add_param_group(self.convs[-1].parameters())
+        if optim is not None :
+            optim.add_param_group(self.convs[-1].parameters())
 
         self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim))
-        optim.add_param_group(self.to_rgbs[-1].parameters())
+        if optim is not None :
+            optim.add_param_group(self.to_rgbs[-1].parameters())
         
         self.n_latent = self.log_size * 2 - 2
 
