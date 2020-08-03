@@ -583,7 +583,7 @@ class Generator(nn.Module):
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
-        print("LATENT",latent.shape)
+        # print("LATENT",latent.shape)
 
         if self.mask :
             out = self.mask_extractor(mask)
@@ -591,7 +591,7 @@ class Generator(nn.Module):
         else :
             out = self.input(latent)
 
-        print("OUT",out.shape)
+        # print("OUT",out.shape)
         
 
         
