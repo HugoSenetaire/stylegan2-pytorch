@@ -467,6 +467,43 @@ class Generator(nn.Module):
 
         self.n_latent = self.log_size * 2 - 2
 
+    def add_scale(self, optim):
+        if self.size >= 1024 :
+            raise ValueError("Size cannot be increased anymore")
+        in_channel = self.channels[self.size]
+        self.size = self.size*2
+        self.log_size = int(math.log(size, 2))
+        self.num_layers = (self.log_size - 2) * 2 + 1
+
+        out_channel = self.channels[self.size]
+
+        self.convs.append(
+                StyledConv(
+                    in_channel,
+                    out_channel,
+                    3,
+                    self.total_style_dim,
+                    upsample=True,
+                    blur_kernel=blur_kernel,
+                )
+            )
+        optim.add_param_group(self.convs[-1].parameters())
+
+        self.convs.append(
+            StyledConv(
+                out_channel, out_channel, 3, self.total_style_dim, blur_kernel=blur_kernel
+            )
+        )
+        optim.add_param_group(self.convs[-1].parameters())
+
+        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim))
+        optim.add_param_group(self.to_rgbs[-1].parameters())
+        
+        self.n_latent = self.log_size * 2 - 2
+
+        
+
+
     def make_noise(self):
         device = self.input.input.device
 
@@ -676,10 +713,12 @@ class Discriminator(nn.Module):
             512: 16 * channel_multiplier,
             1024: 8 * channel_multiplier,
         }
-
+        self.channels = channels
+        self.blur_kernel = blur_kernel
         convs = [ConvLayer(3, channels[size], 1)]
-
+        self.size = size
         log_size = int(math.log(size, 2))
+        self.log_size = log_size
 
         in_channel = channels[size]
 
@@ -703,6 +742,17 @@ class Discriminator(nn.Module):
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
         # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
+    def add_scale(self,optim):
+        out_channel = self.channels[self.size]
+        self.size = self.size * 2
+        self.log_size = int(math.log(self.size,2))
+        in_channel = self.channels[self.size]
+        toadd_conv = convs.append(ResBlock(in_channel, out_channel, self.blur_kernel))
+        self.convs = nn.Sequential([
+            toadd_conv,
+            self.convs,
+        ])
+        optim.add_param_group(self.convs[0].parameters())
 
 
     def forward(self, input, labels):

@@ -125,6 +125,27 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
+def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim):
+    generator.add_scale(g_optim)
+    discriminator.add_scale(d_optim)
+    g_ema.add_scale()
+
+    dataset.image_size = dataset.image_size*2
+    transform = transforms.Compose(
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize(dataset.image_size),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
+    dataset.transform = transform
+    # g_optim.add_param_group(generator.convs[-2].parameters())
+    # g_optim.add_param_group(generator.convs[-1].parameters())
+    # d_optim.add_param_group(discriminator.convs[0].parameters())
+    
+
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
 
@@ -171,8 +192,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             print("Done!")
             break
 
+        if args.progressive :
+           
+            if i%args.upscale_every == 0 and current_size<1024:
+                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim)
+
+
         real_label,real_img = next(loader)
-        #print(label)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
 
@@ -406,6 +432,8 @@ if __name__ == "__main__":
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--progressive", action="store_true")
+    parser.add_argument("--upscale_every", type = int, default = 100000)
 
     args = parser.parse_args()
 
