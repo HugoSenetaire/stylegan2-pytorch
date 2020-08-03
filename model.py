@@ -754,6 +754,7 @@ class Discriminator(nn.Module):
         self.log_size = int(math.log(self.size,2))
         in_channel = self.channels[self.size]
         toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel)
+        print(toadd_conv)
         self.convs = nn.Sequential([
             toadd_conv,
             self.convs,
