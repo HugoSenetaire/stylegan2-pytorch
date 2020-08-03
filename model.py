@@ -377,7 +377,7 @@ class Generator(nn.Module):
         super().__init__()
 
         self.size = size
-
+        self.blur_kernel = blur_kernel
         self.style_dim = style_dim 
         
         self.latent_label_dim = latent_label_dim
