@@ -290,6 +290,7 @@ class NoiseInjection(nn.Module):
         return image + self.weight * noise
 
 
+
 class ConstantInput(nn.Module):
     def __init__(self, channel, size=4):
         super().__init__()
@@ -398,10 +399,10 @@ class Generator(nn.Module):
             1024: 4 * channel_multiplier,
         }
 
-        if mask :
-            self.total_style_dim += 4*4*self.channels_mask[4]
+        # if mask :
+            # self.total_style_dim += 4*4*self.channels_mask[4]
         
-        
+        # self.total_style_dim = 4*4*self.channels_mask[4]
 
         
         layers = [PixelNorm()]
@@ -456,8 +457,9 @@ class Generator(nn.Module):
             512: 16 * channel_multiplier,
             1024: 8 * channel_multiplier,
         }
-
-        self.input = ConstantInput(self.channels[4])
+        if not self.mask :
+            self.input = ConstantInput(self.channels[4])
+        
         
         self.conv1 = StyledConv(
             self.channels[4], self.channels[4], 3, self.total_style_dim, blur_kernel=blur_kernel
@@ -593,19 +595,10 @@ class Generator(nn.Module):
             latent = self.forward_mixlabel(latent,labels)
 
         if self.mask :
-            # print("LATENT",latent.shape)
-            # print("MASK INPUT",mask.shape)
-            if mask is None :
-                print("Error mask is None")
-            mask_output = self.mask_extractor(mask)
-            # print("MASKOUTPUT",mask_output.shape)
-            mask_output = mask_output.flatten(1)
-            # print("MASKOUTPUT FLATTEN", mask_output.shape)
-            latent = self.forward_mixlabel(latent,mask_output)
-            # print("LATENT", latent.shape)
+            out = self.mask_extractor(mask)
 
-
-        out = self.input(latent)
+        else :
+            out = self.input(latent)
 
         
 
