@@ -472,7 +472,7 @@ class Generator(nn.Module):
             raise ValueError("Size cannot be increased anymore")
         in_channel = self.channels[self.size]
         self.size = self.size*2
-        self.log_size = int(math.log(size, 2))
+        self.log_size = int(math.log(self.size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
 
         out_channel = self.channels[self.size]
@@ -484,7 +484,7 @@ class Generator(nn.Module):
                     3,
                     self.total_style_dim,
                     upsample=True,
-                    blur_kernel=blur_kernel,
+                    blur_kernel=self.blur_kernel,
                 )
             )
         if optim is not None :
@@ -492,7 +492,7 @@ class Generator(nn.Module):
 
         self.convs.append(
             StyledConv(
-                out_channel, out_channel, 3, self.total_style_dim, blur_kernel=blur_kernel
+                out_channel, out_channel, 3, self.total_style_dim, blur_kernel=self.blur_kernel
             )
         )
         if optim is not None :
