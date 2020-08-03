@@ -310,6 +310,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.mask :
             sample_mask, sample_name = dataset.random_mask(args.n_sample,True)
+            print(sample_mask.shape)
             sample_mask = sample_mask.to(device)
             utils.save_image(
                             sample_mask,
