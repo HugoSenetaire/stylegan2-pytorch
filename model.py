@@ -728,14 +728,15 @@ class Discriminator(nn.Module):
 
         in_channel = channels[size]
 
+        self.convs = nn.ModuleList()
         for i in range(log_size, 2, -1):
             out_channel = channels[2 ** (i - 1)]
 
-            convs.append(ResBlock(in_channel, out_channel, blur_kernel))
+            self.convs.append(ResBlock(in_channel, out_channel, blur_kernel))
 
             in_channel = out_channel
 
-        self.convs = nn.Sequential(*convs)
+        # self.convs = nn.Sequential(*convs)
         self.latent_label_dim = latent_label_dim
         self.stddev_group = 4
         self.stddev_feat = 1
@@ -754,17 +755,20 @@ class Discriminator(nn.Module):
         self.log_size = int(math.log(self.size,2))
         in_channel = self.channels[self.size]
         toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel)
-        print(toadd_conv)
-        print(self.convs)
-        self.convs = nn.Sequential([
-            toadd_conv,
-            self.convs,
-        ])
+        # print(toadd_conv)
+        # print(self.convs)
+        # self.convs = nn.Sequential([
+        #     toadd_conv,
+        #     self.convs,
+        # ])
+        self.convs.insert(0,toadd_conv)
         optim.add_param_group({"params":self.convs[0].parameters()})
 
 
     def forward(self, input, labels):
-        out = self.convs(input)
+        out=input
+        for layer in self.convs :
+            out = layer(out)
 
         batch, channel, height, width = out.shape
         group = min(batch, self.stddev_group)
