@@ -125,11 +125,11 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
-def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim):
-    generator.add_scale(g_optim)
-    discriminator.add_scale(d_optim)
-    g_ema.add_scale()
+def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
+    generator.add_scale(g_optim,device =device)
+    discriminator.add_scale(d_optim,device =device)
 
+    g_ema.add_scale(device = device)
     dataset.image_size = dataset.image_size*2
     transform = transforms.Compose(
         [   
@@ -194,7 +194,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<1024:
-                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim)
+                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
 
 
         real_label,real_img = next(loader)

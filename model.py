@@ -467,7 +467,7 @@ class Generator(nn.Module):
 
         self.n_latent = self.log_size * 2 - 2
 
-    def add_scale(self, optim = None):
+    def add_scale(self, optim = None, device = None):
         if self.size >= 1024 :
             raise ValueError("Size cannot be increased anymore")
         in_channel = self.channels[self.size]
@@ -485,7 +485,7 @@ class Generator(nn.Module):
                     self.total_style_dim,
                     upsample=True,
                     blur_kernel=self.blur_kernel,
-                )
+                ).to(device)
             )
         if optim is not None :
             print("DEBUG")
@@ -496,12 +496,12 @@ class Generator(nn.Module):
         self.convs.append(
             StyledConv(
                 out_channel, out_channel, 3, self.total_style_dim, blur_kernel=self.blur_kernel
-            )
+            ).to(device)
         )
         if optim is not None :
             optim.add_param_group({"params":self.convs[-1].parameters()})
 
-        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim))
+        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
         if optim is not None :
             optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
         
@@ -750,12 +750,12 @@ class Discriminator(nn.Module):
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
         # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
-    def add_scale(self,optim):
+    def add_scale(self,optim,device):
         out_channel = self.channels[self.size]
         self.size = self.size * 2
         self.log_size = int(math.log(self.size,2))
         in_channel = self.channels[self.size]
-        toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel)
+        toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel).to(device)
         # print(toadd_conv)
         # print(self.convs)
         # self.convs = nn.Sequential([
