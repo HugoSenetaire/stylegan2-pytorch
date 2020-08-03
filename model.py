@@ -491,7 +491,7 @@ class Generator(nn.Module):
             print("DEBUG")
             print("Self COnv",self.convs)
             print(self.convs[-1].parameters())
-            optim.add_param_group(self.convs[-1].parameters())
+            optim.add_param_group({"params":self.convs[-1].parameters()})
 
         self.convs.append(
             StyledConv(
@@ -499,11 +499,11 @@ class Generator(nn.Module):
             )
         )
         if optim is not None :
-            optim.add_param_group(self.convs[-1].parameters())
+            optim.add_param_group({"params":self.convs[-1].parameters()})
 
         self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim))
         if optim is not None :
-            optim.add_param_group(self.to_rgbs[-1].parameters())
+            optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
         
         self.n_latent = self.log_size * 2 - 2
 
