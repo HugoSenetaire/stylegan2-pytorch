@@ -606,6 +606,8 @@ class Generator(nn.Module):
                 noise = [
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
+        print("NOISE BEFORE EVERYTHING")
+        print(noise)
 
         if truncation < 1:
             style_t = []
