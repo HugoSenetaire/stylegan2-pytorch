@@ -515,9 +515,9 @@ class Generator(nn.Module):
         self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
 
 
-        in_channel_mask = self.channels_mask[size]
-        out_channel_mask = self.channels_mask[size/2]
-        self.mask_extractor[0] = ConvLayer(3, self.channels_mask[size], 1)
+        in_channel_mask = self.channels_mask[self.size]
+        out_channel_mask = self.channels_mask[self.size/2]
+        self.mask_extractor[0] = ConvLayer(3, in_channel_mask, 1)
         toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True)
         self.mask_extractor.insert(1,toadd_conv)
 
