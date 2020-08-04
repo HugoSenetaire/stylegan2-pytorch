@@ -592,10 +592,10 @@ class Generator(nn.Module):
             if randomize_noise:
                 noise = [None] * self.num_layers
             elif noise == 'zero':
-                noise = [
-                getattr(self.zeroNoises, f'zero_noises{i}') for i in range(self.num_layers)
-                ]
-            else:
+            #     noise = [
+            #     getattr(self.zeroNoises, f'zero_noises{i}') for i in range(self.num_layers)
+            #     ]
+            # else:
                 noise = [
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
