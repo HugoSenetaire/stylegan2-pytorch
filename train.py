@@ -148,7 +148,7 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
-def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
+def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask = None):
     generator.add_scale(g_optim,device =device)
     discriminator.add_scale(d_optim,device =device)
 
@@ -156,14 +156,22 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     dataset.image_size = dataset.image_size*2
     transform = transforms.Compose(
         [   
-            transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
             transforms.Resize(dataset.image_size),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
     dataset.transform = transform
+    if mask is not None :
+        transform_mask = transforms.Compose(
+            [
+                transforms.Resize(dataset.image_size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+        dataset.transform_mask = transform_mask
+
     # g_optim.add_param_group(generator.convs[-2].parameters())
     # g_optim.add_param_group(generator.convs[-1].parameters())
     # d_optim.add_param_group(discriminator.convs[0].parameters())
@@ -206,6 +214,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         #sample_label = dataset.random_one_hot(args.n_sample).to(device)
         sample_label = dataset.listing_one_hot(args.n_sample).to(device)
 
+    print("The labels for the generation are the following :")
+    print(sample_label)
+    
     if args.mask :
         sample_mask = dataset.random_mask(args.n_sample).to(device)
         utils.save_image(
@@ -217,8 +228,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                     )
     else :
         sample_mask = None
-    print("The labels for the generation are the following :")
-    print(sample_label)
+
 
     for idx in pbar:
         i = idx + args.start_iter
@@ -234,7 +244,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<1024:
                 # print(discriminator)
-                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
+                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask=args.mask)
                 # print(discriminator)
 
         real_label = real_label.to(device)
@@ -337,8 +347,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                             normalize=True,
                             range=(-1, 1),
             )
-            #print("Sample for the generation")
-            #print(sample_name)
         else :
             random_mask = None
 
@@ -541,7 +549,6 @@ if __name__ == "__main__":
     transform = transforms.Compose(
         [   
             transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
             transforms.Resize(args.size),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
@@ -552,6 +559,7 @@ if __name__ == "__main__":
             [
                 transforms.Resize(args.size),
                 transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
             ]
         )
         args.mask = True

@@ -78,14 +78,11 @@ class OneHot():
         return self.rev_dic[i]
 
 class Dataset(data.Dataset):
-    #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
     def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], transparent = False, transform_mask = None):
         super().__init__()
         self.folder = folder
 
-        # if self.folder[:-1] == \":
-        #     self.folder_mask = self.folder[:-1] + "_mask"
-        # else :
+
         self.folder_mask = self.folder + "_masks"
         self.image_size = image_size
         self.columns = columns
@@ -106,8 +103,6 @@ class Dataset(data.Dataset):
             print(f"Saved value for column {column}")
             print(list_possible_value)
             
-        #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
-        #num_channels = 3 if not transparent else 4
         
         self.transform = transform
         self.transform_mask = transform_mask
@@ -119,9 +114,7 @@ class Dataset(data.Dataset):
         data = self.df.iloc[index]
         name = data.image_id
         path = os.path.join(self.folder,name+".jpg")
-        # print(path)
         path_mask = os.path.join(self.folder_mask,name+".jpg")
-        # print(path_mask)
         img = Image.open(path).convert('RGB')
         img.save("test_save.jpg")
         img_transform = self.transform(img)
