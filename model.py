@@ -621,7 +621,7 @@ class Generator(nn.Module):
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
-
+        print("===============GENERATOR===============")
         print("Latent before")
         print(latent.shape)
 
@@ -818,6 +818,8 @@ class Discriminator(nn.Module):
 
     def forward(self, input, labels):
         # print(self.convs)
+
+        print("=============DISCRIMINATOR================")
         print("input shape")
         print(input.shape)
         out=self.convs[0](input)
