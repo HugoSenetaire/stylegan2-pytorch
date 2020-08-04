@@ -148,6 +148,27 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
+def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
+    generator.add_scale(g_optim,device =device)
+    discriminator.add_scale(d_optim,device =device)
+
+    g_ema.add_scale(device = device)
+    dataset.image_size = dataset.image_size*2
+    transform = transforms.Compose(
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize(dataset.image_size),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
+    dataset.transform = transform
+    # g_optim.add_param_group(generator.convs[-2].parameters())
+    # g_optim.add_param_group(generator.convs[-1].parameters())
+    # d_optim.add_param_group(discriminator.convs[0].parameters())
+    
+
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
 
@@ -206,17 +227,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             print("Done!")
             break
 
+
         real_label,real_img, real_mask = next(loader)
-        # print(real_label)
-        # print(real_img.shape)
-        # print(real_mask.shape)
-        # torchvision.utils.save_image(real_img[0],"real_img.jpg")
-        # torchvision.utils.save_image(real_mask[0],"real_mask.jpg")
-        # break
-        # plt.imshow(real_img[0])
-        # plt.show()
-        # plt.imshow(real_mask[0])
-        # plt.show()
+
+
+        if args.progressive and i>0 :
+            if i%args.upscale_every == 0 and dataset.image_size<1024:
+                # print(discriminator)
+                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
+                # print(discriminator)
 
         real_label = real_label.to(device)
         real_img = real_img.to(device)
@@ -495,6 +514,8 @@ if __name__ == "__main__":
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--mask", type=str, default=None)
+    parser.add_argument("--progressive", action="store_true")
+    parser.add_argument("--upscale_every", type = int, default = 100000)
 
     args = parser.parse_args()
 

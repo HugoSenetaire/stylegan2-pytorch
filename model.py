@@ -379,6 +379,7 @@ class Generator(nn.Module):
 
         self.size = size
         self.mask = mask
+        self.blur_kernel = blur_kernel
         self.style_dim = style_dim 
         
         self.latent_label_dim = latent_label_dim
@@ -505,6 +506,49 @@ class Generator(nn.Module):
             in_channel = out_channel
 
         self.n_latent = self.log_size * 2 - 2
+
+    def add_scale(self, optim = None, device = None):
+        if self.size >= 1024 :
+            raise ValueError("Size cannot be increased anymore")
+        in_channel = self.channels[self.size]
+        self.size = self.size*2
+        self.log_size = int(math.log(self.size, 2))
+        self.num_layers = (self.log_size - 2) * 2 + 1
+
+        out_channel = self.channels[self.size]
+
+        self.convs.append(
+                StyledConv(
+                    in_channel,
+                    out_channel,
+                    3,
+                    self.total_style_dim,
+                    upsample=True,
+                    blur_kernel=self.blur_kernel,
+                ).to(device)
+            )
+        if optim is not None :
+            # print("DEBUG")
+            # print("Self COnv",self.convs)
+            # print(self.convs[-1].parameters())
+            optim.add_param_group({"params":self.convs[-1].parameters()})
+
+        self.convs.append(
+            StyledConv(
+                out_channel, out_channel, 3, self.total_style_dim, blur_kernel=self.blur_kernel
+            ).to(device)
+        )
+        if optim is not None :
+            optim.add_param_group({"params":self.convs[-1].parameters()})
+
+        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
+        if optim is not None :
+            optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
+        
+        self.n_latent = self.log_size * 2 - 2
+
+        
+
 
     def make_noise(self):
         device = self.input.input.device
@@ -730,21 +774,23 @@ class Discriminator(nn.Module):
             512: 16 * channel_multiplier,
             1024: 8 * channel_multiplier,
         }
-
-        convs = [ConvLayer(3, channels[size], 1)]
-
+        self.channels = channels
+        self.blur_kernel = blur_kernel
+       
+        self.size = size
         log_size = int(math.log(size, 2))
+        self.log_size = log_size
 
         in_channel = channels[size]
 
+        self.convs = nn.ModuleList()
+        self.convs.append(ConvLayer(3, channels[size], 1))
         for i in range(log_size, 2, -1):
             out_channel = channels[2 ** (i - 1)]
-
-            convs.append(ResBlock(in_channel, out_channel, blur_kernel))
-
+            self.convs.append(ResBlock(in_channel, out_channel, blur_kernel))
             in_channel = out_channel
 
-        self.convs = nn.Sequential(*convs)
+        # self.convs = nn.Sequential(*convs)
         self.latent_label_dim = latent_label_dim
         self.stddev_group = 4
         self.stddev_feat = 1
@@ -757,10 +803,30 @@ class Discriminator(nn.Module):
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
         # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
+    def add_scale(self,optim,device):
+        out_channel = self.channels[self.size]
+        self.size = self.size * 2
+        self.log_size = int(math.log(self.size,2))
+        in_channel = self.channels[self.size]
+        # print(optim)
+        self.convs[0] = ConvLayer(3, self.channels[self.size], 1).to(device)
+        optim.add_param_group({"params":self.convs[0].parameters()})
+        # print(optim)
+        toadd_conv = ResBlock(in_channel, out_channel, self.blur_kernel).to(device)
+        # print(toadd_conv)
+        # print(self.convs)
+        # self.convs = nn.Sequential([
+        #     toadd_conv,
+        #     self.convs,
+        # ])
+        self.convs.insert(1,toadd_conv)
+        optim.add_param_group({"params":self.convs[1].parameters()})
 
 
     def forward(self, input, labels):
-        out = self.convs(input)
+        out=input
+        for layer in self.convs :
+            out = layer(out)
 
         batch, channel, height, width = out.shape
         group = min(batch, self.stddev_group)
