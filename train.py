@@ -150,9 +150,7 @@ def select_index_discriminator(output_discriminator, label):
 
 def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask = None):
     
-    print("DATASET VARIATION")
-    print(dataset.image_size)
-    print(dataset.transform)
+
     generator.add_scale(g_optim,device =device)
     discriminator.add_scale(d_optim,device =device)
 
@@ -167,9 +165,6 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask 
     )
     dataset.transform = transform
 
-    print("DATASET VARIATION")
-    print(dataset.image_size)
-    print(dataset.transform)
     if mask is not None :
         transform_mask = transforms.Compose(
             [
@@ -246,12 +241,12 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             break
 
 
-        real_label,real_img, real_mask = next(loader)
-
-
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<1024:
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask=args.mask)
+
+        
+        real_label,real_img, real_mask = next(loader)
 
 
         real_label = real_label.to(device)
