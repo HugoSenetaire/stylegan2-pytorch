@@ -621,9 +621,6 @@ class Generator(nn.Module):
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
-        print("===============GENERATOR===============")
-        print("Latent before")
-        print(latent.shape)
 
         if self.mask :
             if mask is None :
@@ -631,8 +628,6 @@ class Generator(nn.Module):
             mask_output = self.mask_extractor[0](mask)
             for layer in self.mask_extractor[1:] :
                 mask_output = layer(mask_output)
-            print("mask output")
-            print(mask_output.shape)
             mask_output = mask_output.flatten(1)
             latent = self.forward_mixlabel(latent,mask_output)
 
@@ -640,10 +635,7 @@ class Generator(nn.Module):
 
         
         
-        print("Final latent")
-        print(latent.shape)
         out = self.input(latent)
-        print("OUt")
         
 
         
@@ -819,9 +811,7 @@ class Discriminator(nn.Module):
     def forward(self, input, labels):
         # print(self.convs)
 
-        print("=============DISCRIMINATOR================")
-        print("input shape")
-        print(input.shape)
+     
         out=self.convs[0](input)
         for layer in self.convs[1:] :
             out = layer(out)
@@ -835,14 +825,8 @@ class Discriminator(nn.Module):
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
         out = torch.cat([out, stddev], 1)
-        print("Cat Previous")
-        print(out.shape)
         out = self.final_conv(out)
-        print("Final conv")
-        print(out.shape)
-        print("Reshape")
         out = out.view(batch, -1)
-        print(out.shape)
         # if self.latent_label_dim >0 :
         #     out = torch.cat([out,labels],dim=1)
 
