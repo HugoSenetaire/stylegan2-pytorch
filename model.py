@@ -807,8 +807,8 @@ class Discriminator(nn.Module):
 
 
     def forward(self, input, labels):
-        out=input
-        for layer in self.convs :
+        out=self.convs[0](input)
+        for layer in self.convs[1:] :
             out = layer(out)
 
         batch, channel, height, width = out.shape
@@ -824,8 +824,8 @@ class Discriminator(nn.Module):
         out = self.final_conv(out)
 
         out = out.view(batch, -1)
-        # if self.latent_label_dim >0 :
-        #     out = torch.cat([out,labels],dim=1)
+        if self.latent_label_dim >0 :
+            out = torch.cat([out,labels],dim=1)
 
 
         out = self.final_linear(out)
