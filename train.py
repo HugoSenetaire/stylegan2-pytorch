@@ -149,6 +149,10 @@ def select_index_discriminator(output_discriminator, label):
     return filtered_output
 
 def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask = None):
+    
+    print("DATASET VARIATION")
+    print(dataset.image_size)
+    print(dataset.transform)
     generator.add_scale(g_optim,device =device)
     discriminator.add_scale(d_optim,device =device)
 
