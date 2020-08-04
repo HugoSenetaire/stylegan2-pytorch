@@ -808,6 +808,8 @@ class Discriminator(nn.Module):
 
     def forward(self, input, labels):
         # print(self.convs)
+        print("input shape")
+        print(input.shape)
         out=self.convs[0](input)
         for layer in self.convs[1:] :
             out = layer(out)
