@@ -357,7 +357,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
-        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask)
+        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask, noise = 'zero', randomise_noise = False)
 
 
 
@@ -369,7 +369,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.mask :
             shape_loss = g_shape_loss(zero_img, random_mask)
             non_saturating_loss = g_nonsaturating_loss(fake_pred)
-            g_loss =non_saturating_loss + shape_loss
+            g_loss = non_saturating_loss + shape_loss
             loss_dict["gmask"] = shape_loss
             loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
         else :

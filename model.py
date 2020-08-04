@@ -452,6 +452,7 @@ class Generator(nn.Module):
         self.upsamples = nn.ModuleList()
         self.to_rgbs = nn.ModuleList()
         self.noises = nn.Module()
+        self.zeroNoises = nn.Module()
 
         in_channel = self.channels[4]
 
@@ -459,6 +460,7 @@ class Generator(nn.Module):
             res = (layer_idx + 5) // 2
             shape = [1, 1, 2 ** res, 2 ** res]
             self.noises.register_buffer(f'noise_{layer_idx}', torch.randn(*shape))
+            self.zeroNoises.register_buffer(f'zero_noise_{layer_idx}', torch.randn(*shape))
 
         for i in range(3, self.log_size + 1):
             out_channel = self.channels[2 ** i]
@@ -493,6 +495,12 @@ class Generator(nn.Module):
         self.size = self.size*2
         self.log_size = int(math.log(self.size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
+
+        for layer_idx in range(self.num_layers):
+            res = (layer_idx + 5) // 2
+            shape = [1, 1, 2 ** res, 2 ** res]
+            self.noises.register_buffer(f'noise_{layer_idx}', torch.randn(*shape))
+            self.zeroNoises.register_buffer(f'zero_noise_{layer_idx}', torch.zeros(*shape))
 
         out_channel = self.channels[self.size]
 
@@ -583,6 +591,8 @@ class Generator(nn.Module):
         if noise is None:
             if randomize_noise:
                 noise = [None] * self.num_layers
+            elif noise == 'zero':
+                getattr(self.zeroNoises, f'zero_noises{i}') for i in range(self.num_layers)
             else:
                 noise = [
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
