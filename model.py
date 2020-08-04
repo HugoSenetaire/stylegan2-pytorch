@@ -523,6 +523,8 @@ class Generator(nn.Module):
 
         if optim is not None :
             optim.add_param_group({"params":self.convs[-1].parameters()})
+            optim.add_param_group({"params":self.convs[-2].parameters()})
+            optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
             optim.add_param_group({"params":self.mask_extractor[0].parameters()})
             optim.add_param_group({"params":self.mask_extractor[1].parameters()})
 
