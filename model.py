@@ -821,9 +821,12 @@ class Discriminator(nn.Module):
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
         out = torch.cat([out, stddev], 1)
+        print("Cat Previous")
         print(out.shape)
         out = self.final_conv(out)
+        print("Final conv")
         print(out.shape)
+        print("Reshape")
         out = out.view(batch, -1)
         print(out.shape)
         # if self.latent_label_dim >0 :
