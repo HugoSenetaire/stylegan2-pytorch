@@ -807,6 +807,7 @@ class Discriminator(nn.Module):
 
 
     def forward(self, input, labels):
+        print(selfs.convs)
         out=self.convs[0](input)
         for layer in self.convs[1:] :
             out = layer(out)
