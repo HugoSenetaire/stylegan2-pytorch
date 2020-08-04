@@ -591,11 +591,15 @@ class Generator(nn.Module):
         if noise is None:
             if randomize_noise:
                 noise = [None] * self.num_layers
-            elif noise == 'zero':
-            #     noise = [
-            #     getattr(self.zeroNoises, f'zero_noises{i}') for i in range(self.num_layers)
-            #     ]
-            # else:
+            elif noise == 'zero' and mask is not None:
+                device = self.input.input.device
+                batch, _, _, _ = mask.shape
+                noise = []
+                for i in range(self.num_layers):
+                    res = (layer_idx + 5) // 2
+                    shape = [batch, 1, 2 ** res, 2 ** res]
+                    noise.append(torch.zeros(shape).to(device))
+            else:
                 noise = [
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
@@ -657,7 +661,8 @@ class Generator(nn.Module):
         i = 1
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
-        ):
+        ):  
+            
             out = conv1(out, latent[:, i], noise=noise1)
             out = conv2(out, latent[:, i + 1], noise=noise2)
             skip = to_rgb(out, latent[:, i + 2], skip)
