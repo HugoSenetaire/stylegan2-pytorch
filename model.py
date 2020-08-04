@@ -517,8 +517,8 @@ class Generator(nn.Module):
 
         in_channel_mask = self.channels_mask[self.size]
         out_channel_mask = self.channels_mask[self.size/2]
-        self.mask_extractor[0] = ConvLayer(3, in_channel_mask, 1)
-        toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True)
+        self.mask_extractor[0] = ConvLayer(3, in_channel_mask, 1).to(device)
+        toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True).to(device)
         self.mask_extractor.insert(1,toadd_conv)
 
         if optim is not None :
