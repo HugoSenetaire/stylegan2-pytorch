@@ -824,10 +824,11 @@ class Discriminator(nn.Module):
         out = self.final_conv(out)
 
         out = out.view(batch, -1)
+        print(out.shape)
         if self.latent_label_dim >0 :
             out = torch.cat([out,labels],dim=1)
 
-
+        print(out.shape)
         out = self.final_linear(out)
 
         return out
