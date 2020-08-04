@@ -162,6 +162,10 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask 
         ]
     )
     dataset.transform = transform
+
+    print("DATASET VARIATION")
+    print(dataset.image_size)
+    print(dataset.transform)
     if mask is not None :
         transform_mask = transforms.Compose(
             [
