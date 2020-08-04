@@ -807,7 +807,7 @@ class Discriminator(nn.Module):
 
 
     def forward(self, input, labels):
-        print(self.convs)
+        # print(self.convs)
         out=self.convs[0](input)
         for layer in self.convs[1:] :
             out = layer(out)
@@ -821,15 +821,14 @@ class Discriminator(nn.Module):
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
         out = torch.cat([out, stddev], 1)
-
+        print(out.shape)
         out = self.final_conv(out)
-
+        print(out.shape)
         out = out.view(batch, -1)
         print(out.shape)
         # if self.latent_label_dim >0 :
         #     out = torch.cat([out,labels],dim=1)
 
-        print(out.shape)
         out = self.final_linear(out)
 
         return out
