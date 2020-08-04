@@ -216,7 +216,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
     print("The labels for the generation are the following :")
     print(sample_label)
-    
+
     if args.mask :
         sample_mask = dataset.random_mask(args.n_sample).to(device)
         utils.save_image(
@@ -243,9 +243,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<1024:
-                # print(discriminator)
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask=args.mask)
-                # print(discriminator)
+
 
         real_label = real_label.to(device)
         real_img = real_img.to(device)

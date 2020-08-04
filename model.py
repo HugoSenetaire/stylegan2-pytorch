@@ -415,37 +415,17 @@ class Generator(nn.Module):
             )
 
         self.style = nn.Sequential(*layers)
+        
 
         if mask :
-
-            # convs_mask = [nn.Conv2d(3, 64, (5, 5), stride=(2, 2), padding=(2, 2))]
-            # convs_mask.append(nn.Conv2d(64, 128, (5, 5), stride=(2, 2), padding=(2, 2)))
-            # convs_mask.append(nn.Conv2d(128, 256, (5, 5), stride=(2, 2), padding=(2, 2)))
-            # convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1)))
-            # convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1)))
-            # convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1)))
-            # #convs_mask.append(nn.Conv2d(256, 256, (3, 3), stride=(1, 1), padding=(1, 1))
+            self.mask_extractor = nn.ModuleList()
             in_channel_mask = self.channels_mask[size]
-            convs_mask = [ConvLayer(3, self.channels_mask[size], 1)]
-            in_channel_mask = self.channels_mask[size]
+            self.mask_extractor.append(ConvLayer(3, self.channels_mask[size], 1))
             for i in range(log_size, 2, -1):
                 out_channel_mask = self.channels_mask[2 ** (i - 1)]
-                convs_mask.append(ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True))
-                #convs_mask.append(ResBlock(in_channel_mask, out_channel_mask, blur_kernel))
+                self.mask_extractor.append(ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True))
                 in_channel_mask = out_channel_mask
 
-            self.mask_extractor = nn.Sequential(*convs_mask)
-        # self.channels = {
-        #     4: 512 ,
-        #     8: 512 ,
-        #     16: 512,
-        #     32: 512,
-        #     64: 256 * channel_multiplier,
-        #     128: 128 * channel_multiplier,
-        #     256: 64 * channel_multiplier,
-        #     512: 32 * channel_multiplier,
-        #     1024: 16 * channel_multiplier,
-        # }
         self.channels = {
             4: 512 ,
             8: 512 ,
@@ -468,7 +448,6 @@ class Generator(nn.Module):
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
       
-
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
         self.to_rgbs = nn.ModuleList()
@@ -527,23 +506,27 @@ class Generator(nn.Module):
                     blur_kernel=self.blur_kernel,
                 ).to(device)
             )
-        if optim is not None :
-            # print("DEBUG")
-            # print("Self COnv",self.convs)
-            # print(self.convs[-1].parameters())
-            optim.add_param_group({"params":self.convs[-1].parameters()})
 
         self.convs.append(
             StyledConv(
                 out_channel, out_channel, 3, self.total_style_dim, blur_kernel=self.blur_kernel
             ).to(device)
         )
+        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
+
+
+        in_channel_mask = self.channels_mask[size]
+        out_channel_mask = self.channels_mask[size/2]
+        self.mask_extractor[0] = ConvLayer(3, self.channels_mask[size], 1)
+        toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True)
+        self.mask_extractor.insert(1,toadd_conv)
+
         if optim is not None :
             optim.add_param_group({"params":self.convs[-1].parameters()})
+            optim.add_param_group({"params":self.mask_extractor[-1].parameters()})
+            optim.add_param_group({"params":self.mask_extractor[-2].parameters()})
 
-        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
-        if optim is not None :
-            optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
+
         
         self.n_latent = self.log_size * 2 - 2
 
@@ -630,23 +613,21 @@ class Generator(nn.Module):
             latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
 
             latent = torch.cat([latent, latent2], 1)
-        # print("")
+
+
         if self.latent_label_dim>0 :
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
 
         if self.mask :
-            # print("LATENT",latent.shape)
-            # print("MASK INPUT",mask.shape)
             if mask is None :
                 print("Error mask is None")
-            mask_output = self.mask_extractor(mask)
-            # print("MASKOUTPUT",mask_output.shape)
+            mask_output = self.mask_extractor[0](mask)
+            for layer in self.mask_extractor[1:] :
+                mask_output = layer(mask_output)
             mask_output = mask_output.flatten(1)
-            # print("MASKOUTPUT FLATTEN", mask_output.shape)
             latent = self.forward_mixlabel(latent,mask_output)
-            # print("LATENT", latent.shape)
 
 
         out = self.input(latent)
