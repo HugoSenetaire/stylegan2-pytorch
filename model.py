@@ -335,6 +335,8 @@ class StyledConv(nn.Module):
 
     def forward(self, input, style, noise=None):
         out = self.conv(input, style)
+        print("NOISE INSIDE STYLED CONV")
+        print(noise)
         out = self.noise(out, noise=noise)
         # out = out + self.bias
         out = self.activate(out)
@@ -663,7 +665,9 @@ class Generator(nn.Module):
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):  
+            print("NOise1")
             print(noise1)
+            print("Noise 2")
             print(noise2)
             out = conv1(out, latent[:, i], noise=noise1)
             out = conv2(out, latent[:, i + 1], noise=noise2)
