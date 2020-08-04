@@ -632,7 +632,7 @@ class Generator(nn.Module):
             for layer in self.mask_extractor[1:] :
                 mask_output = layer(mask_output)
             print("mask output")
-            print(mask_output)
+            print(mask_output.shape)
             mask_output = mask_output.flatten(1)
             latent = self.forward_mixlabel(latent,mask_output)
 
