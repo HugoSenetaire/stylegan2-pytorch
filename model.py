@@ -594,18 +594,20 @@ class Generator(nn.Module):
         if noise is None:
             if randomize_noise:
                 noise = [None] * self.num_layers
-            elif noise == 'zero' and mask is not None:
-                device = self.input.input.device
-                batch, _, _, _ = mask.shape
-                noise = []
-                for i in range(self.num_layers):
-                    res = (layer_idx + 5) // 2
-                    shape = [batch, 1, 2 ** res, 2 ** res]
-                    noise.append(torch.zeros(shape).to(device))
+            
             else:
                 noise = [
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
+
+        elif noise == 'zero' and mask is not None:
+            device = self.input.input.device
+            batch, _, _, _ = mask.shape
+            noise = []
+            for i in range(self.num_layers):
+                res = (layer_idx + 5) // 2
+                shape = [batch, 1, 2 ** res, 2 ** res]
+                noise.append(torch.zeros(shape).to(device))
         print("NOISE BEFORE EVERYTHING")
         print(noise)
 
