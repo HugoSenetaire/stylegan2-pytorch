@@ -131,3 +131,5 @@ dmypy.json
 wandb/
 *.lmdb/
 *.pkl
+gan_visualizer.py
+M4055N_FRONT_VIEW.jpg
