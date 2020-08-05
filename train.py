@@ -336,24 +336,17 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if latent_label_dim>0 :
             random_label = dataset.random_one_hot(args.batch)
+            random_label = random_label.to(device)
+
         else :
             random_label = None
 
         if args.mask :
-            sample_mask, sample_name = dataset.random_mask(args.n_sample,True)
-            sample_mask = sample_mask.to(device)
-            utils.save_image(
-                            sample_mask,
-                            os.path.join(args.output_prefix, f"sample_mask.png"),
-                            nrow=int(args.n_sample ** 0.5),
-                            normalize=True,
-                            range=(-1, 1),
-            )
+            random_mask, sample_name = dataset.random_mask(args.n_sample,True)
+            random_mask = random_mask.to(device)
         else :
             random_mask = None
 
-        random_label = random_label.to(device)
-        random_mask = random_mask.to(device)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
