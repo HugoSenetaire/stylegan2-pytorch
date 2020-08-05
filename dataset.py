@@ -216,6 +216,7 @@ class Dataset(data.Dataset):
         
         data_year_one_hot = data_year_one_hot[None,:]
         for k in range(1,batch_size):
+            print(dic_label)
             aux = k % len(self.dic[self.columns[0]])
             dic_label[self.columns[0]].append(aux)
             #aux = np.random.randint(len(self.dic[self.columns[0]]))
