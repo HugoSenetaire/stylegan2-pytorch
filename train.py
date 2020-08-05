@@ -242,7 +242,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
         if args.progressive and i>0 :
-            if i%args.upscale_every == 0 and dataset.image_size<1024:
+            if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
+                args.upscale_every = args.upscale_every*4
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask=args.mask)
 
         
@@ -518,7 +519,8 @@ if __name__ == "__main__":
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--mask", type=str, default=None)
     parser.add_argument("--progressive", action="store_true")
-    parser.add_argument("--upscale_every", type = int, default = 100000)
+    parser.add_argument("--upscale_every", type = int, default = 1000)
+    parser.add_argument("--max_size", type = int, default = 512)
 
     args = parser.parse_args()
 
