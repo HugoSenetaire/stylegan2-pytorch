@@ -246,6 +246,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 print("IMAGE SIZE", dataset.image_size)
                 args.upscale_every = args.upscale_every*4
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask=args.mask)
+                if args.mask :
+                    sample_mask = dataset.random_mask(args.n_sample).to(device)
+                    utils.save_image(
+                                    sample_mask,
+                                    os.path.join(args.output_prefix, f"sample_mask.png"),
+                                    nrow=int(args.n_sample ** 0.5),
+                                    normalize=True,
+                                    range=(-1, 1),
+                                )
 
         
         real_label,real_img, real_mask = next(loader)
