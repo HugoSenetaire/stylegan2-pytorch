@@ -311,7 +311,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             random_label = None
 
         if args.mask :
-            random_mask, random_name = dataset.random_mask(args.n_sample,True)
+            random_mask, random_name = dataset.random_mask(args.batch,True)
             random_mask = random_mask.to(device)
             #print("Sample for the generation")
             #print(sample_name)
