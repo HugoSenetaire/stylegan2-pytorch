@@ -201,14 +201,12 @@ class Dataset(data.Dataset):
     def listing_one_hot(self,batch_size):
         if len(self.columns)==0 :
             return None
-        #aux = np.random.randint(len(self.dic[self.columns[0]]))
         aux = 0
         dic_label = {self.columns[0] : [aux]}
         data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
         for i,column in enumerate(self.columns):
             if i == 0 :
                 continue
-            #aux = np.random.randint(len(self.dic[column]))
             aux = 0
             dic_label[column ] = [aux]
             data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
@@ -219,14 +217,15 @@ class Dataset(data.Dataset):
             print(dic_label)
             aux = k % len(self.dic[self.columns[0]])
             dic_label[self.columns[0]].append(aux)
-            #aux = np.random.randint(len(self.dic[self.columns[0]]))
             aux_data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            print(aux_data_year_one_hot)
             for i,column in enumerate(self.columns):
                 if i == 0 :
                     continue
                 aux = k % len(self.dic[column])
                 dic_label[column].append(aux)
-                #aux = np.random.randint(len(self.dic[column]))
+                print(data_year_one_hot)
+                print(torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0))
                 aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
         for column in self.columns:
