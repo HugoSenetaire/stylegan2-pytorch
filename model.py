@@ -646,14 +646,8 @@ class Generator(nn.Module):
                 mask_output = layer(mask_output)
             mask_output = mask_output.flatten(1)
             latent = self.forward_mixlabel(latent,mask_output)
-
-
-
-        
         
         out = self.input(latent)
-        
-
         
         out = self.conv1(out, latent[:, 0], noise=noise[0])
         skip = self.to_rgb1(out, latent[:, 1])
