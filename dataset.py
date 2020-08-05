@@ -75,7 +75,7 @@ class OneHot():
 
 class Dataset(data.Dataset):
     #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
-    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], transparent = False):
+    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function","sap_aesthetic_line"], transparent = False):
         super().__init__()
         self.folder = folder
         self.image_size = image_size
