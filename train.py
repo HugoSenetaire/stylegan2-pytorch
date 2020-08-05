@@ -250,7 +250,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                     sample_mask = dataset.random_mask(args.n_sample).to(device)
                     utils.save_image(
                                     sample_mask,
-                                    os.path.join(args.output_prefix, f"sample_mask.png"),
+                                    os.path.join(args.output_prefix, f"sample_mask_{i}.png"),
                                     nrow=int(args.n_sample ** 0.5),
                                     normalize=True,
                                     range=(-1, 1),
