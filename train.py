@@ -243,6 +243,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
+                print("IMAGE SIZE", dataset.image_size)
                 args.upscale_every = args.upscale_every*4
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask=args.mask)
 

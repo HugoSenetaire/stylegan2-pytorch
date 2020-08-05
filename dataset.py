@@ -184,7 +184,7 @@ class Dataset(data.Dataset):
                     continue
 
                 aux = np.random.randint(len(self.dic[column]))
-                aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+                aux_data_year_one_hot = torch.cat((aux_data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
         
         return data_year_one_hot
@@ -199,7 +199,6 @@ class Dataset(data.Dataset):
         for i,column in enumerate(self.columns):
             if i == 0 :
                 continue
-            #aux = np.random.randint(len(self.dic[column]))
             aux = 0
             data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             
@@ -207,14 +206,12 @@ class Dataset(data.Dataset):
         data_year_one_hot = data_year_one_hot[None,:]
         for k in range(1,batch_size):
             aux = k % len(self.dic[self.columns[0]])
-            #aux = np.random.randint(len(self.dic[self.columns[0]]))
             aux_data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
             for i,column in enumerate(self.columns):
                 if i == 0 :
                     continue
                 aux = k % len(self.dic[column])
-                #aux = np.random.randint(len(self.dic[column]))
-                aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+                aux_data_year_one_hot = torch.cat((aux_data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
         
         return data_year_one_hot
