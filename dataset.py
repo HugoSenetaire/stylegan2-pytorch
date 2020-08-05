@@ -173,7 +173,7 @@ class Dataset(data.Dataset):
             if i == 0 :
                 continue
             aux = np.random.randint(len(self.dic[column]))
-            dic_label = {column : [aux]}
+            dic_label[column] = [aux]
             data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             
         
@@ -204,15 +204,13 @@ class Dataset(data.Dataset):
         #aux = np.random.randint(len(self.dic[self.columns[0]]))
         aux = 0
         dic_label = {self.columns[0] : [aux]}
-        print(dic_label)
         data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
         for i,column in enumerate(self.columns):
             if i == 0 :
                 continue
             #aux = np.random.randint(len(self.dic[column]))
             aux = 0
-            dic_label = {column : [aux]}
-            print(dic_label)
+            dic_label[column ] = [aux]
             data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             
         
