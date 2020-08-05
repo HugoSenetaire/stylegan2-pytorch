@@ -213,6 +213,7 @@ class Dataset(data.Dataset):
             
         
         data_year_one_hot = data_year_one_hot[None,:]
+        print("data year one hot total",data_year_one_hot)
         for k in range(1,batch_size):
             aux = k % len(self.dic[self.columns[0]])
             dic_label[self.columns[0]].append(aux)
@@ -223,7 +224,7 @@ class Dataset(data.Dataset):
                     continue
                 aux = k % len(self.dic[column])
                 dic_label[column].append(aux)
-                print("data year one hot total",data_year_one_hot)
+
                 print("tensor zeros",torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0))
                 aux_data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
