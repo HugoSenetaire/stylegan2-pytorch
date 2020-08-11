@@ -100,6 +100,8 @@ def create_label(batch_size,column_size):
 
 def creativity_loss(pred,weights):
     batch,column_size = weights.shape
+    print("CREATIVITY LOSS")
+    print("column size",column_size)
     pred_aux = pred.unsqueeze(1)
     pred_aux = pred_aux.expand(-1,column_size,-1)
     pred_aux = pred_aux.view(batch*column_size,-1)
