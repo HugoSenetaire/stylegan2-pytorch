@@ -135,6 +135,7 @@ class Dataset(data.Dataset):
         
     
     def get_len(self):
+        print(self.dic_inspirationnal)
         size = 0
         for column in self.columns:
             size+=len(self.dic[column])
