@@ -97,7 +97,7 @@ class Dataset(data.Dataset):
             aux = self.encoder[columns[0]].apply(data[columns[0]])
             one_hot = torch.zeros(len(dic[columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
             dic_label[columns[0]] = aux
-            for i,column in enumerate[columns):
+            for i,column in enumerate(columns):
                 if i == 0 :
                     continue
                 aux = self.encoder[column].apply(data[column])
@@ -138,7 +138,7 @@ class Dataset(data.Dataset):
         size = 0
         for column in self.columns:
             size+=len(self.dic[column])
-        for column is self.columns_inspirationnal:
+        for column in self.columns_inspirationnal:
             size+=len(self.dic_inspirationnal[column])
 
         return size
