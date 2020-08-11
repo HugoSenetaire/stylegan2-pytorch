@@ -295,7 +295,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
-        fake_pred, fake_classification, fake_inspirationnal = discriminator(fake_img,labels = random_label)
+        fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
         
         # fake_pred = select_index_discriminator(fake_pred,random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
@@ -305,7 +305,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             for column in dataset.columns :
                 g_loss += classification_loss(fake_classification[column], random_dic_label[column])
             for column in dataset.columns_inspirationnal :
-                g_loss +=creativity_loss(fake_inspirationnal[column], random_dic_inspiration[column])
+                g_loss += creativity_loss(fake_inspiration[column], random_dic_inspiration[column])
             
 
 
@@ -499,6 +499,7 @@ if __name__ == "__main__":
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
+         dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device
     ).to(device)
     
