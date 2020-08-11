@@ -686,7 +686,6 @@ class Discriminator(nn.Module):
         if self.dic_inspirationnal_label_dim is not None :  
             self.columns_inspirationnal = list(self.dic_inspirationnal_label_dim.keys())
 
-        print(self.columns_inspirationnal)
 
         self.stddev_group = 4
         self.stddev_feat = 1
@@ -751,7 +750,7 @@ class Discriminator(nn.Module):
 
         if self.dic_inspirationnal_label_dim is not None:
             out_inspiration = {}
-            for column in self.columns:
+            for column in self.columns_inspirationnal:
                 out_inspiration[column] = self.final_linear_inspiration[column](out_conv)
         else :
             out_inspiration = None
