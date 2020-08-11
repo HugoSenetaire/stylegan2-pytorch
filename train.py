@@ -89,15 +89,14 @@ def classification_loss(pred, label):
 def create_label(batch_size,column_size):
     # TODO
     # Non nécessaire de le créer à chaque fois , juste mettre en global
+    print("Create label")
+    print([i%column_size for i in range(batch_size*column_size)])
     labels = torch.tensor([i%column_size for i in range(batch_size*column_size)]) 
     return labels
 
 
 
 def creativity_loss(pred,weights):
-    print("CREATIVITY LOSS")
-    print(weights)
-    print(weights.shape)
     batch,column_size = weights.shape
     pred_aux = pred.unsqueeze(1)
     pred_aux = pred_aux.expand(-1,column_size,-1)
@@ -306,8 +305,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             for column in dataset.columns :
                 g_loss += classification_loss(fake_classification[column], random_dic_label[column])
             for column in dataset.columns_inspirationnal :
-                print(fake_inspiration)
-                print(random_dic_inspiration)
                 g_loss += creativity_loss(fake_inspiration[column], random_dic_inspiration[column])
             
 
