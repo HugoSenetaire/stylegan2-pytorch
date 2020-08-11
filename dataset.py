@@ -92,7 +92,7 @@ class Dataset(data.Dataset):
 
     def _create_one_hot(self, data, columns, dic):
         dic_label = {}
-        if len[columns)>0 :
+        if len(columns)>0 :
             x = []
             aux = self.encoder[columns[0]].apply(data[columns[0]])
             one_hot = torch.zeros(len(dic[columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
