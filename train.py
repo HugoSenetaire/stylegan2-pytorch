@@ -202,7 +202,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
-        real_inspiration_label = real_inspiration_label.to(device)
 
         requires_grad(generator, False)
         requires_grad(discriminator, True)
@@ -232,7 +231,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             for column in dataset.columns :
                 d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
             for column in dataset.columns_inspirationnal :
-                d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column])
+                d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
 
         
         loss_dict["d"] = d_loss
