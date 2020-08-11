@@ -70,7 +70,7 @@ class Dataset(data.Dataset):
         self.dic_inspirationnal = {}
         self.encoder_inspirationnal = {}
         self.dic_column_dim_inspirationnal = {}
-        for column in columns :
+        for column in self.columns_inspirationnal :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
                 if self.df[column].value_counts()[value] > 50:
@@ -84,8 +84,7 @@ class Dataset(data.Dataset):
             
         #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
         #num_channels = 3 if not transparent else 4
-        
-        print(self.dic_inspirationnal)
+
 
         self.transform = transform
 
@@ -137,7 +136,6 @@ class Dataset(data.Dataset):
         
     
     def get_len(self):
-        print(self.dic_inspirationnal)
         size = 0
         for column in self.columns:
             size+=len(self.dic[column])
