@@ -228,6 +228,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             for column in dataset.columns :
                 d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
             for column in dataset.columns_inspirationnal :
+                print(real_inspiration)
+                print(real_inspiration_label)
                 d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column])
 
         
