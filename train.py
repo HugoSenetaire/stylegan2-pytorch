@@ -89,10 +89,6 @@ def classification_loss(pred, label):
 def create_label(batch_size,column_size):
     # TODO
     # Non nécessaire de le créer à chaque fois , juste mettre en global
-    print("Create label")
-    print(batch_size)
-    print(column_size)
-    print([i%column_size for i in range(batch_size*column_size)])
     labels = torch.tensor([i%column_size for i in range(batch_size*column_size)]) 
     return labels
 
@@ -100,12 +96,10 @@ def create_label(batch_size,column_size):
 
 def creativity_loss(pred,weights):
     batch,column_size = weights.shape
-    print("CREATIVITY LOSS")
-    print("column size",column_size)
     pred_aux = pred.unsqueeze(1)
     pred_aux = pred_aux.expand(-1,column_size,-1)
     pred_aux = pred_aux.view(batch*column_size,-1)
-    neo_labels = create_label(batch,weights)
+    neo_labels = create_label(batch,column_size)
     weights_aux = weights.flatten()
     pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
     return torch.dot(weights_aux,pred_output)
