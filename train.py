@@ -84,9 +84,6 @@ def g_nonsaturating_loss(fake_pred):
 
 def classification_loss(pred, label):
     loss = nn.CrossEntropyLoss()
-    print("classification_loss")
-    print(pred)
-    print(label)
     return loss(pred,label)
 
 def create_label(batch_size,column_size):
@@ -306,6 +303,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             for column in dataset.columns :
                 g_loss += classification_loss(fake_classification[column], random_dic_label[column])
             for column in dataset.columns_inspirationnal :
+                print(fake_inspiration)
+                print(random_dic_inspiration)
                 g_loss += creativity_loss(fake_inspiration[column], random_dic_inspiration[column])
             
 
