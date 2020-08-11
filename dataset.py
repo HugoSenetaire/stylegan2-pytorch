@@ -298,7 +298,7 @@ class Dataset(data.Dataset):
             
 
         if len(self.columns_inspirationnal)>0:
-            if label_method == 'fullrandom':
+            if inspiration_method == 'fullrandom':
                 sample_weights, dic_weights = self.random_weights(batch_size)
             else :
                 raise(ValueError("Inspiration method not recognized"))
