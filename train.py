@@ -90,6 +90,8 @@ def create_label(batch_size,column_size):
     # TODO
     # Non nécessaire de le créer à chaque fois , juste mettre en global
     print("Create label")
+    print(batch_size)
+    print(column_size)
     print([i%column_size for i in range(batch_size*column_size)])
     labels = torch.tensor([i%column_size for i in range(batch_size*column_size)]) 
     return labels
