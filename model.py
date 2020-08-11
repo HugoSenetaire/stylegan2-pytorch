@@ -650,21 +650,8 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, dic_latent_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None):
+    def __init__(self, size, dic_latent_label_dim = None, dic_inspirationnal_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None):
         super().__init__()
-
-        # channels = {
-        #     4: 512,
-        #     8: 512,
-        #     16: 512,
-        #     32: 512,
-        #     64: 256 * channel_multiplier,
-        #     128: 128 * channel_multiplier,
-        #     256: 64 * channel_multiplier,
-        #     512: 32 * channel_multiplier,
-        #     1024: 16 * channel_multiplier,
-        # }
-
         channels = {
             4: 512 ,
             8: 512 ,
@@ -692,7 +679,13 @@ class Discriminator(nn.Module):
 
         self.convs = nn.Sequential(*convs)
         self.dic_latent_label_dim = dic_latent_label_dim
-        self.columns = list(self.dic_latent_label_dim.keys())
+        self.dic_inspirationnal_label_dim = dic_inspirationnal_label_dim
+
+        if self.dic_latent_label_dim is not None :
+            self.columns = list(self.dic_latent_label_dim.keys())
+        if self.dic_inspirationnal_label_dim is not None :  
+            self.columns_inspirationnal = list(self.dic_inspirationnal_label_dim.keys())
+
         self.stddev_group = 4
         self.stddev_feat = 1
 
@@ -702,6 +695,8 @@ class Discriminator(nn.Module):
                 EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
                 EqualLinear(channels[4], 1),
             )
+
+        
         if self.dic_latent_label_dim is not None:
             self.final_linear_label = {}
             for column in self.columns:
@@ -711,12 +706,23 @@ class Discriminator(nn.Module):
                     nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
                 ).to(device)
 
+        if self.dic_inspirationnal_label_dim is not None:
+            self.final_linear_inspiration = {}
+            for column in self.columns_inspirationnal:
+                self.final_linear_inspiration[column] = nn.Sequential(
+                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                    EqualLinear(channels[4], self.dic_inspirationnal_label_dim[column]),
+                    nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
+                ).to(device)
+
+        
+
         # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
         # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
 
 
-    def forward(self, input, labels):
+    def forward(self, input):
         out = self.convs(input)
 
         batch, channel, height, width = out.shape
@@ -741,5 +747,12 @@ class Discriminator(nn.Module):
         else :
             out_classification = None
 
-        return out_real_fake, out_classification
+        if self.dic_inspirationnal_label_dim is not None:
+            out_inspiration = {}
+            for column in self.columns:
+                out_inspiration[column] = self.final_linear_inspiration[column](out_conv)
+        else :
+            out_inspiration = None
+
+        return out_real_fake, out_classification, out_inspiration
 

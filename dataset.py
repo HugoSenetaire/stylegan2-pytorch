@@ -20,40 +20,6 @@ import torch
 from torch import nn
 from torch.utils import data
 import torch.nn.functional as F
-class MultiResolutionDataset(data.Dataset):
-    def __init__(self, path, transform, resolution=256):
-        self.env = lmdb.open(
-            path,
-            max_readers=32,
-            readonly=True,
-            lock=False,
-            readahead=False,
-            meminit=False,
-        )
-
-        if not self.env:
-            raise IOError('Cannot open lmdb dataset', path)
-
-        with self.env.begin(write=False) as txn:
-            self.length = int(txn.get('length'.encode('utf-8')).decode('utf-8'))
-
-        self.resolution = resolution
-        self.transform = transform
-
-    def __len__(self):
-        return self.length
-
-    def __getitem__(self, index):
-        with self.env.begin(write=False) as txn:
-            key = f'{self.resolution}-{str(index).zfill(5)}'.encode('utf-8')
-            img_bytes = txn.get(key)
-
-        buffer = BytesIO(img_bytes)
-        img = Image.open(buffer)
-        img = self.transform(img)
-
-        return img
-
 
 
 
@@ -75,11 +41,12 @@ class OneHot():
 
 class Dataset(data.Dataset):
     #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
-    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function","sap_aesthetic_line"], transparent = False):
+    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], columns_inspirationnal = ["sap_aesthetic_line"], transparent = False):
         super().__init__()
         self.folder = folder
         self.image_size = image_size
         self.columns = columns
+        self.columns_inspirationnal = columns_inspirationnal
         self.df = pd.read_csv(folder+".csv")
         
         # Get one Hot Encoder
@@ -90,12 +57,28 @@ class Dataset(data.Dataset):
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
                 #print(value,type(value))
-                if self.df[column].value_counts()[value] > 200:
+                if self.df[column].value_counts()[value] > 50:
                     list_possible_value.append(value)
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
             self.dic_column_dim[column] = len(self.dic[column])
+            print(f"Saved value for column {column}")
+            print(list_possible_value)
+
+
+        self.dic_inspirationnal = {}
+        self.encoder_inspirationnal = {}
+        self.dic_column_dim_inspirationnal = {}
+        for column in columns :
+            list_possible_value = []
+            for k, value in enumerate(self.df[column].unique()):
+                if self.df[column].value_counts()[value] > 50:
+                    list_possible_value.append(value)
+            self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
+            self.encoder_inspirationnal[column] = OneHot(list_possible_value)
+            self.df = self.df[self.df[column].isin(self.dic_inspirationnal[column])]
+            self.dic_column_dim_inspirationnal[column] = len(self.dic_inspirationnal[column])
             print(f"Saved value for column {column}")
             print(list_possible_value)
             
@@ -107,6 +90,27 @@ class Dataset(data.Dataset):
     def __len__(self):
         return len(self.df)
 
+    def _create_one_hot(self, data, columns, dic):
+        dic_label = {}
+        if len[columns)>0 :
+            x = []
+            aux = self.encoder[columns[0]].apply(data[columns[0]])
+            one_hot = torch.zeros(len(dic[columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            dic_label[columns[0]] = aux
+            for i,column in enumerate[columns):
+                if i == 0 :
+                    continue
+                aux = self.encoder[column].apply(data[column])
+                dic_label[column] = aux
+                one_hot = torch.cat((one_hot,torch.zeros(len(dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+
+
+            x = one_hot.type(torch.float32)
+        else :
+            x = -1
+
+        return x, dic_label
+
     def __getitem__(self, index):
         data = self.df.iloc[index]
         name = data.image_id
@@ -114,31 +118,29 @@ class Dataset(data.Dataset):
         img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
 
-        dic_label = {}
-        if len(self.columns)>0 :
-            x = []
-            # data_year_one_hot = torch.empty()
-            aux = self.encoder[self.columns[0]].apply(data[self.columns[0]])
-            data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-            dic_label[self.columns[0]] = aux
-            for i,column in enumerate(self.columns):
-                if i == 0 :
-                    continue
-                #data_year_one_hot = torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)
-                aux = self.encoder[column].apply(data[column])
-                dic_label[column] = aux
-                data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+        x,dic_label = self._create_one_hot(data, self.columns,self.dic)
+        y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
-            x = data_year_one_hot.type(torch.float32)
+        if len(self.columns)>0:
+            if len(self.columns_inspirationnal)>0 :
+                x = torch.cat([x,y])
+            return x, img_transform, dic_label, dic_inspiration
+
+        elif len(self.columns_inspirationnal)>0:
+            return y, img_transform, dic_label, dic_inspiration
+            
         else :
-            x = -1
-        return x,img_transform,dic_label
+            return -1, img_transform, dic_label, dic_inspiration
+
         
     
     def get_len(self):
         size = 0
         for column in self.columns:
             size+=len(self.dic[column])
+        for column is self.columns_inspirationnal:
+            size+=len(self.dic_inspirationnal[column])
+
         return size
     
     
@@ -159,8 +161,12 @@ class Dataset(data.Dataset):
             liste.append(self.encoder[column].reverse(index[i]))
             
         return liste
+
+    ### Sampling methods
     
     def random_one_hot(self,batch_size):
+        # TODO
+        # Code beaucoup trop brouillon à modifier
         
         if len(self.columns)==0 :
             return None
@@ -168,20 +174,20 @@ class Dataset(data.Dataset):
         
         aux = np.random.randint(len(self.dic[self.columns[0]]))
         dic_label = {self.columns[0] : [aux]}
-        data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
         for i,column in enumerate(self.columns):
             if i == 0 :
                 continue
             aux = np.random.randint(len(self.dic[column]))
             dic_label[column] = [aux]
-            data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             
         
-        data_year_one_hot = data_year_one_hot[None,:]
+        one_hot = one_hot[None,:]
         for k in range(batch_size-1):
             aux = np.random.randint(len(self.dic[self.columns[0]]))
             dic_label[self.columns[0]].append(aux)
-            aux_data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
             
             for i,column in enumerate(self.columns):
                 if i == 0 :
@@ -189,34 +195,36 @@ class Dataset(data.Dataset):
 
                 aux = np.random.randint(len(self.dic[column]))
                 dic_label[column].append(aux)
-                aux_data_year_one_hot = torch.cat((aux_data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
+                aux_one_hot = torch.cat((aux_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
         
         for column in self.columns:
             dic_label[column] = torch.tensor(dic_label[column])
 
-        return data_year_one_hot,dic_label
+        return one_hot,dic_label
 
 
     def listing_one_hot(self,batch_size):
+        # TODO
+        # Code beaucoup trop brouillon à modifier
         if len(self.columns)==0 :
             return None
         aux = 0
         dic_label = {self.columns[0] : [aux]}
-        data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
         for i,column in enumerate(self.columns):
             if i == 0 :
                 continue
             aux = 0
             dic_label[column ] = [aux]
-            data_year_one_hot = torch.cat((data_year_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             
         
-        data_year_one_hot = data_year_one_hot[None,:]
+        one_hot = one_hot[None,:]
         for k in range(1,batch_size):
             aux = k % len(self.dic[self.columns[0]])
             dic_label[self.columns[0]].append(aux)
-            aux_data_year_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
             for i,column in enumerate(self.columns):
                 if i == 0 :
                     continue
@@ -224,9 +232,91 @@ class Dataset(data.Dataset):
                 dic_label[column].append(aux)
 
                 final_aux = torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)
-                aux_data_year_one_hot = torch.cat((aux_data_year_one_hot,final_aux))
-            data_year_one_hot = torch.cat((data_year_one_hot,aux_data_year_one_hot[None,:]),dim=0)
+                aux_one_hot = torch.cat((aux_one_hot,final_aux))
+            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
         for column in self.columns:
             dic_label[column] = torch.tensor(dic_label[column])
 
-        return data_year_one_hot,dic_label
+        return one_hot,dic_label
+
+    def random_weights(self,batch_size):
+        # TODO
+        # Code beaucoup trop brouillon à modifier
+        if len(self.columns_inspirationnal)==0 :
+            return None
+
+        
+        possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
+        weights = torch.zeros((possibleLength,)).fill(1./possibleLength)
+        dic_weights = {self.columns_inspirationnal[0] : weights}
+        one_hot = weights
+        for i,column in enumerate(self.columns_inspirationnal):
+            if i == 0 :
+                continue
+            possibleLength = len(self.dic_inspirationnal[column])
+            weights = torch.zeros((possibleLength,)).fill(1./possibleLength)
+            dic_weights[column] = [weights]
+            one_hot = torch.cat((one_hot,weights))
+            
+        
+        one_hot = one_hot[None,:]
+        for k in range(1,batch_size):
+            possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
+            weights = torch.zeros((possibleLength,)).fill(1./possibleLength)
+            dic_weights = {self.columns_inspirationnal[0] : weights}
+            aux_one_hot = weights
+          
+            for i,column in enumerate(self.columns_inspirationnal):
+                if i == 0 :
+                    continue
+                possibleLength = len(self.dic_inspirationnal[column])
+                weights = torch.zeros((possibleLength,)).fill(1./possibleLength)
+                dic_weights[column] = [weights]
+                aux_one_hot = torch.cat((aux_one_hot,weights))
+
+            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
+
+        for column in self.columns_inspirationnal:
+            dic_weights[column] = torch.tensor(dic_weights[column])
+
+        return one_hot,dic_weights
+
+
+    def sample_manager(self, batch_size, device, label_method, inspiration_method):
+
+        if len(self.columns)>0 :
+            if label_method == 'listing':
+                sample_label, dic_label = self.listing_one_hot(batch_size)
+            elif label_method == 'random' :
+                sample_label, dic_label = self.random_one_hot(batch_size)
+            else :
+                raise(ValueError("Label method not recognize"))
+            sample_label = sample_label.to(device)
+            for column in self.columns :
+                dic_label[column] = dic_label[column].to(device)
+            
+
+        if len(self.columns_inspirationnal)>0:
+            if label_method == 'fullrandom':
+                sample_weights, dic_weights = self.random_weights(batch_size)
+            
+            sample_weights = sample_weights.to(device)
+            for column in self.columns_inspirationnal:
+                dic_weights = dic_weights[column].to(device)
+
+
+        if len(self.columns)>0:
+            if len(self.columns_inspirationnal)>0:
+                output = torch.cat([sample_label,sample_weights],dim=1)
+                return output,dic_label,dic_weights
+            else :
+                output = sample_label
+                return output,dic_label,None
+        elif len(self.columns_inspirationnal)>0:
+            output = sample_weights
+            return output,None,dic_weights
+        else :
+            return None,None,None
+
+        
+            

@@ -85,6 +85,25 @@ def g_nonsaturating_loss(fake_pred):
 def classification_loss(pred, label):
     loss = nn.CrossEntropyLoss()
     return loss(pred,label)
+
+def create_label(batch_size,column_size):
+    # TODO
+    # Non nécessaire de le créer à chaque fois , juste mettre en global
+    labels = torch.tensor([i%column_size for i in range(batch_size*column_size)]) 
+    return labels
+
+
+
+def creativity_loss(pred,weights):
+    batch,column_size = weights.shape
+    pred_aux = pred.unsqueeze(1)
+    pred_aux = pred_aux.expand(-1,column_size,-1)
+    pred_aux = pred_aux.view(batch*column_size,-1)
+    neo_labels = create_label(batch,weights)
+    weights_aux = weights.flatten()
+    pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
+    return torch.dot(weights_aux,pred_output)
+
     
 def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
     noise = torch.randn_like(fake_img) / math.sqrt(
@@ -162,14 +181,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     r_t_stat = 0
 
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
-    if dataset.get_len()>0:
-        #sample_label = dataset.random_one_hot(args.n_sample).to(device)
-        sample_label,dic_label = dataset.listing_one_hot(args.n_sample)
-        sample_label = sample_label.to(device)
-        for column in dataset.columns :
-            dic_label[column] = dic_label[column].to(device)
+
+    sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(args.n_sample, device, args.label_method, args.inspiration_method)
+    
     print("The labels for the generation are the following :")
-    print(sample_label)
+    print(sample_dic_label)
+    print("The weights for the generation are the following :")
+    print(sample_dic_inspiration)
 
     for idx in pbar:
         i = idx + args.start_iter
@@ -178,21 +196,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             print("Done!")
             break
 
-        real_label,real_img,real_dic_label = next(loader)
-        #print(label)
+        real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
 
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
-        if latent_label_dim>0 :
-            random_label,random_dic_label = dataset.random_one_hot(args.batch)
-        else :
-            random_label = None
-            random_dic_label = None
-        
-        random_label = random_label.to(device)
+        sample_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
+
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
   
         fake_img, _ = generator(noise,labels= random_label)
@@ -205,8 +217,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             real_img_aug = real_img
 
     
-        fake_pred, fake_classification = discriminator(fake_img,labels = random_label) 
-        real_pred, real_classification = discriminator(real_img_aug, labels = real_label)
+        fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
+        real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
+
         #fake_pred = select_index_discriminator(fake_pred,random_label)
         #real_pred = select_index_discriminator(real_pred,real_label)
 
@@ -214,7 +227,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if latent_label_dim>0 :
             for column in dataset.columns :
                 d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
+            for column in dataset.columns_inspirationnal :
+                d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column])
 
+        
         loss_dict["d"] = d_loss
         loss_dict["real_score"] = real_pred.mean()
         loss_dict["fake_score"] = fake_pred.mean()
@@ -248,11 +264,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if d_regularize:
             real_img.requires_grad = True
-            real_pred, real_classification = discriminator(real_img,labels = real_label)
+            real_pred, real_classification, real_inspiration = discriminator(real_img,labels = real_label)
             #real_pred = select_index_discriminator(real_pred,real_label)
             r1_loss = d_r1_loss(real_pred, real_img)
-            
-            
             discriminator.zero_grad()
             (args.r1 / 2 * r1_loss * args.d_reg_every + 0 * real_pred[0]).backward()
 
@@ -264,31 +278,34 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(discriminator, False)
         
 
-        if latent_label_dim>0 :
-            random_label,random_dic_label = dataset.random_one_hot(args.batch)
-        else :
-            random_label = None
-            random_dic_label = None
+        # if latent_label_dim>0 :
+        #     random_label,random_dic_label = dataset.random_one_hot(args.batch)
+        # else :
+        #     random_label = None
+        #     random_dic_label = None
 
-        random_label = random_label.to(device)
+        # random_label = random_label.to(device)
+
+        random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         fake_img, _ = generator(noise,labels = random_label)
 
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
-        fake_pred, fake_classification = discriminator(fake_img,labels = random_label)
+        fake_pred, fake_classification, fake_inspirationnal = discriminator(fake_img,labels = random_label)
         
-
-
         # fake_pred = select_index_discriminator(fake_pred,random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
 
         # Not sure it is really necessary if no conditionning, would be for the creativity loss :
         if latent_label_dim>0 :
             for column in dataset.columns :
-                g_loss += classification_loss(fake_classification[column], random_dic_label[column].to(device))
+                g_loss += classification_loss(fake_classification[column], random_dic_label[column])
+            for column in dataset.columns_inspirationnal :
+                g_loss +=creativity_loss(fake_inspirationnal[column], random_dic_inspiration[column])
             
+
 
         loss_dict["g"] = g_loss
 
@@ -301,12 +318,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if g_regularize:
             path_batch_size = max(1, args.batch // args.path_batch_shrink)
             noise = mixing_noise(path_batch_size, args.latent, args.mixing, device)
-            if latent_label_dim>0 :
-                random_label,random_dic_label = dataset.random_one_hot(path_batch_size)
-            else :
-                random_label = None
-                random_dic_label = None
-            random_label = random_label.to(device)
+
+            random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(path_batch_size, device, "random", args.inspiration_method)
+
             fake_img, latents = generator(noise, labels = random_label, return_latents=True)
 
             path_loss, mean_path_length, path_lengths = g_path_regularize(
@@ -429,6 +443,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--design_inspiration", type=str, default = "fullrandom", description = "Possible value is fullrandom/onlyinspiration") 
 
     args = parser.parse_args()
 
