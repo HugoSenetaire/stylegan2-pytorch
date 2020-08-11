@@ -249,7 +249,7 @@ class Dataset(data.Dataset):
         
         possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
         weights = torch.zeros((possibleLength,))
-            weights.new_full((possibleLength,),1./possibleLength)
+        weights.new_full((possibleLength,),1./possibleLength)
         dic_weights = {self.columns_inspirationnal[0] : weights}
         one_hot = weights
         for i,column in enumerate(self.columns_inspirationnal):
