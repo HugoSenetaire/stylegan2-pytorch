@@ -291,7 +291,7 @@ class Dataset(data.Dataset):
             elif label_method == 'random' :
                 sample_label, dic_label = self.random_one_hot(batch_size)
             else :
-                raise(ValueError("Label method not recognize"))
+                raise(ValueError("Label method not recognized"))
             sample_label = sample_label.to(device)
             for column in self.columns :
                 dic_label[column] = dic_label[column].to(device)
@@ -300,7 +300,8 @@ class Dataset(data.Dataset):
         if len(self.columns_inspirationnal)>0:
             if label_method == 'fullrandom':
                 sample_weights, dic_weights = self.random_weights(batch_size)
-            
+            else :
+                raise(ValueError("Inspiration method not recognized"))
             sample_weights = sample_weights.to(device)
             for column in self.columns_inspirationnal:
                 dic_weights = dic_weights[column].to(device)

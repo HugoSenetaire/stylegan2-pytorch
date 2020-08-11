@@ -444,7 +444,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
-    parser.add_argument("--label_method", type=str, default = "list", help = "Possible value is random/list")
+    parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")
 
     args = parser.parse_args()
 
