@@ -722,7 +722,7 @@ class Discriminator(nn.Module):
 
 
 
-    def forward(self, input):
+    def forward(self, input, labels = None):
         out = self.convs(input)
 
         batch, channel, height, width = out.shape
