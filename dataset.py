@@ -85,6 +85,8 @@ class Dataset(data.Dataset):
         #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
         #num_channels = 3 if not transparent else 4
         
+        print(self.dic_inspirationnal)
+
         self.transform = transform
 
     def __len__(self):
