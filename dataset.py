@@ -307,7 +307,7 @@ class Dataset(data.Dataset):
                 raise(ValueError("Inspiration method not recognized"))
             sample_weights = sample_weights.to(device)
             for column in self.columns_inspirationnal:
-                dic_weights = dic_weights[column].to(device)
+                dic_weights[column] = dic_weights[column].to(device)
 
 
         if len(self.columns)>0:
