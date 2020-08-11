@@ -202,6 +202,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
+        real_inspiration_label = real_inspiration_label.to(device)
 
         requires_grad(generator, False)
         requires_grad(discriminator, True)
