@@ -68,7 +68,6 @@ class Dataset(data.Dataset):
 
 
         self.dic_inspirationnal = {}
-        self.encoder_inspirationnal = {}
         self.dic_column_dim_inspirationnal = {}
         for column in self.columns_inspirationnal :
             list_possible_value = []
@@ -76,7 +75,7 @@ class Dataset(data.Dataset):
                 if self.df[column].value_counts()[value] > 50:
                     list_possible_value.append(value)
             self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
-            self.encoder_inspirationnal[column] = OneHot(list_possible_value)
+            self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic_inspirationnal[column])]
             self.dic_column_dim_inspirationnal[column] = len(self.dic_inspirationnal[column])
             print(f"Saved value for column {column}")
@@ -251,7 +250,9 @@ class Dataset(data.Dataset):
         print(possibleLength)
         print(1./possibleLength)
         weights = torch.zeros((possibleLength,),dtype = torch.float32)
-        weights.new_full((possibleLength,),1./possibleLength)
+        print(weights)
+        weights = weights.new_full((possibleLength,),1./possibleLength)
+        print(weights)
         dic_weights = {self.columns_inspirationnal[0] : weights}
         one_hot = weights
         for i,column in enumerate(self.columns_inspirationnal):
