@@ -249,14 +249,14 @@ class Dataset(data.Dataset):
         possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
         weights = torch.zeros((possibleLength,),dtype = torch.float32)
         weights = weights.new_full((possibleLength,),1./possibleLength)
-        dic_weights = {self.columns_inspirationnal[0] : weights}
+        dic_weights = {self.columns_inspirationnal[0] : copy.deepcopy(weights)}
         one_hot = weights
         for i,column in enumerate(self.columns_inspirationnal):
             if i == 0 :
                 continue
             possibleLength = len(self.dic_inspirationnal[column])
             weights = torch.zeros((possibleLength,),dtype = torch.float32)
-            weights.new_full((possibleLength,),1./possibleLength)
+            weights = weights.new_full((possibleLength,),1./possibleLength)
             dic_weights[column] = [weights]
             one_hot = torch.cat((one_hot,weights))
             
@@ -265,7 +265,7 @@ class Dataset(data.Dataset):
         for k in range(1,batch_size):
             possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
             weights = torch.zeros((possibleLength,),dtype = torch.float32)
-            weights.new_full((possibleLength,),1./possibleLength)
+            weights = weights.new_full((possibleLength,),1./possibleLength)
             dic_weights = {self.columns_inspirationnal[0] : weights}
             aux_one_hot = weights
           
@@ -274,14 +274,14 @@ class Dataset(data.Dataset):
                     continue
                 possibleLength = len(self.dic_inspirationnal[column])
                 weights = torch.zeros((possibleLength,),dtype = torch.float32)
-                weights = torch.new_full((possibleLength,),1./possibleLength)
+                weights = weights.new_full((possibleLength,),1./possibleLength)
                 dic_weights[column] = [weights]
                 aux_one_hot = torch.cat((aux_one_hot,weights))
 
             one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
 
-        for column in self.columns_inspirationnal:
-            dic_weights[column] = torch.tensor(dic_weights[column])
+        # for column in self.columns_inspirationnal:
+        #     dic_weights[column] = torch.tensor(dic_weights[column])
 
         return one_hot,dic_weights
 
