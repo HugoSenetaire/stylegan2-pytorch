@@ -248,6 +248,8 @@ class Dataset(data.Dataset):
 
         
         possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
+        print(possibleLength)
+        print(1./possibleLength)
         weights = torch.zeros((possibleLength,),dtype = torch.float32)
         weights.new_full((possibleLength,),1./possibleLength)
         dic_weights = {self.columns_inspirationnal[0] : weights}
