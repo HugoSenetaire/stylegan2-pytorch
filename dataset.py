@@ -57,11 +57,12 @@ class Dataset(data.Dataset):
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
                 #print(value,type(value))
-                if self.df[column].value_counts()[value] > 100:
+                if self.df[column].value_counts()[value] > 50:
                     list_possible_value.append(value)
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
+            self.dic_column_dim[column] = len(self.dic_inspirationnal[column])
 
 
         self.dic_inspirationnal = {}
@@ -69,7 +70,7 @@ class Dataset(data.Dataset):
         for column in self.columns_inspirationnal :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
-                if self.df[column].value_counts()[value] > 100:
+                if self.df[column].value_counts()[value] > 50:
                     list_possible_value.append(value)
             self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
