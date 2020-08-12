@@ -487,6 +487,7 @@ if __name__ == "__main__":
          latent_label_dim=latent_label_dim,
     ).to(device)
     
+    
 
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
