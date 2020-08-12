@@ -62,7 +62,7 @@ class Dataset(data.Dataset):
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
-            self.dic_column_dim[column] = len(self.dic_inspirationnal[column])
+            self.dic_column_dim[column] = len(self.dic[column])
 
 
         self.dic_inspirationnal = {}
