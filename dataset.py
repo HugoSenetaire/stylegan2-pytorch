@@ -57,7 +57,7 @@ class Dataset(data.Dataset):
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
                 #print(value,type(value))
-                if self.df[column].value_counts()[value] > 20:
+                if self.df[column].value_counts()[value] > 100:
                     list_possible_value.append(value)
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
@@ -69,15 +69,13 @@ class Dataset(data.Dataset):
         for column in self.columns_inspirationnal :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
-                if self.df[column].value_counts()[value] > 20:
+                if self.df[column].value_counts()[value] > 100:
                     list_possible_value.append(value)
             self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic_inspirationnal[column])]
             self.dic_column_dim_inspirationnal[column] = len(self.dic_inspirationnal[column])
-            print(f"Saved value for column {column}")
-            print(list_possible_value)
-        
+ 
         print("Total lenght of remaining dataframe")
         print(len(self.df))
 
