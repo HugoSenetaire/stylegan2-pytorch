@@ -194,7 +194,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
-                args.upscale_every = args.upscale_every*4
+                print(f"Upscale at {i}")
+                print(f"next upscale at {args.upscale_every*2}")
+                args.upscale_every = args.upscale_every*2
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
 
         real_label,real_img = next(loader)
@@ -432,7 +434,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--progressive", action="store_true")
-    parser.add_argument("--upscale_every", type = int, default = 10000)
+    parser.add_argument("--upscale_every", type = int, default = 2000)
     parser.add_argument("--max_size",type=int, default = 512)
 
     args = parser.parse_args()
