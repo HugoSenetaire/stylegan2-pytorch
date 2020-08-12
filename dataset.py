@@ -57,12 +57,11 @@ class Dataset(data.Dataset):
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
                 #print(value,type(value))
-                if self.df[column].value_counts()[value] > 50:
+                if self.df[column].value_counts()[value] > 20:
                     list_possible_value.append(value)
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
-            self.dic_column_dim[column] = len(self.dic[column])
             print(f"Saved value for column {column}")
             print(list_possible_value)
 
@@ -72,7 +71,7 @@ class Dataset(data.Dataset):
         for column in self.columns_inspirationnal :
             list_possible_value = []
             for k, value in enumerate(self.df[column].unique()):
-                if self.df[column].value_counts()[value] > 50:
+                if self.df[column].value_counts()[value] > 20:
                     list_possible_value.append(value)
             self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
@@ -80,7 +79,9 @@ class Dataset(data.Dataset):
             self.dic_column_dim_inspirationnal[column] = len(self.dic_inspirationnal[column])
             print(f"Saved value for column {column}")
             print(list_possible_value)
-            
+        
+        print("Total lenght of remaining dataframe")
+        print(len(self.df))
         #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
         #num_channels = 3 if not transparent else 4
 
