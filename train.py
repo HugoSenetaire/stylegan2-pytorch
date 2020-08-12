@@ -226,6 +226,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         d_loss = d_logistic_loss(real_pred, fake_pred)
         if latent_label_dim>0 :
             for column in dataset.columns :
+                print("INSIDE")
                 print(real_classification)
                 print(real_dic_label)
                 d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
