@@ -50,32 +50,41 @@ class Dataset(data.Dataset):
         self.df = pd.read_csv(folder+".csv")
         
         # Get one Hot Encoder
-        self.dic = {}
-        self.encoder = {}
-        self.dic_column_dim = {}
-        for column in columns :
-            list_possible_value = []
-            for k, value in enumerate(self.df[column].unique()):
-                #print(value,type(value))
-                if self.df[column].value_counts()[value] > 50:
-                    list_possible_value.append(value)
-            self.dic[column] = copy.deepcopy(list_possible_value)
-            self.encoder[column] = OneHot(list_possible_value)
-            self.df = self.df[self.df[column].isin(self.dic[column])]
-            self.dic_column_dim[column] = len(self.dic[column])
+        change = True   # TODO Change the following
+        while(change): # This seems like a really bad way to make sure every category has more than 50 items
+            change = False
+            self.dic = {}
+            self.encoder = {}
+            self.dic_column_dim = {}
+            for column in columns :
+                list_possible_value = []
+                for k, value in enumerate(self.df[column].unique()):
+                    #print(value,type(value))
+                    if self.df[column].value_counts()[value] > 50:
+                        list_possible_value.append(value)
+                self.dic[column] = copy.deepcopy(list_possible_value)
+                self.encoder[column] = OneHot(list_possible_value)
+                before_len = len(self.df)
+                self.df = self.df[self.df[column].isin(self.dic[column])]
+                if before_len != len(self.df):
+                    change = True
+                self.dic_column_dim[column] = len(self.dic[column])
 
 
-        self.dic_inspirationnal = {}
-        self.dic_column_dim_inspirationnal = {}
-        for column in self.columns_inspirationnal :
-            list_possible_value = []
-            for k, value in enumerate(self.df[column].unique()):
-                if self.df[column].value_counts()[value] > 50:
-                    list_possible_value.append(value)
-            self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
-            self.encoder[column] = OneHot(list_possible_value)
-            self.df = self.df[self.df[column].isin(self.dic_inspirationnal[column])]
-            self.dic_column_dim_inspirationnal[column] = len(self.dic_inspirationnal[column])
+            self.dic_inspirationnal = {}
+            self.dic_column_dim_inspirationnal = {}
+            for column in self.columns_inspirationnal :
+                list_possible_value = []
+                for k, value in enumerate(self.df[column].unique()):
+                    if self.df[column].value_counts()[value] > 50:
+                        list_possible_value.append(value)
+                self.dic_inspirationnal[column] = copy.deepcopy(list_possible_value)
+                self.encoder[column] = OneHot(list_possible_value)
+                before_len = len(self.df)
+                self.df = self.df[self.df[column].isin(self.dic_inspirationnal[column])]
+                if before_len != len(self.df):
+                    change = True
+                self.dic_column_dim_inspirationnal[column] = len(self.dic_inspirationnal[column])
  
         print("Total lenght of remaining dataframe")
         print(len(self.df))
