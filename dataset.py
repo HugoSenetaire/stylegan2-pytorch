@@ -62,8 +62,6 @@ class Dataset(data.Dataset):
             self.dic[column] = copy.deepcopy(list_possible_value)
             self.encoder[column] = OneHot(list_possible_value)
             self.df = self.df[self.df[column].isin(self.dic[column])]
-            print(f"Saved value for column {column}")
-            print(list_possible_value)
 
 
         self.dic_inspirationnal = {}
@@ -82,6 +80,14 @@ class Dataset(data.Dataset):
         
         print("Total lenght of remaining dataframe")
         print(len(self.df))
+
+        for column in columns :
+            print(f"Saved value for column {column}")
+            print(self.df[column].value_counts())
+        for column in self.columns_inspirationnal:
+            print(f"Saved value for column {column}")
+            print(self.df[column].value_counts())
+
         #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
         #num_channels = 3 if not transparent else 4
 
