@@ -300,10 +300,19 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         # Not sure it is really necessary if no conditionning, would be for the creativity loss :
         if latent_label_dim>0 :
+            print("CLASSIFICATION")
             for column in dataset.columns :
-                g_loss += classification_loss(fake_classification[column], random_dic_label[column])
+                print(fake_classification[column])
+                print(random_dic_label[column])
+                g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
+                print(classification_loss(fake_classification[column], random_dic_label[column]))
+
+            print("INSPIRATION")
             for column in dataset.columns_inspirationnal :
-                g_loss += creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
+                print(column)
+                print(fake_inspiration, random_dic_inspiration)
+                print(creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device))
+                g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
             
 
 
@@ -445,6 +454,8 @@ if __name__ == "__main__":
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")
+    parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
+    parser.add_argument("--lambda_inspiration_gen", type=float, default=1.0)
 
     args = parser.parse_args()
 
