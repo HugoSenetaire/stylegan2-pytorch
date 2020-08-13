@@ -226,6 +226,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 print(f"New size is {dataset.image_size}")
 
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
+        print(real_label)
+        print(real_img)
+        print(real_dic_label)
+        print(real_inspiration_label)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
 
