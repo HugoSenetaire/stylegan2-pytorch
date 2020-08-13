@@ -150,7 +150,7 @@ class Dataset(data.Dataset):
     def __getitem__(self, index):
         if self.dataset_type == "stellar" :
             data = self.df.iloc[index]
-            name = data.id_sap
+            name = data.image_id
             url = data.akamai_asset_link.split("/")[-1].replace(" ","%20")
             path = os.path.join(self.folder,url)
         else :
