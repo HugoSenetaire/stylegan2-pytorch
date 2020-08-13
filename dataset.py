@@ -157,23 +157,27 @@ class Dataset(data.Dataset):
             data = self.df.iloc[index]
             name = data.image_id
             path = os.path.join(self.folder,name+".jpg")
+
+        # TODO Very bad way to deal with the problem of the dataset
+        try :
+            img = Image.open(path).convert('RGB')
+            img_transform = self.transform(img)
         
-        img = Image.open(path).convert('RGB')
-        img_transform = self.transform(img)
+            x,dic_label = self._create_one_hot(data, self.columns,self.dic)
+            y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
-        x,dic_label = self._create_one_hot(data, self.columns,self.dic)
-        y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
+            if len(self.columns)>0:
+                if len(self.columns_inspirationnal)>0 :
+                    x = torch.cat([x,y])
+                return x, img_transform, dic_label, dic_inspiration
 
-        if len(self.columns)>0:
-            if len(self.columns_inspirationnal)>0 :
-                x = torch.cat([x,y])
-            return x, img_transform, dic_label, dic_inspiration
-
-        elif len(self.columns_inspirationnal)>0:
-            return y, img_transform, dic_label, dic_inspiration
-            
-        else :
-            return -1, img_transform, dic_label, dic_inspiration
+            elif len(self.columns_inspirationnal)>0:
+                return y, img_transform, dic_label, dic_inspiration
+                
+            else :
+                return -1, img_transform, dic_label, dic_inspiration
+        except :
+            self.__getitem__(index+1)
 
         
     
