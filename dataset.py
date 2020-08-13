@@ -65,11 +65,11 @@ class Dataset(data.Dataset):
         else :
             self.df = pd.read_csv(folder+".csv")
 
-        if self.dataset_type == stellar :
+        if self.dataset_type == "stellar" :
             self.df_name = self.df.id_sap.drop_duplicates()
             if not self.multiview:
                 self.df = self.df[self.df.stellar_view.isin(["Front view", "Vue de Face"])]
-            
+
         # Get one Hot Encoder
         change = True   # TODO Change the following
         while(change): # This seems like a really bad way to make sure every category has more than 50 items
