@@ -162,6 +162,7 @@ class Dataset(data.Dataset):
 
         img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
+        print(img_transform.shape)
     
         x,dic_label = self._create_one_hot(data, self.columns,self.dic)
         y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
