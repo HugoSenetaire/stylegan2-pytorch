@@ -221,9 +221,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
                 print(f"Upscale at {i}")
                 print(f"next upscale at {args.upscale_every*2}")
-                print(f"New size is {dataset.image_size}")
                 args.upscale_every = args.upscale_every*2
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
+                print(f"New size is {dataset.image_size}")
 
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         real_label = real_label.to(device)
