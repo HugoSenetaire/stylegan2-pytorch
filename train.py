@@ -148,6 +148,27 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
+def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
+    generator.add_scale(g_optim,device =device)
+    discriminator.add_scale(d_optim,device =device)
+
+    g_ema.add_scale(device = device)
+    dataset.image_size = dataset.image_size*2
+    transform = transforms.Compose(
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize(dataset.image_size),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
+    dataset.transform = transform
+    # g_optim.add_param_group(generator.convs[-2].parameters())
+    # g_optim.add_param_group(generator.convs[-1].parameters())
+    # d_optim.add_param_group(discriminator.convs[0].parameters())
+    
+
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
 
@@ -195,6 +216,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if i > args.iter:
             print("Done!")
             break
+
+        if args.progressive and i>0 :
+            if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
+                print(f"Upscale at {i}")
+                print(f"next upscale at {args.upscale_every*2}")
+                args.upscale_every = args.upscale_every*2
+                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
 
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         real_label = real_label.to(device)
@@ -448,6 +476,10 @@ if __name__ == "__main__":
     parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")
     parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
     parser.add_argument("--lambda_inspiration_gen", type=float, default=1.0)
+    parser.add_argument("--progressive", action="store_true")
+    parser.add_argument("--upscale_every", type = int, default = 2000)
+    parser.add_argument("--max_size",type=int, default = 512)
+
 
     args = parser.parse_args()
 
@@ -503,6 +535,7 @@ if __name__ == "__main__":
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device
     ).to(device)
+    
     
 
     g_ema = Generator(
