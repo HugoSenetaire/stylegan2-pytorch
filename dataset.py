@@ -66,7 +66,7 @@ class Dataset(data.Dataset):
             self.df = pd.read_csv(folder+".csv")
 
         if self.dataset_type == "stellar" :
-            self.df_name = self.df.id_sap.drop_duplicates()
+            self.df_name = self.df.image_id.drop_duplicates()
             if not self.multiview:
                 self.df = self.df[self.df.stellar_view.isin(["Front view", "Vue de Face"])]
 
@@ -159,25 +159,24 @@ class Dataset(data.Dataset):
             path = os.path.join(self.folder,name+".jpg")
 
         # TODO Very bad way to deal with the problem of the dataset
-        try :
-            img = Image.open(path).convert('RGB')
-            img_transform = self.transform(img)
-        
-            x,dic_label = self._create_one_hot(data, self.columns,self.dic)
-            y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
-            if len(self.columns)>0:
-                if len(self.columns_inspirationnal)>0 :
-                    x = torch.cat([x,y])
-                return x, img_transform, dic_label, dic_inspiration
+        img = Image.open(path).convert('RGB')
+        img_transform = self.transform(img)
+    
+        x,dic_label = self._create_one_hot(data, self.columns,self.dic)
+        y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
-            elif len(self.columns_inspirationnal)>0:
-                return y, img_transform, dic_label, dic_inspiration
-                
-            else :
-                return -1, img_transform, dic_label, dic_inspiration
-        except :
-            return self.__getitem__(index+1)
+        if len(self.columns)>0:
+            if len(self.columns_inspirationnal)>0 :
+                x = torch.cat([x,y])
+            return x, img_transform, dic_label, dic_inspiration
+
+        elif len(self.columns_inspirationnal)>0:
+            return y, img_transform, dic_label, dic_inspiration
+            
+        else :
+            return -1, img_transform, dic_label, dic_inspiration
+        return self.__getitem__(index+1)
 
         
     
