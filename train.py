@@ -511,7 +511,7 @@ if __name__ == "__main__":
     dataset = Dataset(args.path,
         transform, args.size, 
         columns = args.labels,
-        columns_inspirationnal = args.label_inspirationnal,
+        columns_inspirationnal = args.labels_inspirationnal,
         dataset_type = args.dataset_type,
         multiview = args.multiview,
         csv_path = args.csv_path
