@@ -148,7 +148,7 @@ class Dataset(data.Dataset):
         return x, dic_label
 
     def __getitem__(self, index):
-        if self.dataset_type == stellar :
+        if self.dataset_type == "stellar" :
             data = self.df.iloc[index]
             name = data.id_sap
             url = data.akamai_asset_link.split("/")[-1].replace(" ","%20")
