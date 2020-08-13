@@ -739,7 +739,7 @@ class Discriminator(nn.Module):
 
 
         # self.convs = nn.Sequential(*convs)
-        self.latent_label_dim = latent_label_dim
+        # self.latent_label_dim = latent_label_dim
         self.stddev_group = 4
         self.stddev_feat = 1
 
