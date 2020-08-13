@@ -158,7 +158,7 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
         [   
             transforms.Lambda(convert_transparent_to_rgb),
             transforms.RandomHorizontalFlip(),
-            transforms.Resize(dataset.image_size),
+            transforms.Resize((dataset.image_size,dataset.image_size)),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
@@ -226,8 +226,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 print(f"New size is {dataset.image_size}")
 
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
-        print(real_label.shape)
-        print(real_img.shape)
+        # print(real_label.shape)
+        # print(real_img.shape)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
 
@@ -505,7 +505,7 @@ if __name__ == "__main__":
         [   
             transforms.Lambda(convert_transparent_to_rgb),
             transforms.RandomHorizontalFlip(),
-            transforms.Resize(args.size),
+            transforms.Resize((args.size,args.size)),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
