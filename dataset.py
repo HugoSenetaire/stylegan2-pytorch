@@ -41,13 +41,34 @@ class OneHot():
 
 class Dataset(data.Dataset):
     #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
-    def __init__(self, folder, transform, image_size,columns = ["sap_sub_function"], columns_inspirationnal = [], transparent = False):
+    def __init__(self,
+        folder,
+        transform,
+        image_size,
+        columns = ["sap_sub_function"],
+        columns_inspirationnal = [],
+        dataset_type = "unique",
+        multiview = False,
+        csv_path = None,
+        transparent = False):
+
+
         super().__init__()
         self.folder = folder
         self.image_size = image_size
         self.columns = columns
         self.columns_inspirationnal = columns_inspirationnal
-        self.df = pd.read_csv(folder+".csv")
+        self.dataset_type = dataset_type
+        self.multiview = multiview
+        if csv_path is not None :
+            self.df = pd.read_csv(csv_path)
+        else :
+            self.df = pd.read_csv(folder+".csv")
+
+        if self.dataset_type == stellar :
+            self.df_name = self.df.id_sap.drop_duplicates()
+            if not self.multiview:
+                self.df = self.df[self.df.stellar_view.isin(["Front view", "Vue de Face"])]
         
         # Get one Hot Encoder
         change = True   # TODO Change the following
@@ -127,9 +148,16 @@ class Dataset(data.Dataset):
         return x, dic_label
 
     def __getitem__(self, index):
-        data = self.df.iloc[index]
-        name = data.image_id
-        path = os.path.join(self.folder,name+".jpg")
+        if self.dataset_type == stellar :
+            data = self.df.iloc[index]
+            name = data.id_sap
+            url = data.akamai_asset_link.split("/")[-1].replace(" ","%20")
+            path = os.path.join(self.folder,url)
+        else :
+            data = self.df.iloc[index]
+            name = data.image_id
+            path = os.path.join(self.folder,name+".jpg")
+        
         img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
 

@@ -472,8 +472,11 @@ if __name__ == "__main__":
     parser.add_argument("--upscale_every", type = int, default = 2000)
     parser.add_argument("--max_size",type=int, default = 512)
     parser.add_argument("--upscale_factor", type=int, default = 2)
-
-
+    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
+    parser.add_argument("--multiview", action = "store_true")
+    parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
+    parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
+    parser.add_argument('--csv_path', type = str, default = None)    
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -505,7 +508,14 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-    dataset = Dataset(args.path, transform, args.size)
+    dataset = Dataset(args.path,
+        transform, args.size, 
+        columns = args.labels,
+        columns_inspirationnal = args.label_inspirationnal,
+        dataset_type = args.dataset_type,
+        multiview = args.multiview,
+        csv_path = args.csv_path
+    )
     loader = data.DataLoader(
         dataset,
         batch_size=args.batch,
