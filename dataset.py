@@ -177,7 +177,7 @@ class Dataset(data.Dataset):
             else :
                 return -1, img_transform, dic_label, dic_inspiration
         except :
-            self.__getitem__(index+1)
+            return self.__getitem__(index+1)
 
         
     
