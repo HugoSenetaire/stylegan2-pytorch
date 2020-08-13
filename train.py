@@ -278,14 +278,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(discriminator, False)
         
 
-        # if latent_label_dim>0 :
-        #     random_label,random_dic_label = dataset.random_one_hot(args.batch)
-        # else :
-        #     random_label = None
-        #     random_dic_label = None
-
-        # random_label = random_label.to(device)
-
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         fake_img, _ = generator(noise,labels = random_label)

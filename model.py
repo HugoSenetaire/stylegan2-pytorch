@@ -748,6 +748,8 @@ class Discriminator(nn.Module):
         else :
             out_classification = None
 
+
+        
         if self.dic_inspirationnal_label_dim is not None:
             out_inspiration = {}
             for column in self.columns_inspirationnal:
