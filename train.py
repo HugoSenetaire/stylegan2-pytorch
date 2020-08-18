@@ -284,7 +284,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                                     range=(-1, 1),
                                 )
 
-        real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
+        real_label, real_img, real_mask, real_dic_label, real_inspiration_label = next(loader)
         # print(real_label.shape)
         # print(real_img.shape)
         real_label = real_label.to(device)
