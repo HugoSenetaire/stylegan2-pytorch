@@ -158,15 +158,19 @@ class Dataset(data.Dataset):
             name = data.image_id
             url = data.akamai_asset_link.split("/")[-1].replace(" ","%20")
             path = os.path.join(self.folder,url)
+            path_mask = os.path.join(self.folder_mask,url)
         else :
             data = self.df.iloc[index]
             name = data.image_id
             path = os.path.join(self.folder,name+".jpg")
+            path_mask = os.path.join(self.folder_mask,name+".jpg")
 
         # TODO Very bad way to deal with the problem of the dataset
 
         img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
+
+
         if self.transform_mask is not None :
                 mask = Image.open(path_mask).convert('RGB')
                 mask_transform = self.transform_mask(mask)
