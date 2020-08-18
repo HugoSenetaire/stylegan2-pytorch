@@ -102,8 +102,14 @@ def create_label(batch_size,column_size,device):
 
 def creativity_loss(pred,weights,device):
     batch,column_size = weights.shape
+    print("Batch :", batch)
+    print("column_size : ", column_size)
+    print("creativity_loss")
+    print(pred.shape)
     pred_aux = pred.unsqueeze(1)
+    print(pred_aux.shape)
     pred_aux = pred_aux.expand(-1,column_size,-1)
+    print(pred_aux.shape)
     pred_aux = pred_aux.view(batch*column_size,-1)
     neo_labels = create_label(batch,column_size,device)
     weights_aux = weights.flatten()
