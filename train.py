@@ -397,7 +397,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             loss_dict["gmask"] = shape_loss
             loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
 
-            g_loss = non_saturating_loss + shape_loss
+            g_loss = non_saturating_loss + args.lambda_mask * shape_loss
         else :
             g_loss = g_nonsaturating_loss(fake_pred)
 
@@ -571,6 +571,7 @@ if __name__ == "__main__":
     parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
     parser.add_argument('--csv_path', type = str, default = None)    
     parser.add_argument("--mask",  action="store_true")
+    parser.add_argument("--lambda_mask", type = float, default=1.0)
 
 
     args = parser.parse_args()
