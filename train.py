@@ -10,8 +10,9 @@ from torch.nn import functional as F
 from torch.utils import data
 import torch.distributed as dist
 from torchvision import transforms, utils
+import torchvision
 from tqdm import tqdm
-
+import matplotlib.pyplot as plt
 try:
     import wandb
 
@@ -81,6 +82,11 @@ def g_nonsaturating_loss(fake_pred):
 
     return loss
 
+def g_shape_loss(zero_pred,mask):
+    loss = torch.nn.L1Loss(reduction = 'sum')
+    return loss(zero_pred,mask)
+    #return loss
+
 
 def classification_loss(pred, label):
     loss = nn.CrossEntropyLoss()
@@ -129,13 +135,30 @@ def make_noise(batch, latent_dim, n_noise, device):
 
     return noises
 
+def make_zero_noise(batch, latent_dim, n_noise, device):
+    if n_noise == 1:
+        return torch.zeros(batch, latent_dim, device=device)
 
-def mixing_noise(batch, latent_dim, prob, device):
-    if prob > 0 and random.random() < prob:
-        return make_noise(batch, latent_dim, 2, device)
+    noises = torch.zeros(n_noise, batch, latent_dim, device=device).unbind(0)
 
-    else:
-        return [make_noise(batch, latent_dim, 1, device)]
+    return noises
+
+
+
+def mixing_noise(batch, latent_dim, prob, device, zero = False):
+    if not zero :
+        if prob > 0 and random.random() < prob:
+            return make_noise(batch, latent_dim, 2, device)
+
+        else:
+            return [make_noise(batch, latent_dim, 1, device)]
+    else :
+        if prob > 0 and random.random() < prob:
+            return make_zero_noise(batch, latent_dim, 2, device)
+
+        else:
+            return [make_zero_noise(batch, latent_dim, 1, device)]
+
 
 
 def set_grad_none(model, targets):
@@ -148,7 +171,9 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
-def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
+def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device,mask = False):
+    
+
     generator.add_scale(g_optim,device =device)
     discriminator.add_scale(d_optim,device =device)
 
@@ -164,6 +189,17 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
         ]
     )
     dataset.transform = transform
+
+    if mask :
+        transform_mask = transforms.Compose(
+            [
+                transforms.Resize(dataset.image_size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+        dataset.transform_mask = transform_mask
+
     # g_optim.add_param_group(generator.convs[-2].parameters())
     # g_optim.add_param_group(generator.convs[-1].parameters())
     # d_optim.add_param_group(discriminator.convs[0].parameters())
@@ -202,13 +238,25 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     r_t_stat = 0
 
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
-
     sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(args.n_sample, device, args.label_method, args.inspiration_method)
     
     print("The labels for the generation are the following :")
     print(sample_dic_label)
     print("The weights for the generation are the following :")
     print(sample_dic_inspiration)
+
+    if args.mask :
+        sample_mask = dataset.random_mask(args.n_sample).to(device)
+        utils.save_image(
+                        sample_mask,
+                        os.path.join(args.output_prefix, f"sample_mask.png"),
+                        nrow=int(args.n_sample ** 0.5),
+                        normalize=True,
+                        range=(-1, 1),
+                    )
+    else :
+        sample_mask = None
+
 
     for idx in pbar:
         i = idx + args.start_iter
@@ -217,28 +265,46 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             print("Done!")
             break
 
+
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
                 print(f"Upscale at {i}")
                 print(f"next upscale at {args.upscale_every*args.upscale_factor}")
                 args.upscale_every = args.upscale_every*args.upscale_factor
-                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
+                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device, args.mask)
                 print(f"New size is {dataset.image_size}")
+
+                if args.mask :
+                    sample_mask = dataset.random_mask(args.n_sample).to(device)
+                    utils.save_image(
+                                    sample_mask,
+                                    os.path.join(args.output_prefix, f"sample_mask_{i}.png"),
+                                    nrow=int(args.n_sample ** 0.5),
+                                    normalize=True,
+                                    range=(-1, 1),
+                                )
 
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         # print(real_label.shape)
         # print(real_img.shape)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
-
+        real_mask = real_mask.to(device)
+       
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
 
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-  
-        fake_img, _ = generator(noise,labels= random_label)
+        if args.mask :
+            random_mask = dataset.random_mask(args.batch)
+        else :
+            random_mask = None
+        random_mask = random_mask.to(device)
+
+
+        fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
 
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
@@ -309,16 +375,32 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         
 
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
+        if args.mask :
+            random_mask = dataset.random_mask(args.batch)
+            random_mask = random_mask.to(device)
+        else :
+            random_mask = None
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        fake_img, _ = generator(noise,labels = random_label)
+        zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
+        fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
+        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask, noise = 'zero', randomize_noise = False)
+
+
 
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
-        
-        # fake_pred = select_index_discriminator(fake_pred,random_label)
-        g_loss = g_nonsaturating_loss(fake_pred)
+        if args.mask :
+            shape_loss = g_shape_loss(zero_img, random_mask)
+            non_saturating_loss = g_nonsaturating_loss(fake_pred)
+            loss_dict["gmask"] = shape_loss
+            loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
+
+            g_loss = non_saturating_loss + shape_loss
+        else :
+            g_loss = g_nonsaturating_loss(fake_pred)
+
 
         # Not sure it is really necessary if no conditionning, would be for the creativity loss :
         if latent_label_dim>0 :
@@ -331,7 +413,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
         loss_dict["g"] = g_loss
-
         generator.zero_grad()
         g_loss.backward()
         g_optim.step()
@@ -343,8 +424,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             noise = mixing_noise(path_batch_size, args.latent, args.mixing, device)
 
             random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(path_batch_size, device, "random", args.inspiration_method)
-
-            fake_img, latents = generator(noise, labels = random_label, return_latents=True)
+            if args.mask :
+                random_mask = dataset.random_mask(path_batch_size)
+            else :
+                random_mask = None
+            random_mask = random_mask.to(device)
+            fake_img, latents = generator(noise, labels = random_label, return_latents=True, mask = random_mask)
+            
 
             path_loss, mean_path_length, path_lengths = g_path_regularize(
                 fake_img, latents, mean_path_length
@@ -373,6 +459,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         d_loss_val = loss_reduced["d"].mean().item()
         g_loss_val = loss_reduced["g"].mean().item()
+        if args.mask :
+            g_classic_loss = loss_reduced["gclassic"].mean().item()
+            g_mask_loss = loss_reduced["gmask"].mean().item()
         r1_val = loss_reduced["r1"].mean().item()
         path_loss_val = loss_reduced["path"].mean().item()
         real_score_val = loss_reduced["real_score"].mean().item()
@@ -382,9 +471,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if get_rank() == 0:
             pbar.set_description(
                 (
-                    f"d: {d_loss_val:.4f}; g: {g_loss_val:.4f}; r1: {r1_val:.4f}; "
-                    f"path: {path_loss_val:.4f}; mean path: {mean_path_length_avg:.4f}; "
-                    f"augment: {ada_aug_p:.4f}"
+                    f"d: {d_loss_val:.4f}; g: {g_loss_val:.4f}; r1: {r1_val:.4f};"
+                    f"path: {path_loss_val:.4f}; mean path: {mean_path_length_avg:.4f};"
+                    f"augment: {ada_aug_p:.4f}; gmask:{g_mask_loss:.4f}; gclassic:{g_classic_loss:.4f};"
                 )
             )
 
@@ -392,6 +481,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 wandb.log(
                     {
                         "Generator": g_loss_val,
+                        "Classic Generator": g_classic_loss,
+                        "Mask Generator": g_mask_loss,
                         "Discriminator": d_loss_val,
                         "Augment": ada_aug_p,
                         "Rt": r_t_stat,
@@ -407,7 +498,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if i % 100 == 0:
                 with torch.no_grad():
                     g_ema.eval()
-                    sample, _ = g_ema([sample_z],labels = sample_label)
+                    sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask)
                     utils.save_image(
                         sample,
                         os.path.join(args.output_prefix, f"sample/{str(i).zfill(6)}.png"),
@@ -479,6 +570,9 @@ if __name__ == "__main__":
     parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
     parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
     parser.add_argument('--csv_path', type = str, default = None)    
+    parser.add_argument("--mask",  action="store_true")
+
+
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -489,7 +583,7 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(args.output_prefix, "checkpoint")):
         os.makedirs(os.path.join(args.output_prefix, "checkpoint"))
 
-
+    torch.cuda.set_device(args.local_rank)
     if args.distributed:
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
@@ -500,24 +594,47 @@ if __name__ == "__main__":
     args.n_mlp = 8
 
     args.start_iter = 0
+    if args.mask :
+        transform = transforms.Compose(
+            [   
+                transforms.Lambda(convert_transparent_to_rgb),
+                transforms.Resize((args.size,args.size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+        transform_mask = transforms.Compose(
+            [
+                transforms.Resize(args.size),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+    
+    else :
+        transform = transforms.Compose(
+            [   
+                transforms.Lambda(convert_transparent_to_rgb),
+                transforms.RandomHorizontalFlip(),
+                transforms.Resize((args.size,args.size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+        transform_mask = None
 
-    transform = transforms.Compose(
-        [   
-            transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
-            transforms.Resize((args.size,args.size)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-        ]
-    )
+        
     dataset = Dataset(args.path,
         transform, args.size, 
         columns = args.labels,
         columns_inspirationnal = args.labels_inspirationnal,
         dataset_type = args.dataset_type,
         multiview = args.multiview,
-        csv_path = args.csv_path
+        csv_path = args.csv_path,
+        transform_mask = transform_mask
     )
+
+
     loader = data.DataLoader(
         dataset,
         batch_size=args.batch,
@@ -532,8 +649,8 @@ if __name__ == "__main__":
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
+         mask = args.mask
     ).to(device)
-    
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
@@ -546,7 +663,8 @@ if __name__ == "__main__":
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim
+         latent_label_dim=latent_label_dim,
+         mask = args.mask,
     ).to(device)
     g_ema.eval()
     accumulate(g_ema, generator, 0)

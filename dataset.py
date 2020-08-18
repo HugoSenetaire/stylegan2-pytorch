@@ -12,6 +12,7 @@ from shutil import rmtree
 from functools import partial
 import multiprocessing
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import copy
@@ -40,11 +41,11 @@ class OneHot():
         return self.rev_dic[i]
 
 class Dataset(data.Dataset):
-    #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
     def __init__(self,
         folder,
         transform,
         image_size,
+        transform_mask = None,
         columns = ["sap_sub_function"],
         columns_inspirationnal = [],
         dataset_type = "unique",
@@ -55,6 +56,9 @@ class Dataset(data.Dataset):
 
         super().__init__()
         self.folder = folder
+
+
+        self.folder_mask = self.folder + "_masks"
         self.image_size = image_size
         self.columns = columns
         self.columns_inspirationnal = columns_inspirationnal
@@ -122,6 +126,7 @@ class Dataset(data.Dataset):
 
 
         self.transform = transform
+        self.transform_mask = transform_mask
 
     def __len__(self):
         return len(self.df)
@@ -162,20 +167,25 @@ class Dataset(data.Dataset):
 
         img = Image.open(path).convert('RGB')
         img_transform = self.transform(img)
-    
+        if self.transform_mask is not None :
+                mask = Image.open(path_mask).convert('RGB')
+                mask_transform = self.transform_mask(mask)
+        else :
+            mask_transform = None
+
         x,dic_label = self._create_one_hot(data, self.columns,self.dic)
         y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0 :
                 x = torch.cat([x,y])
-            return x, img_transform, dic_label, dic_inspiration
+            return x, img_transform, mask_transform, dic_label, dic_inspiration
 
         elif len(self.columns_inspirationnal)>0:
-            return y, img_transform, dic_label, dic_inspiration
+            return y, img_transform, mask_transform, dic_label, dic_inspiration
             
         else :
-            return -1, img_transform, dic_label, dic_inspiration
+            return -1, img_transform, mask_transform, dic_label, dic_inspiration
    
 
         
@@ -368,6 +378,30 @@ class Dataset(data.Dataset):
             return output,None,dic_weights
         else :
             return None,None,None
+    
+
+    def random_mask(self,batch_size, return_name = False):
+        list_name = []
+        index = np.random.randint(0,len(self.df))
+        data = self.df.iloc[index]
+        name = data.image_id
+        path_mask = os.path.join(self.folder_mask,name+".jpg")
+        mask = Image.open(path_mask).convert('RGB')
+        mask_transform = self.transform_mask(mask)
+        total = mask_transform[None, :, :, :]
+        list_name.append(name)
+        for i in range(batch_size-1):
+            index = np.random.randint(0,len(self.df))
+            data = self.df.iloc[index]
+            name = data.image_id
+            path_mask = os.path.join(self.folder_mask,name+".jpg")
+            mask = Image.open(path_mask).convert('RGB')
+            mask_transform = self.transform_mask(mask)[None,:,:,:]
+            total = torch.cat([total,mask_transform],dim=0)
+            list_name.append(name)
+        if return_name :
+            return total,list_name
+        return total
 
         
             
