@@ -408,6 +408,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
 
             for column in dataset.columns_inspirationnal :
+                print("Test Loss")
+                print(fake_inspiration)
+                print(random_dic_inspiration)
                 g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
             
 
