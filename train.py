@@ -102,15 +102,9 @@ def create_label(batch_size,column_size,device):
 
 def creativity_loss(pred,weights,device):
     batch,column_size = weights.shape
-    print("Batch :", batch)
-    print("column_size : ", column_size)
-    print("creativity_loss")
-    print(pred.shape)
     pred_aux = pred.unsqueeze(1)
-    print(pred_aux.shape)
     pred_aux = pred_aux.expand(-1,column_size,-1)
-    print(pred_aux.shape)
-    pred_aux = pred_aux.view(batch*column_size,-1)
+    pred_aux = pred_aux.view(batch*column_size,column_size)
     neo_labels = create_label(batch,column_size,device)
     weights_aux = weights.flatten()
     pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
@@ -414,9 +408,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
 
             for column in dataset.columns_inspirationnal :
-                print("Test Loss")
-                print(fake_inspiration)
-                print(random_dic_inspiration)
                 g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
             
 
