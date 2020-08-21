@@ -530,40 +530,40 @@ if __name__ == "__main__":
     latent_label_dim = dataset.get_len()
 
    
-    # generator = Generator(
-    #     args.size, args.latent, args.n_mlp,
-    #      channel_multiplier=args.channel_multiplier,
-    #      latent_label_dim=latent_label_dim,
-    # ).to(device)
-    generator = torch.nn.DataParallel(Generator(
+    generator = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
-    ), device_ids = list_device, output_device = 0)
-    # discriminator = Discriminator(
-    #     args.size, channel_multiplier=args.channel_multiplier,
-    #      dic_latent_label_dim=dataset.dic_column_dim,
-    #      dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
-    #      device=device
-    # ).to(device)
-    discriminator = torch.nn.DataParallel(Discriminator(
+    ).to(device)
+    # generator = torch.nn.DataParallel(Generator(
+    #     args.size, args.latent, args.n_mlp,
+    #      channel_multiplier=args.channel_multiplier,
+    #      latent_label_dim=latent_label_dim,
+    # ), device_ids = list_device, output_device = 0)
+    discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device
-    ), device_ids = list_device, output_device = 0)
+    ).to(device)
+    # discriminator = torch.nn.DataParallel(Discriminator(
+    #     args.size, channel_multiplier=args.channel_multiplier,
+    #      dic_latent_label_dim=dataset.dic_column_dim,
+    #      dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
+    #      device=device
+    # ), device_ids = list_device, output_device = 0)
     
 
-    # g_ema = Generator(
-    #     args.size, args.latent, args.n_mlp,
-    #      channel_multiplier=args.channel_multiplier,
-    #      latent_label_dim=latent_label_dim
-    # ).to(device)
-    g_ema = torch.nn.DataParallel(Generator(
+    g_ema = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
-    ), device_ids = list_device, output_device = 0)
+    ).to(device)
+    # g_ema = torch.nn.DataParallel(Generator(
+    #     args.size, args.latent, args.n_mlp,
+    #      channel_multiplier=args.channel_multiplier,
+    #      latent_label_dim=latent_label_dim
+    # ), device_ids = list_device, output_device = 0)
     g_ema.eval()
     accumulate(g_ema, generator, 0)
 
