@@ -539,7 +539,7 @@ if __name__ == "__main__":
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
-    ), device_ids = list_device)
+    ), device_ids = list_device, output_device = 0)
     # discriminator = Discriminator(
     #     args.size, channel_multiplier=args.channel_multiplier,
     #      dic_latent_label_dim=dataset.dic_column_dim,
@@ -551,7 +551,7 @@ if __name__ == "__main__":
          dic_latent_label_dim=dataset.dic_column_dim,
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device
-    ), device_ids = list_device)
+    ), device_ids = list_device, output_device = 0)
     
 
     # g_ema = Generator(
@@ -563,7 +563,7 @@ if __name__ == "__main__":
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
-    ), device_ids = list_device)
+    ), device_ids = list_device, output_device = 0)
     g_ema.eval()
     accumulate(g_ema, generator, 0)
 
