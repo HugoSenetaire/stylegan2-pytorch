@@ -190,7 +190,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     path_lengths = torch.tensor(0.0, device=device)
     mean_path_length_avg = 0
     loss_dict = {}
-
+    print(args.distributed)
     if args.distributed:
         g_module = generator.module
         d_module = discriminator.module
