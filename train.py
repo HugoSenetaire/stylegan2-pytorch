@@ -495,7 +495,8 @@ if __name__ == "__main__":
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
-
+    args.local_rank = 0
+    list_device = [0,1]
     # torch.cuda.set_device(args.local_rank)
     args.latent = 512
     args.n_mlp = 8
@@ -529,26 +530,40 @@ if __name__ == "__main__":
     latent_label_dim = dataset.get_len()
 
    
-    generator = Generator(
+    # generator = Generator(
+    #     args.size, args.latent, args.n_mlp,
+    #      channel_multiplier=args.channel_multiplier,
+    #      latent_label_dim=latent_label_dim,
+    # ).to(device)
+    generator = torch.nn.DataParallel(Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
-    ).to(device)
-    
-    discriminator = Discriminator(
+    ), device_ids = list_device)
+    # discriminator = Discriminator(
+    #     args.size, channel_multiplier=args.channel_multiplier,
+    #      dic_latent_label_dim=dataset.dic_column_dim,
+    #      dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
+    #      device=device
+    # ).to(device)
+    discriminator = torch.nn.DataParallel(Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device
-    ).to(device)
-    
+    ), device_ids = list_device)
     
 
-    g_ema = Generator(
+    # g_ema = Generator(
+    #     args.size, args.latent, args.n_mlp,
+    #      channel_multiplier=args.channel_multiplier,
+    #      latent_label_dim=latent_label_dim
+    # ).to(device)
+    g_ema = torch.nn.DataParallel(Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
-    ).to(device)
+    ), device_ids = list_device)
     g_ema.eval()
     accumulate(g_ema, generator, 0)
 
