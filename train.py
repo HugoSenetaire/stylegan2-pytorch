@@ -481,8 +481,8 @@ if __name__ == "__main__":
     parser.add_argument('--csv_path', type = str, default = None)    
     args = parser.parse_args()
 
-    # n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
-    n_gpu = 2
+    n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
+    # n_gpu = 2
     args.distributed = n_gpu > 1
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample")):
