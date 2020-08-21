@@ -494,7 +494,7 @@ if __name__ == "__main__":
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
-
+    args.local_rank = [0,1]
     torch.cuda.set_device(args.local_rank)
     args.latent = 512
     args.n_mlp = 8
@@ -611,9 +611,6 @@ if __name__ == "__main__":
             broadcast_buffers=False,
         )
 
-    
-
-    
 
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
