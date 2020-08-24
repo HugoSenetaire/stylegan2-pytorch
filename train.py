@@ -176,8 +176,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
 
-    generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
-    discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
+    # generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
+    # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
     if get_rank() == 0:
         pbar = tqdm(pbar, initial=args.start_iter, dynamic_ncols=True, smoothing=0.01)
 
@@ -485,8 +485,8 @@ if __name__ == "__main__":
     parser.add_argument('--csv_path', type = str, default = None)    
     args = parser.parse_args()
 
-    n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
-    # n_gpu = 2
+    # n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
+    n_gpu = torch.cuda.device_count()
     args.distributed = n_gpu > 1
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample")):
@@ -496,6 +496,11 @@ if __name__ == "__main__":
 
 
     if args.distributed:
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '12355'
+
+        # initialize the process group
+        dist.init_process_group("gloo", rank=rank, world_size=world_size)
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
