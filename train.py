@@ -548,7 +548,7 @@ if __name__ == "__main__":
 
     latent_label_dim = dataset.get_len()
 
-   
+    print("START DEFINITION")
     generator = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
@@ -559,6 +559,7 @@ if __name__ == "__main__":
     #      channel_multiplier=args.channel_multiplier,
     #      latent_label_dim=latent_label_dim,
     # ), device_ids = list_device, output_device = 0)
+    print("START DEFINITION DISCRIMINATOR")
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
@@ -579,7 +580,7 @@ if __name__ == "__main__":
          latent_label_dim=latent_label_dim
     ).to(device)
 
-    print("END DEFINITION GENERATOR")
+    print("END DEFINITION")
     # g_ema = torch.nn.DataParallel(Generator(
     #     args.size, args.latent, args.n_mlp,
     #      channel_multiplier=args.channel_multiplier,
