@@ -176,8 +176,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
 
-    generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
-    discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
+    # generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
+    # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
     if get_rank() == 0:
         pbar = tqdm(pbar, initial=args.start_iter, dynamic_ncols=True, smoothing=0.01)
 
