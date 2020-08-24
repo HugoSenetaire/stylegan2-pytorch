@@ -578,6 +578,8 @@ if __name__ == "__main__":
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
     ).to(device)
+
+    print("END DEFINITION GENERATOR")
     # g_ema = torch.nn.DataParallel(Generator(
     #     args.size, args.latent, args.n_mlp,
     #      channel_multiplier=args.channel_multiplier,
@@ -605,13 +607,16 @@ if __name__ == "__main__":
 
         ckpt = torch.load(args.ckpt, map_location=lambda storage, loc: storage)
 
+
+      
         try:
             ckpt_name = os.path.basename(args.ckpt)
             args.start_iter = int(os.path.splitext(ckpt_name)[0])
 
         except ValueError:
             pass
-
+        
+  
         generator.load_state_dict(ckpt["g"])
         discriminator.load_state_dict(ckpt["d"])
         g_ema.load_state_dict(ckpt["g_ema"])
@@ -630,15 +635,16 @@ if __name__ == "__main__":
                 lr=args.lr * d_reg_ratio,
                 betas=(0 ** d_reg_ratio, 0.99 ** d_reg_ratio),
             )
-
+    print("Start discributed")
     if args.distributed:
+        print("Generator")
         generator = nn.parallel.DistributedDataParallel(
             generator,
             device_ids=[args.local_rank],
             output_device=args.local_rank,
             broadcast_buffers=False,
         )
-
+        print("discriminator")
         discriminator = nn.parallel.DistributedDataParallel(
             discriminator,
             device_ids=[args.local_rank],
