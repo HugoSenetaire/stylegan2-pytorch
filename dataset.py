@@ -159,8 +159,8 @@ class Dataset(data.Dataset):
             path = os.path.join(self.folder,name+".jpg")
 
         # TODO Very bad way to deal with the problem of the dataset
-        print(self.image_size)
-        img = Image.open(path).convert('RGB').resize(self.image_size)
+        # print(self.image_size)
+        img = Image.open(path).convert('RGB').resize((self.image_size,self.image_size,3))
         img_transform = self.transform(img)
     
         x,dic_label = self._create_one_hot(data, self.columns,self.dic)
