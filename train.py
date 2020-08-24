@@ -496,11 +496,11 @@ if __name__ == "__main__":
 
 
     if args.distributed:
-        os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = '12355'
+        # os.environ['MASTER_ADDR'] = 'localhost'
+        # os.environ['MASTER_PORT'] = '12355'
 
         # initialize the process group
-        dist.init_process_group("gloo", rank=rank, world_size=world_size)
+        # dist.init_process_group("gloo", rank=rank, world_size=world_size)
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
