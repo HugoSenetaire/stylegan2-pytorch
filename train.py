@@ -508,7 +508,7 @@ if __name__ == "__main__":
 
 
     print(args.local_rank)
-    print()
+    print(args.distributed)
     if args.distributed:
         # os.environ['MASTER_ADDR'] = 'localhost'
         # os.environ['MASTER_PORT'] = '12355'
