@@ -12,7 +12,8 @@ import numpy as np
 from tqdm import tqdm
 
 from inception import InceptionV3
-from dataset import MultiResolutionDataset
+# from dataset import MultiResolutionDataset
+from dataset import Dataset
 
 
 class Inception3Feature(Inception3):
@@ -63,7 +64,7 @@ def extract_features(loader, inception, device):
 
     feature_list = []
 
-    for img in pbar:
+    for _,img,_,_ in pbar:
         img = img.to(device)
         feature = inception(img)[0].view(img.shape[0], -1)
         feature_list.append(feature.to('cpu'))
@@ -84,6 +85,12 @@ if __name__ == '__main__':
     parser.add_argument('--n_sample', type=int, default=50000)
     parser.add_argument('--flip', action='store_true')
     parser.add_argument('path', metavar='PATH', help='path to datset lmdb file')
+    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
+    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
+    parser.add_argument("--multiview", action = "store_true")
+    parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
+    parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
+    parser.add_argument('--csv_path', type = str, default = None)   
 
     args = parser.parse_args()
 
@@ -91,15 +98,29 @@ if __name__ == '__main__':
     inception = nn.DataParallel(inception).eval().to(device)
 
     transform = transforms.Compose(
-        [
-            transforms.RandomHorizontalFlip(p=0.5 if args.flip else 0),
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize((args.size,args.size)),
             transforms.ToTensor(),
-            transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-
-    dset = MultiResolutionDataset(args.path, transform=transform, resolution=args.size)
-    loader = DataLoader(dset, batch_size=args.batch, num_workers=4)
+    dataset = Dataset(args.path,
+        transform, args.size, 
+        columns = args.labels,
+        columns_inspirationnal = args.labels_inspirationnal,
+        dataset_type = args.dataset_type,
+        multiview = args.multiview,
+        csv_path = args.csv_path
+    )
+    loader = data.DataLoader(
+        dataset,
+        batch_size=args.batch,
+        num_workers=4,
+    )
+    # dset = MultiResolutionDataset(args.path, transform=transform, resolution=args.size)
+    # loader = DataLoader(dset, batch_size=args.batch, num_workers=4)
 
     features = extract_features(loader, inception, device).numpy()
 

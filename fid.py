@@ -13,7 +13,7 @@ from calc_inception import load_patched_inception_v3
 
 @torch.no_grad()
 def extract_feature_from_samples(
-    generator, inception, truncation, truncation_latent, batch_size, n_sample, device
+    generator, inception, truncation, truncation_latent, batch_size, n_sample, device, args
 ):
     n_batch = n_sample // batch_size
     resid = n_sample - (n_batch * batch_size)
@@ -22,7 +22,8 @@ def extract_feature_from_samples(
 
     for batch in tqdm(batch_sizes):
         latent = torch.randn(batch, 512, device=device)
-        img, _ = g([latent], truncation=truncation, truncation_latent=truncation_latent)
+        sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
+        img, _ = g(latent,sample_label, truncation=truncation, truncation_latent=truncation_latent)
         feat = inception(img)[0].view(img.shape[0], -1)
         features.append(feat.to('cpu'))
 
@@ -68,13 +69,38 @@ if __name__ == '__main__':
     parser.add_argument('--n_sample', type=int, default=50000)
     parser.add_argument('--size', type=int, default=256)
     parser.add_argument('--inception', type=str, default=None, required=True)
+    parser.add_argument("--channel_multiplier", type=int, default=1)
     parser.add_argument('ckpt', metavar='CHECKPOINT')
-
+    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
+    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
+    parser.add_argument("--multiview", action = "store_true")
+    parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
+    parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
+    parser.add_argument('--csv_path', type = str, default = None)    
     args = parser.parse_args()
 
     ckpt = torch.load(args.ckpt)
 
-    g = Generator(args.size, 512, 8).to(device)
+
+    dataset = Dataset(args.path,
+        transform, args.size, 
+        columns = args.labels,
+        columns_inspirationnal = args.labels_inspirationnal,
+        dataset_type = args.dataset_type,
+        multiview = args.multiview,
+        csv_path = args.csv_path
+    )
+
+
+    latent_label_dim = dataset.get_len()
+
+   
+    g = Generator(
+        args.size, args.latent, args.n_mlp,
+         channel_multiplier=args.channel_multiplier,
+         latent_label_dim=latent_label_dim
+    ).to(device)
+
     g.load_state_dict(ckpt['g_ema'])
     g = nn.DataParallel(g)
     g.eval()
@@ -90,7 +116,7 @@ if __name__ == '__main__':
     inception.eval()
 
     features = extract_feature_from_samples(
-        g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device
+        g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args
     ).numpy()
     print(f'extracted {features.shape[0]} features')
 
