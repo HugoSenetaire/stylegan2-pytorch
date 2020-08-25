@@ -175,7 +175,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     pbar = range(args.iter)
 
 
-    print("LAUNCH TRAIN")
+    # print("LAUNCH TRAIN")
     # generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
     # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
     if get_rank() == 0:
@@ -198,19 +198,19 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         g_module = generator
         d_module = discriminator
     
-    print("MODULE OK")
+    # print("MODULE OK")
     accum = 0.5 ** (32 / (10 * 1000))
     ada_augment = torch.tensor([0.0, 0.0], device=device)
     ada_aug_p = args.augment_p if args.augment_p > 0 else 0.0
     ada_aug_step = args.ada_target / args.ada_length
     r_t_stat = 0
 
-    print("START SAMPLING")
+    # print("START SAMPLING")
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
 
     sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(args.n_sample, device, args.label_method, args.inspiration_method)
     
-    print("END SAMPLING")
+    # print("END SAMPLING")
     print("The labels for the generation are the following :")
     print(sample_dic_label)
     print("The weights for the generation are the following :")
@@ -231,11 +231,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
                 print(f"New size is {dataset.image_size}")
 
-        print("LOADING FROM DATASET")
+        # print("LOADING FROM DATASET")
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
-        print("Loading OK")
+        # print("Loading OK")
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
@@ -243,9 +243,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
     
-        print("GENERATOR 1")
+        # print("GENERATOR 1")
         fake_img, _ = generator(noise,labels= random_label)
-        print("GENERATOR OK")
+        # print("GENERATOR OK")
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
             fake_img, _ = augment(fake_img, ada_aug_p)
@@ -253,17 +253,17 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-        print("Discriminator 1")
+        # print("Discriminator 1")
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
-        print("DISCRIMINATOR OK")
-        print("DISCRIMINATOR 2")
+        # print("DISCRIMINATOR OK")
+        # print("DISCRIMINATOR 2")
         real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
-        print("DISCRIMINATOR OK")
+        # print("DISCRIMINATOR OK")
 
         #fake_pred = select_index_discriminator(fake_pred,random_label)
         #real_pred = select_index_discriminator(real_pred,real_label)
         
-        print("Calculus loss")
+        # print("Calculus loss")
 
         d_loss = d_logistic_loss(real_pred, fake_pred)
         if latent_label_dim>0 :
@@ -277,7 +277,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         loss_dict["real_score"] = real_pred.mean()
         loss_dict["fake_score"] = fake_pred.mean()
 
-        print("BACKWARD")
+        # print("BACKWARD")
         discriminator.zero_grad()
         d_loss.backward()
         d_optim.step()
@@ -319,7 +319,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(generator, True)
         requires_grad(discriminator, False)
         
-        print("NEW SAMPLE")
+        # print("NEW SAMPLE")
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         fake_img, _ = generator(noise,labels = random_label)
@@ -328,9 +328,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             fake_img, _ = augment(fake_img, ada_aug_p)
 
 
-        print("DISCRIMINATOR 3")
+        # print("DISCRIMINATOR 3")
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
-        print("DISCRIMINATOR 3 OK")
+        # print("DISCRIMINATOR 3 OK")
         # fake_pred = select_index_discriminator(fake_pred,random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
 
@@ -549,7 +549,7 @@ if __name__ == "__main__":
 
     latent_label_dim = dataset.get_len()
 
-    print("START DEFINITION")
+    # print("START DEFINITION")
     generator = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
@@ -560,7 +560,7 @@ if __name__ == "__main__":
     #      channel_multiplier=args.channel_multiplier,
     #      latent_label_dim=latent_label_dim,
     # ), device_ids = list_device, output_device = 0)
-    print("START DEFINITION DISCRIMINATOR")
+    # print("START DEFINITION DISCRIMINATOR")
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
@@ -581,7 +581,7 @@ if __name__ == "__main__":
          latent_label_dim=latent_label_dim
     ).to(device)
 
-    print("END DEFINITION")
+    # print("END DEFINITION")
     # g_ema = torch.nn.DataParallel(Generator(
     #     args.size, args.latent, args.n_mlp,
     #      channel_multiplier=args.channel_multiplier,
@@ -637,16 +637,16 @@ if __name__ == "__main__":
                 lr=args.lr * d_reg_ratio,
                 betas=(0 ** d_reg_ratio, 0.99 ** d_reg_ratio),
             )
-    print("Start discributed")
+    # print("Start discributed")
     if args.distributed:
-        print("Generator")
+        # print("Generator")
         generator = nn.parallel.DistributedDataParallel(
             generator,
             device_ids=[args.local_rank],
             output_device=args.local_rank,
             broadcast_buffers=False,
         )
-        print("discriminator")
+        # print("discriminator")
         discriminator = nn.parallel.DistributedDataParallel(
             discriminator,
             device_ids=[args.local_rank],
