@@ -506,6 +506,8 @@ if __name__ == "__main__":
         os.makedirs(os.path.join(args.output_prefix, "checkpoint"))
 
 
+
+    print(args.local_rank)
     if args.distributed:
         # os.environ['MASTER_ADDR'] = 'localhost'
         # os.environ['MASTER_PORT'] = '12355'
@@ -515,6 +517,8 @@ if __name__ == "__main__":
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
+
+    print(device)
     # args.local_rank = 0
     # list_device = [0,1]
     # torch.cuda.set_device(args.local_rank)
