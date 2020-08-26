@@ -10,6 +10,7 @@ from tqdm import tqdm
 from model import Generator
 from calc_inception import load_patched_inception_v3
 from dataset import *
+from torchvision import transforms, utils
 
 def convert_rgb_to_transparent(image):
     if image.mode == 'RGB':
@@ -91,7 +92,15 @@ if __name__ == '__main__':
 
     ckpt = torch.load(args.ckpt)
 
-
+    transform = transforms.Compose(
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize((args.size,args.size)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
     dataset = Dataset(args.path,
         transform, args.size, 
         columns = args.labels,
