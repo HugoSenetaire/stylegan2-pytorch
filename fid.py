@@ -10,7 +10,15 @@ from tqdm import tqdm
 from model import Generator
 from calc_inception import load_patched_inception_v3
 
+def convert_rgb_to_transparent(image):
+    if image.mode == 'RGB':
+        return image.convert('RGBA')
+    return image
 
+def convert_transparent_to_rgb(image):
+    if image.mode == 'RGBA':
+        return image.convert('RGB')
+    return image
 @torch.no_grad()
 def extract_feature_from_samples(
     generator, inception, truncation, truncation_latent, batch_size, n_sample, device, args

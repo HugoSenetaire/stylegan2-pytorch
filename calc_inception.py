@@ -14,7 +14,15 @@ from tqdm import tqdm
 from inception import InceptionV3
 # from dataset import MultiResolutionDataset
 from dataset import Dataset
+def convert_rgb_to_transparent(image):
+    if image.mode == 'RGB':
+        return image.convert('RGBA')
+    return image
 
+def convert_transparent_to_rgb(image):
+    if image.mode == 'RGBA':
+        return image.convert('RGB')
+    return image
 
 class Inception3Feature(Inception3):
     def forward(self, x):
