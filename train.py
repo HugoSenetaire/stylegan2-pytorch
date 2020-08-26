@@ -12,6 +12,8 @@ import torch.distributed as dist
 from torchvision import transforms, utils
 from tqdm import tqdm
 
+from utils import *
+from loss import *
 try:
     import wandb
 
@@ -30,144 +32,6 @@ from distributed import (
 from non_leaking import augment
 
 
-def data_sampler(dataset, shuffle, distributed):
-    if distributed:
-        return data.distributed.DistributedSampler(dataset, shuffle=shuffle)
-
-    if shuffle:
-        return data.RandomSampler(dataset)
-
-    else:
-        return data.SequentialSampler(dataset)
-
-
-def requires_grad(model, flag=True):
-    for p in model.parameters():
-        p.requires_grad = flag
-
-
-def accumulate(model1, model2, decay=0.999):
-    par1 = dict(model1.named_parameters())
-    par2 = dict(model2.named_parameters())
-
-    for k in par1.keys():
-        par1[k].data.mul_(decay).add_(par2[k].data, alpha=1 - decay)
-
-
-def sample_data(loader):
-    while True:
-        for batch in loader:
-            yield batch
-
-
-def d_logistic_loss(real_pred, fake_pred):
-    real_loss = F.softplus(-real_pred)
-    fake_loss = F.softplus(fake_pred)
-
-    return real_loss.mean() + fake_loss.mean()
-
-
-def d_r1_loss(real_pred, real_img):
-    grad_real, = autograd.grad(
-        outputs=real_pred.sum(), inputs=real_img, create_graph=True
-    )
-    grad_penalty = grad_real.pow(2).reshape(grad_real.shape[0], -1).sum(1).mean()
-
-    return grad_penalty
-
-
-def g_nonsaturating_loss(fake_pred):
-    loss = F.softplus(-fake_pred).mean()
-
-    return loss
-
-
-def classification_loss(pred, label):
-    loss = nn.CrossEntropyLoss()
-    return loss(pred,label)
-
-def create_label(batch_size,column_size,device):
-    # TODO
-    # Non nécessaire de le créer à chaque fois , juste mettre en global
-    labels = torch.tensor([i%column_size for i in range(batch_size*column_size)]).to(device)
-    return labels
-
-
-
-def creativity_loss(pred,weights,device):
-    batch,column_size = weights.shape
-    pred_aux = pred.unsqueeze(1)
-    pred_aux = pred_aux.expand(-1,column_size,-1)
-    pred_aux = pred_aux.view(batch*column_size,-1)
-    neo_labels = create_label(batch,column_size,device)
-    weights_aux = weights.flatten()
-    pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
-    return torch.dot(weights_aux,pred_output)
-
-    
-def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
-    noise = torch.randn_like(fake_img) / math.sqrt(
-        fake_img.shape[2] * fake_img.shape[3]
-    )
-    grad, = autograd.grad(
-        outputs=(fake_img * noise).sum(), inputs=latents, create_graph=True
-    )
-    path_lengths = torch.sqrt(grad.pow(2).sum(2).mean(1))
-
-    path_mean = mean_path_length + decay * (path_lengths.mean() - mean_path_length)
-
-    path_penalty = (path_lengths - path_mean).pow(2).mean()
-
-    return path_penalty, path_mean.detach(), path_lengths
-
-
-def make_noise(batch, latent_dim, n_noise, device):
-    if n_noise == 1:
-        return torch.randn(batch, latent_dim, device=device)
-
-    noises = torch.randn(n_noise, batch, latent_dim, device=device).unbind(0)
-
-    return noises
-
-
-def mixing_noise(batch, latent_dim, prob, device):
-    if prob > 0 and random.random() < prob:
-        return make_noise(batch, latent_dim, 2, device)
-
-    else:
-        return [make_noise(batch, latent_dim, 1, device)]
-
-
-def set_grad_none(model, targets):
-    for n, p in model.named_parameters():
-        if n in targets:
-            p.grad = None
-
-def select_index_discriminator(output_discriminator, label):
-    if label == None and output_discriminator.shape[1]==1:
-        return output_discriminator.squeeze(0)    
-    index = torch.ge(label,0.5)
-    filtered_output = output_discriminator.masked_select(index)
-    return filtered_output
-
-def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
-    generator.add_scale(g_optim,device =device)
-    discriminator.add_scale(d_optim,device =device)
-
-    g_ema.add_scale(device = device)
-    dataset.image_size = dataset.image_size*2
-    transform = transforms.Compose(
-        [   
-            transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
-            transforms.Resize((dataset.image_size,dataset.image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-        ]
-    )
-    dataset.transform = transform
-
-    
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
@@ -187,7 +51,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     path_lengths = torch.tensor(0.0, device=device)
     mean_path_length_avg = 0
     loss_dict = {}
-    print(args.distributed)
+
+
     if args.distributed:
         g_module = generator.module
         d_module = discriminator.module
@@ -406,7 +271,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                     }
                 )
 
-            if i % 100 == 0:
+            if i % args.save_img_every == 0:
                 with torch.no_grad():
                     g_ema.eval()
                     sample, _ = g_ema([sample_z],labels = sample_label)
@@ -418,7 +283,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                         range=(-1, 1),
                     )
 
-            if i % 1000 == 0:
+            if i % args.save_model_every == 0:
                 torch.save(
                     {
                         "g": g_module.state_dict(),
@@ -445,44 +310,59 @@ def convert_transparent_to_rgb(image):
 if __name__ == "__main__":
     device = "cuda"
     parser = argparse.ArgumentParser()
-
+    # Dataset parameters 
     parser.add_argument("path", type=str)
+    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
+    parser.add_argument("--multiview", action = "store_true")
+    parser.add_argument("--labels", nargs='*', help='List of element used for classification', type=str, default = [])
+    parser.add_argument("--labels_inspirationnal", nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
+    parser.add_argument("--csv_path", type = str, default = None)    
+
+
+    # Network parameters
+    parser.add_argument("--discriminator_type", type=str, default = "design", help = "option : bilinear/design ")
+    parser.add_argument("--latent", type = int, default = 512)
+    parser.add_argument("--n_mlp", type = int, default = 8)
+    parser.add_argument("--ckpt", type=str, default=None)
+
+
+    # Training parameters
     parser.add_argument("--iter", type=int, default=800000)
     parser.add_argument("--batch", type=int, default=16)
-    parser.add_argument("--n_sample", type=int, default=64)
+    parser.add_argument("--progressive", action="store_true")
     parser.add_argument("--size", type=int, default=256)
+    parser.add_argument("--upscale_every", type = int, default = 2000)
+    parser.add_argument("--max_size",type=int, default = 512)
+    parser.add_argument("--upscale_factor", type=int, default = 2)
     parser.add_argument("--r1", type=float, default=10)
     parser.add_argument("--path_regularize", type=float, default=2)
     parser.add_argument("--path_batch_shrink", type=int, default=2)
     parser.add_argument("--d_reg_every", type=int, default=16)
     parser.add_argument("--g_reg_every", type=int, default=4)
     parser.add_argument("--mixing", type=float, default=0.9)
-    parser.add_argument("--ckpt", type=str, default=None)
     parser.add_argument("--lr", type=float, default=0.002)
     parser.add_argument("--channel_multiplier", type=int, default=2)
-    parser.add_argument("--wandb", action="store_true")
-    parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--augment", action="store_true")
     parser.add_argument("--augment_p", type=float, default=0)
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
-    parser.add_argument("--output_prefix", type=str, default = None)
-    parser.add_argument("--discriminator_type", type=str, default = "design", help = "option : bilinear/design ")
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")
     parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
     parser.add_argument("--lambda_inspiration_gen", type=float, default=1.0)
-    parser.add_argument("--progressive", action="store_true")
-    parser.add_argument("--upscale_every", type = int, default = 2000)
-    parser.add_argument("--max_size",type=int, default = 512)
-    parser.add_argument("--upscale_factor", type=int, default = 2)
-    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
-    parser.add_argument("--multiview", action = "store_true")
-    parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
-    parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
-    parser.add_argument('--csv_path', type = str, default = None)    
-    parser.add_argument('--latent', type = int, default = 512)
-    parser.add_argument('--n_mlp', type = int, default = 8)
+
+
+    # Utils parameters :
+    parser.add_argument("--wandb", action="store_true")
+    parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--save_img_every", type=int, default = 100)
+    parser.add_argument("--save_model_every", type = int, default = 1000)
+    parser.add_argument("--n_sample", type=int, default=64)
+
+
+
+
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
