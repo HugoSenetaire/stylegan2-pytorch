@@ -257,9 +257,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                     d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
         elif args.discriminator_type == "bilinear" :
             fake_pred = select_index_discriminator(fake_pred,random_label)
-            print(real_label)
-            print(real_pred)
-            print(fake_pred)
             d_loss = d_logistic_loss(real_pred, fake_pred)
 
         
@@ -329,7 +326,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if latent_label_dim>0 :
                 for column in dataset.columns :
                     g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
-                    
+
                 for column in dataset.columns_inspirationnal :
                     g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
             
