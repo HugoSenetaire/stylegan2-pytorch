@@ -90,6 +90,8 @@ if __name__ == '__main__':
     parser.add_argument('--csv_path', type = str, default = None)    
     args = parser.parse_args()
 
+
+    args.latent = 512
     ckpt = torch.load(args.ckpt)
 
     transform = transforms.Compose(
