@@ -13,6 +13,16 @@ from torchvision import transforms, utils
 from tqdm import tqdm
 
 
+def convert_rgb_to_transparent(image):
+    if image.mode == 'RGB':
+        return image.convert('RGBA')
+    return image
+
+def convert_transparent_to_rgb(image):
+    if image.mode == 'RGBA':
+        return image.convert('RGB')
+    return image
+
 def create_label(batch_size,column_size,device):
     # TODO
     # Non nécessaire de le créer à chaque fois , juste mettre en global

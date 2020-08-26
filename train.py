@@ -297,15 +297,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
 
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
 
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
 
 if __name__ == "__main__":
     device = "cuda"
