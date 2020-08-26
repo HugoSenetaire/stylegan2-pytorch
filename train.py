@@ -144,6 +144,8 @@ def set_grad_none(model, targets):
             p.grad = None
 
 def select_index_discriminator(output_discriminator, label):
+    if label == None and output_discriminator.shape[1]==1:
+        return output_discriminator
     index = torch.ge(label,0.5)
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
@@ -254,8 +256,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 for column in dataset.columns_inspirationnal :
                     d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
         elif args.discriminator_type == "bilinear" :
-            print(random_label)
-            print(real_label)
             fake_pred = select_index_discriminator(fake_pred,random_label)
             real_pred = select_index_discriminator(real_pred,real_label)
             d_loss = d_logistic_loss(real_pred, fake_pred)
