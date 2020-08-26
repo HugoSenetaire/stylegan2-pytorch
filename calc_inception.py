@@ -95,8 +95,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print("Start loading inception")
     inception = load_patched_inception_v3()
-    inception = nn.DataParallel(inception).eval().to(device)
     print("Inception loaded")
+    inception = nn.DataParallel(inception).eval().to(device)
+    print("Data parallel")
     transform = transforms.Compose(
         [   
             transforms.Lambda(convert_transparent_to_rgb),

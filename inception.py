@@ -65,7 +65,7 @@ class InceptionV3(nn.Module):
             results.
         """
         super(InceptionV3, self).__init__()
-
+        print("Initialisation of inception")
         self.resize_input = resize_input
         self.normalize_input = normalize_input
         self.output_blocks = sorted(output_blocks)
@@ -80,6 +80,7 @@ class InceptionV3(nn.Module):
             inception = fid_inception_v3()
         else:
             inception = models.inception_v3(pretrained=True)
+        print("Weights loaded")
 
         # Block 0: input to maxpool1
         block0 = [
