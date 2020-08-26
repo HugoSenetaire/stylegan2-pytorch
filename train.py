@@ -143,7 +143,7 @@ def set_grad_none(model, targets):
         if n in targets:
             p.grad = None
 
-def select_index_discriminator(output_discriminator, label, device):
+def select_index_discriminator(output_discriminator, label):
     if label == None and output_discriminator.shape[1]==1:
         print(output_discriminator.squeeze(0))
         return output_discriminator.squeeze(0)    
