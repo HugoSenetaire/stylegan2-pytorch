@@ -14,15 +14,7 @@ from tqdm import tqdm
 from inception import InceptionV3
 # from dataset import MultiResolutionDataset
 from dataset import Dataset
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
-
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
+from utils import *
 
 class Inception3Feature(Inception3):
     def forward(self, x):
@@ -88,6 +80,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Calculate Inception v3 features for datasets'
     )
+
+    
     parser.add_argument('--size', type=int, default=256)
     parser.add_argument('--batch', default=64, type=int, help='batch size')
     parser.add_argument('--n_sample', type=int, default=50000)

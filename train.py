@@ -308,7 +308,9 @@ if __name__ == "__main__":
     parser.add_argument("--multiview", action = "store_true")
     parser.add_argument("--labels", nargs='*', help='List of element used for classification', type=str, default = [])
     parser.add_argument("--labels_inspirationnal", nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
-    parser.add_argument("--csv_path", type = str, default = None)    
+    parser.add_argument("--csv_path", type = str, default = None)  
+    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
+    parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")  
 
 
     # Network parameters
@@ -338,8 +340,6 @@ if __name__ == "__main__":
     parser.add_argument("--augment_p", type=float, default=0)
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
-    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
-    parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")
     parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
     parser.add_argument("--lambda_inspiration_gen", type=float, default=1.0)
 
