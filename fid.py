@@ -80,6 +80,7 @@ if __name__ == '__main__':
     parser.add_argument('--inception', type=str, default=None, required=True)
     parser.add_argument("--channel_multiplier", type=int, default=1)
     parser.add_argument('ckpt', metavar='CHECKPOINT')
+    parser.add_argument('--path', required=True)
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
     parser.add_argument("--multiview", action = "store_true")
