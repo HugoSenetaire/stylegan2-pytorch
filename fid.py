@@ -92,6 +92,7 @@ if __name__ == '__main__':
 
 
     args.latent = 512
+    args.n_mlp = 8
     ckpt = torch.load(args.ckpt)
 
     transform = transforms.Compose(
