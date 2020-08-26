@@ -33,7 +33,7 @@ class InceptionV3(nn.Module):
                  resize_input=True,
                  normalize_input=True,
                  requires_grad=False,
-                 use_fid_inception=True):
+                 use_fid_inception=False):
         """Build pretrained InceptionV3
 
         Parameters
