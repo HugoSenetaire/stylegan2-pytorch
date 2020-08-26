@@ -143,11 +143,11 @@ def set_grad_none(model, targets):
         if n in targets:
             p.grad = None
 
-def select_index_discriminator(output_discriminator, label):
+def select_index_discriminator(output_discriminator, label, device):
     if label == None and output_discriminator.shape[1]==1:
-        index = torch.zeros((output_discriminator.shape[0]))
-    else :
-        index = torch.ge(label,0.5)
+        print(output_discriminator.squeeze(0))
+        return output_discriminator.squeeze(0)    
+    index = torch.ge(label,0.5)
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
