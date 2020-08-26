@@ -79,7 +79,12 @@ class InceptionV3(nn.Module):
         if use_fid_inception:
             inception = fid_inception_v3()
         else:
-            inception = models.inception_v3(pretrained=True)
+            try :
+                inception = models.inception_v3(pretrained=True)
+            except :
+                import ssl
+                ssl._create_default_https_context = ssl._create_unverified_context
+                inception = models.inception_v3(pretrained=True)
         print("Weights loaded")
 
         # Block 0: input to maxpool1
