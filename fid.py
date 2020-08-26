@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from model import Generator
 from calc_inception import load_patched_inception_v3
+from dataset import *
 
 def convert_rgb_to_transparent(image):
     if image.mode == 'RGB':
