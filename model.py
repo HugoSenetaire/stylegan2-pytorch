@@ -395,17 +395,7 @@ class Generator(nn.Module):
 
         self.style = nn.Sequential(*layers)
 
-        # self.channels = {
-        #     4: 512 ,
-        #     8: 512 ,
-        #     16: 512,
-        #     32: 512,
-        #     64: 256 * channel_multiplier,
-        #     128: 128 * channel_multiplier,
-        #     256: 64 * channel_multiplier,
-        #     512: 32 * channel_multiplier,
-        #     1024: 16 * channel_multiplier,
-        # }
+
         self.channels = {
             4: 512 ,
             8: 512 ,
@@ -495,9 +485,6 @@ class Generator(nn.Module):
                 ).to(device)
             )
         if optim is not None :
-            # print("DEBUG")
-            # print("Self COnv",self.convs)
-            # print(self.convs[-1].parameters())
             optim.add_param_group({"params":self.convs[-1].parameters()})
 
         self.convs.append(
@@ -560,8 +547,8 @@ class Generator(nn.Module):
     ):
         if not input_is_latent:
             styles = [self.style(s) for s in styles]
-        # print("STYLES")
-        # print(styles)
+
+        
         if noise is None:
             if randomize_noise:
                 noise = [None] * self.num_layers
@@ -570,8 +557,6 @@ class Generator(nn.Module):
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
 
-        # print("Noise")
-        # print(noise)
         if truncation < 1:
             style_t = []
 
@@ -703,7 +688,7 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, dic_latent_label_dim = None, dic_inspirationnal_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None):
+    def __init__(self, size, dic_latent_label_dim = None, dic_inspirationnal_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None, discriminator_type = "design"):
         super().__init__()
         channels = {
             4: 512 ,
@@ -718,7 +703,7 @@ class Discriminator(nn.Module):
         }
         self.channels = channels
         self.blur_kernel = blur_kernel
-       
+        self.discriminator_type = discriminator_type
         self.size = size
         log_size = int(math.log(size, 2))
         self.log_size = log_size
@@ -741,41 +726,44 @@ class Discriminator(nn.Module):
             self.columns_inspirationnal = list(self.dic_inspirationnal_label_dim.keys())
 
 
-        # self.convs = nn.Sequential(*convs)
-        # self.latent_label_dim = latent_label_dim
         self.stddev_group = 4
         self.stddev_feat = 1
 
         self.final_conv = ConvLayer(in_channel + 1, channels[4], 3)
+        if self.discriminator_type == "design":
+            self.final_linear = nn.Sequential(
+                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                    EqualLinear(channels[4], 1),
+                )
 
-        self.final_linear = nn.Sequential(
-                EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
-                EqualLinear(channels[4], 1),
-            )
+            
+            if self.dic_latent_label_dim is not None:
+                self.final_linear_label = {}
+                for column in self.columns:
+                    self.final_linear_label[column] = nn.Sequential(
+                        EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                        EqualLinear(channels[4], self.dic_latent_label_dim[column]),
+                        nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
+                    ).to(device)
+
+            if self.dic_inspirationnal_label_dim is not None:
+                self.final_linear_inspiration = {}
+                for column in self.columns_inspirationnal:
+                    self.final_linear_inspiration[column] = nn.Sequential(
+                        EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                        EqualLinear(channels[4], self.dic_inspirationnal_label_dim[column]),
+                        nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
+                    ).to(device)
+        
+        if self.discriminator_type == "bilinear":
+            self.final_linear = nn.Sequential(
+                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                    EqualLinear(channels[4], self.latent_label_dim),
+                )
 
         
-        if self.dic_latent_label_dim is not None:
-            self.final_linear_label = {}
-            for column in self.columns:
-                self.final_linear_label[column] = nn.Sequential(
-                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
-                    EqualLinear(channels[4], self.dic_latent_label_dim[column]),
-                    nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
-                ).to(device)
 
-        if self.dic_inspirationnal_label_dim is not None:
-            self.final_linear_inspiration = {}
-            for column in self.columns_inspirationnal:
-                self.final_linear_inspiration[column] = nn.Sequential(
-                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
-                    EqualLinear(channels[4], self.dic_inspirationnal_label_dim[column]),
-                    nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
-                ).to(device)
 
-        
-
-        # self.pre_final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
-        # self.final_linear = EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu')
 
     def add_scale(self,optim,device):
         out_channel = self.channels[self.size]
@@ -809,21 +797,28 @@ class Discriminator(nn.Module):
 
         out_real_fake = self.final_linear(out_conv)
         
-        if self.dic_latent_label_dim is not None:
-            out_classification = {}
-            for column in self.columns:
-                out_classification[column] = self.final_linear_label[column](out_conv)
-        else :
-            out_classification = None
+
+        if self.discriminator_type == "design":
+            if self.dic_latent_label_dim is not None:
+                out_classification = {}
+                for column in self.columns:
+                    out_classification[column] = self.final_linear_label[column](out_conv)
+            else :
+                out_classification = None
 
 
-        
-        if self.dic_inspirationnal_label_dim is not None:
-            out_inspiration = {}
-            for column in self.columns_inspirationnal:
-                out_inspiration[column] = self.final_linear_inspiration[column](out_conv)
-        else :
-            out_inspiration = None
+            
+            if self.dic_inspirationnal_label_dim is not None:
+                out_inspiration = {}
+                for column in self.columns_inspirationnal:
+                    out_inspiration[column] = self.final_linear_inspiration[column](out_conv)
+            else :
+                out_inspiration = None
 
-        return out_real_fake, out_classification, out_inspiration
+            return out_real_fake, out_classification, out_inspiration
+
+
+        elif self.discriminator_type == "bilinear":
+            return out_real_fake, None, None
+
 

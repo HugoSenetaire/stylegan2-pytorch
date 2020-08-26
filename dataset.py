@@ -39,8 +39,9 @@ class OneHot():
     def reverse(self,i):
         return self.rev_dic[i]
 
+
+
 class Dataset(data.Dataset):
-    #def __init__(self, folder, image_size,columns = ["sap_function"], transparent = False):
     def __init__(self,
         folder,
         transform,
@@ -117,10 +118,6 @@ class Dataset(data.Dataset):
             print(f"Saved value for column {column}")
             print(self.df[column].value_counts())
 
-        #convert_image_fn = convert_transparent_to_rgb if not transparent else convert_rgb_to_transparent
-        #num_channels = 3 if not transparent else 4
-
-
         self.transform = transform
 
     def __len__(self):
@@ -159,7 +156,6 @@ class Dataset(data.Dataset):
             path = os.path.join(self.folder,name+".jpg")
 
         # TODO Very bad way to deal with the problem of the dataset
-        # print(self.image_size)
         img = Image.open(path).convert('RGB').resize((self.image_size,self.image_size))
         img_transform = self.transform(img)
     
@@ -325,9 +321,6 @@ class Dataset(data.Dataset):
                 aux_one_hot = torch.cat((aux_one_hot,weights))
 
             one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
-
-        # for column in self.columns_inspirationnal:
-        #     dic_weights[column] = torch.tensor(dic_weights[column])
 
         return one_hot,dic_weights
 

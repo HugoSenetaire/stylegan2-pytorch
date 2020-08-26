@@ -164,9 +164,7 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
         ]
     )
     dataset.transform = transform
-    # g_optim.add_param_group(generator.convs[-2].parameters())
-    # g_optim.add_param_group(generator.convs[-1].parameters())
-    # d_optim.add_param_group(discriminator.convs[0].parameters())
+
     
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
@@ -175,9 +173,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     pbar = range(args.iter)
 
 
-
-    # generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
-    # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
     if get_rank() == 0:
         pbar = tqdm(pbar, initial=args.start_iter, dynamic_ncols=True, smoothing=0.01)
 
@@ -249,21 +244,23 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-    
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
         real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
+        if args.discriminator_type == "design":
+            d_loss = d_logistic_loss(real_pred, fake_pred)
+            if latent_label_dim>0 :
+                for column in dataset.columns :
+                    d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
+                for column in dataset.columns_inspirationnal :
+                    d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
+        elif args.discriminator_type == "bilinear" :
+            fake_pred = select_index_discriminator(fake_pred,random_label)
+            real_pred = select_index_discriminator(real_pred,real_label)
+            d_loss = d_logistic_loss(real_pred, fake_pred)
 
-        #fake_pred = select_index_discriminator(fake_pred,random_label)
-        #real_pred = select_index_discriminator(real_pred,real_label)
         
-        d_loss = d_logistic_loss(real_pred, fake_pred)
-        if latent_label_dim>0 :
-            for column in dataset.columns :
-                d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
-            for column in dataset.columns_inspirationnal :
-                d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
+        
 
-        
         loss_dict["d"] = d_loss
         loss_dict["real_score"] = real_pred.mean()
         loss_dict["fake_score"] = fake_pred.mean()
@@ -317,18 +314,20 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.augment:
             fake_img, _ = augment(fake_img, ada_aug_p)
 
-        fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
         
-        # fake_pred = select_index_discriminator(fake_pred,random_label)
+        fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
+        if args.discriminator_type == "bilinear":
+            fake_pred = select_index_discriminator(fake_pred,random_label)
         g_loss = g_nonsaturating_loss(fake_pred)
 
         # Not sure it is really necessary if no conditionning, would be for the creativity loss :
-        if latent_label_dim>0 :
-            for column in dataset.columns :
-                g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
+        if args.discriminator_type == "design":
+            if latent_label_dim>0 :
+                for column in dataset.columns :
+                    g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
 
-            for column in dataset.columns_inspirationnal :
-                g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
+                for column in dataset.columns_inspirationnal :
+                    g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
             
 
 
@@ -444,7 +443,6 @@ def convert_transparent_to_rgb(image):
 
 if __name__ == "__main__":
     device = "cuda"
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument("path", type=str)
@@ -468,6 +466,7 @@ if __name__ == "__main__":
     parser.add_argument("--ada_target", type=float, default=0.6)
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--discriminator_type", type=str, default = "design", help = "option : bilinear/design ")
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")
     parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
@@ -481,10 +480,11 @@ if __name__ == "__main__":
     parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
     parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
     parser.add_argument('--csv_path', type = str, default = None)    
+    parser.add_argument('--latent', type = int, default = 512)
+    parser.add_argument('--n_mlp', type = int, default = 8)
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
-    # n_gpu = 2
     args.distributed = n_gpu > 1
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample")):
@@ -497,11 +497,6 @@ if __name__ == "__main__":
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
-    # args.local_rank = 0
-    # list_device = [0,1]
-    # torch.cuda.set_device(args.local_rank)
-    args.latent = 512
-    args.n_mlp = 8
 
     args.start_iter = 0
 
@@ -537,35 +532,21 @@ if __name__ == "__main__":
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim,
     ).to(device)
-    # generator = torch.nn.DataParallel(Generator(
-    #     args.size, args.latent, args.n_mlp,
-    #      channel_multiplier=args.channel_multiplier,
-    #      latent_label_dim=latent_label_dim,
-    # ), device_ids = list_device, output_device = 0)
+
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device
     ).to(device)
-    # discriminator = torch.nn.DataParallel(Discriminator(
-    #     args.size, channel_multiplier=args.channel_multiplier,
-    #      dic_latent_label_dim=dataset.dic_column_dim,
-    #      dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
-    #      device=device
-    # ), device_ids = list_device, output_device = 0)
-    
+
 
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
          latent_label_dim=latent_label_dim
     ).to(device)
-    # g_ema = torch.nn.DataParallel(Generator(
-    #     args.size, args.latent, args.n_mlp,
-    #      channel_multiplier=args.channel_multiplier,
-    #      latent_label_dim=latent_label_dim
-    # ), device_ids = list_device, output_device = 0)
+   
     g_ema.eval()
     accumulate(g_ema, generator, 0)
 
