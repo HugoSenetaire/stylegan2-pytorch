@@ -176,8 +176,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
 
-    generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
-    discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
+    # generator = torch.nn.DataParallel(generator, device_ids=[0,1], output_device = 0)
+    # discriminator = torch.nn.DataParallel(discriminator, device_ids=[0,1], output_device = 0)
     if get_rank() == 0:
         pbar = tqdm(pbar, initial=args.start_iter, dynamic_ncols=True, smoothing=0.01)
 
@@ -230,8 +230,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 print(f"New size is {dataset.image_size}")
 
         real_label, real_img, real_dic_label, real_inspiration_label = next(loader)
-        # print(real_label.shape)
-        # print(real_img.shape)
         real_label = real_label.to(device)
         real_img = real_img.to(device)
 
