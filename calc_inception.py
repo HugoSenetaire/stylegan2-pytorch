@@ -123,7 +123,7 @@ if __name__ == '__main__':
         multiview = args.multiview,
         csv_path = args.csv_path
     )
-    loader = data.DataLoader(
+    loader = DataLoader(
         dataset,
         batch_size=args.batch,
         num_workers=4,
