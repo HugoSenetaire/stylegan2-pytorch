@@ -124,7 +124,7 @@ if __name__ == '__main__':
     ).to(device)
 
     g.load_state_dict(ckpt['g_ema'])
-    g = nn.DataParallel(g)
+    # g = nn.DataParallel(g)
     g.eval()
 
     if args.truncation < 1:
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     else:
         mean_latent = None
 
-    inception = nn.DataParallel(load_patched_inception_v3()).to(device)
+    inception = load_patched_inception_v3().to(device)
     inception.eval()
 
     features = extract_feature_from_samples(
