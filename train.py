@@ -412,7 +412,8 @@ if __name__ == "__main__":
         args.size, channel_multiplier=args.channel_multiplier,
          dic_latent_label_dim=dataset.dic_column_dim,
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
-         device=device
+         device=device,
+         discriminator_type=args.discriminator_type
     ).to(device)
 
 
@@ -476,6 +477,7 @@ if __name__ == "__main__":
             device_ids=[args.local_rank],
             output_device=args.local_rank,
             broadcast_buffers=False,
+
         )
 
         discriminator = nn.parallel.DistributedDataParallel(
