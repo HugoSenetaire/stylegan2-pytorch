@@ -421,7 +421,6 @@ if __name__ == "__main__":
          discriminator_type=args.discriminator_type
     ).to(device)
 
-    print(discriminator)
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
