@@ -756,7 +756,7 @@ class Discriminator(nn.Module):
                         nn.Sigmoid(), # TODO : is it really necessary ? Why not just the original value
                     ).to(device)
         
-        if self.discriminator_type == "bilinear":
+        elif self.discriminator_type == "bilinear":
             self.final_linear = nn.Sequential(
                     EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
                     EqualLinear(channels[4], self.latent_label_dim),
