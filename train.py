@@ -161,6 +161,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if d_regularize:
             real_img.requires_grad = True
             real_pred, real_classification, real_inspiration = discriminator(real_img,labels = real_label)
+            print(real_pred)
             r1_loss = d_r1_loss(real_pred, real_img)
             discriminator.zero_grad()
             (args.r1 / 2 * r1_loss * args.d_reg_every + 0 * real_pred[0]).backward()
