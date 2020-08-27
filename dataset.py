@@ -416,6 +416,7 @@ class Dataset(data.Dataset):
           
             for i,column in enumerate(self.columns_inspirationnal):
                 if i == 0 :
+                    continue
                 aux = label_list[k][i]
                 aux_one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
 
