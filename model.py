@@ -719,6 +719,7 @@ class Discriminator(nn.Module):
 
         self.dic_latent_label_dim = dic_latent_label_dim
         self.dic_inspirationnal_label_dim = dic_inspirationnal_label_dim
+        self.latent_label_dim = latent_label_dim
 
         if self.dic_latent_label_dim is not None :
             self.columns = list(self.dic_latent_label_dim.keys())
