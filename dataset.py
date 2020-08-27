@@ -370,7 +370,7 @@ class Dataset(data.Dataset):
 
         if len(self.columns)>0 :
             if label_list is not None :
-                one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size).to(device)
+                one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size)
             else :
                 if label_method == 'listing':
                     sample_label, dic_label = self.listing_one_hot(batch_size)
@@ -378,25 +378,25 @@ class Dataset(data.Dataset):
                     sample_label, dic_label = self.random_one_hot(batch_size)
                 else :
                     raise(ValueError("Label method not recognized"))
-                one_hot_label = sample_label.to(device)
+                one_hot_label = sample_label
 
         if len(self.columns_inspirationnal)>0:
             if label_inspiration_list is not None :
                 one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
             else :
                 sample_weights, dic_weights = self.random_weights(batch_size)
-                sample_weights = sample_weights.to(device)
+                sample_weights = sample_weights
 
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0:
                 output = torch.cat([one_hot_label,one_hot_weights],dim=1)
-                return output
+                return output.to(device)
             else :
                 output = sample_label
-                return output
+                return output.to(device)
         elif len(self.columns_inspirationnal)>0:
             output = one_hot_weights
-            return output
+            return output.to(device)
         else :
             return None
 
