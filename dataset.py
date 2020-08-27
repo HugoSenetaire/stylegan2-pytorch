@@ -431,7 +431,7 @@ class Dataset(data.Dataset):
 
             one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
 
-        return year_one_hot
+        return one_hot
 
 
     def create_inspiration_weights(self, label_list,batch_size = 1):
