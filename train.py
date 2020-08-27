@@ -409,6 +409,7 @@ if __name__ == "__main__":
          latent_label_dim=latent_label_dim,
     ).to(device)
 
+
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
         latent_label_dim= latent_label_dim,
@@ -418,7 +419,7 @@ if __name__ == "__main__":
          discriminator_type=args.discriminator_type
     ).to(device)
 
-
+    print(discriminator)
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
          channel_multiplier=args.channel_multiplier,
