@@ -122,6 +122,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                     d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
         elif args.discriminator_type == "bilinear" :
             fake_pred = select_index_discriminator(fake_pred,random_label)
+            real_pred = select_index_discriminator(real_pred, real_label)
             d_loss = d_logistic_loss(real_pred, fake_pred)
 
         
@@ -161,7 +162,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if d_regularize:
             real_img.requires_grad = True
             real_pred, real_classification, real_inspiration = discriminator(real_img,labels = real_label)
-            print(real_pred)
+            if args.discriminator_type == 'bilinear':
+                real_pred = select_index_discriminator(real_pred, real_label)
             r1_loss = d_r1_loss(real_pred, real_img)
             discriminator.zero_grad()
             (args.r1 / 2 * r1_loss * args.d_reg_every + 0 * real_pred[0]).backward()
