@@ -380,12 +380,12 @@ class Dataset(data.Dataset):
                     raise(ValueError("Label method not recognized"))
                 one_hot_label = sample_label.to(device)
 
-
-        if label_inspiration_list is not None :
-            one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
-        else :
-            sample_weights, dic_weights = self.random_weights(batch_size)
-            sample_weights = sample_weights.to(device)
+        if len(self.columns_inspirationnal)>0:
+            if label_inspiration_list is not None :
+                one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
+            else :
+                sample_weights, dic_weights = self.random_weights(batch_size)
+                sample_weights = sample_weights.to(device)
 
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0:
