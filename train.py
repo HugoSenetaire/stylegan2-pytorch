@@ -410,6 +410,7 @@ if __name__ == "__main__":
 
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
+        latent_label_dim= latent_label_dim,
          dic_latent_label_dim=dataset.dic_column_dim,
          dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
          device=device,

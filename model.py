@@ -688,7 +688,7 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, dic_latent_label_dim = None, dic_inspirationnal_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None, discriminator_type = "design"):
+    def __init__(self, size, dic_latent_label_dim = None, dic_inspirationnal_label_dim = None, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], device = None, discriminator_type = "design", latent_label_dim = 0):
         super().__init__()
         channels = {
             4: 512 ,
