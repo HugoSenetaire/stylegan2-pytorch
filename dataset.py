@@ -365,12 +365,21 @@ class Dataset(data.Dataset):
 
 ## Manage category for exploration of latent space :
     def category_manager(self, batch_size, device, label_list = None, label_inspiration_list = None, label_method = "random", inspiration_method = "full_random"):
-        if label_list is None :
-            raise Exception("Label should be given to control the category")
+        # if label_list is None :
+            # raise Exception("Label should be given to control the category")
 
+        if len(self.columns)>0 :
+            if label_list is not None :
+                one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size).to(device)
+            else :
+                if label_method == 'listing':
+                    sample_label, dic_label = self.listing_one_hot(batch_size)
+                elif label_method == 'random' :
+                    sample_label, dic_label = self.random_one_hot(batch_size)
+                else :
+                    raise(ValueError("Label method not recognized"))
+                one_hot_label = sample_label.to(device)
 
-        if label_list is not None :
-            one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size).to(device)
 
         if label_inspiration_list is not None :
             one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
