@@ -392,7 +392,7 @@ class Dataset(data.Dataset):
                 output = torch.cat([one_hot_label,one_hot_weights],dim=1)
                 return output.to(device)
             else :
-                output = sample_label
+                output = one_hot_label
                 return output.to(device)
         elif len(self.columns_inspirationnal)>0:
             output = one_hot_weights
