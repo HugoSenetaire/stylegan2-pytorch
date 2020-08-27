@@ -324,8 +324,9 @@ class Dataset(data.Dataset):
 
         return one_hot,dic_weights
 
+    
 
-    def sample_manager(self, batch_size, device, label_method, inspiration_method):
+    def sample_manager(self, batch_size, device, label_method = "random", inspiration_method = "full_random"):
 
         if len(self.columns)>0 :
             if label_method == 'listing':
@@ -362,5 +363,70 @@ class Dataset(data.Dataset):
         else :
             return None,None,None
 
-        
+## Manage category for exploration of latent space :
+    def category_manager(self, batch_size, device, label_list = None, label_inspiration_list = None, label_method = "random", inspiration_method = "full_random"):
+        if label_list is None :
+            raise Exception("Label should be given to control the category")
+
+
+        if label_list is not None :
+            one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size).to(device)
+
+        if label_inspiration_list is not None :
+            one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
+        else :
+            sample_weights, dic_weights = self.random_weights(batch_size)
+            sample_weights = sample_weights.to(device
+
+        if len(self.columns)>0:
+            if len(self.columns_inspirationnal)>0:
+                output = torch.cat([one_hot_label,one_hot_weights],dim=1)
+                return output
+            else :
+                output = sample_label
+                return output
+        elif len(self.columns_inspirationnal)>0:
+            output = one_hot_weights
+            return output
+        else :
+            return None
+
+    def create_label_one_hot(self, label_list,batch_size = 1):
+        nb_columns = len(self.columns)
+        if len(label_list) != batch_size or len(label_list[0])!= nb_columns :
+            raise Exception("list of label do not have the right size")
+
+        aux = label_list[0][0]
+        one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        for i,column in enumerate(self.columns):
+            if i == 0 :
+                continue
+
+            aux = label_list[0][i]
+            one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
             
+        one_hot = one_hot[None,:]
+
+        for k in range(1,batch_size):
+            if k == 0 :
+                continue
+            aux = label_list[k][0]
+            aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            
+          
+            for i,column in enumerate(self.columns_inspirationnal):
+                if i == 0 :
+                aux = label_list[k][i]
+                aux_one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+
+            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
+
+        return year_one_hot
+
+
+    def create_inspiration_weights(self, label_list,batch_size = 1):
+        nb_columns = len(self.columns)
+        if len(label_list) != batch_size or len(label_list[0])!= nb_columns :
+            raise Exception("list of label do not have the right size")
+        
+        raise NotImplementedError

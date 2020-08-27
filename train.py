@@ -102,7 +102,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
   
-        fake_img, _ = generator(noise,labels= random_label)
+        fake_img, _ = generator(noise, labels= random_label)
 
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
