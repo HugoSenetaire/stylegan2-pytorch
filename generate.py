@@ -4,6 +4,7 @@ import torch
 from torchvision import utils
 from model import Generator
 from tqdm import tqdm
+from dataset import Dataset
 def generate(args, g_ema, device, mean_latent, dataset):
 
     with torch.no_grad():
