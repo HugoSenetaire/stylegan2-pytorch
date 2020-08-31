@@ -57,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--size", type=int, default=1024)
     parser.add_argument("--channel_multiplier", type=int, default=1)
     parser.add_argument("--truncation", type=float, default = 1.0)
+    parser.add_argument("--truncation_mean", type=int, default = 4096)
 
     # Utils parameters :
     parser.add_argument("--wandb", action="store_true")
