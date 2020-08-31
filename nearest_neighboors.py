@@ -128,7 +128,7 @@ if __name__ == '__main__':
     print("Start loading inception")
     cnn = create_cnn().to(device)
 
-
+    print(cnn)
     print("Data parallel")
     transform = transforms.Compose(
         [   
