@@ -65,6 +65,7 @@ def extract_features(cnn, loader, device):
     feature_list = []
     if loader is Dataset :
         for _,img,_,_ in pbar:
+            print(img)
             img = img.to(device)
             feature = cnn(img)[0].view(img.shape[0], -1)
             feature_list.append(feature.to('cpu'))
