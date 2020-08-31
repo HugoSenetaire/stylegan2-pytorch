@@ -29,9 +29,10 @@ def generate(args, g_ema, device, mean_latent, dataset):
 
            sample, _ = g_ema([sample_z],labels = sample_label, truncation=args.truncation, truncation_latent=mean_latent)
            
+           
            utils.save_image(
             sample,
-            args.output_prefix + f'sample/{str(i).zfill(6)}.png',
+            os.path.join(args.output_prefix, f'sample_generate/{str(i).zfill(6)}.png'),
             nrow=1,
             normalize=True,
             range=(-1, 1),
@@ -70,6 +71,10 @@ if __name__ == '__main__':
     args.latent = 512
     args.n_mlp = 8
 
+
+
+    if not os.path.exists(os.path.join(args.output_prefix, "sample_generate")):
+        os.makedirs(os.path.join(args.output_prefix, "sample_generate"))
     transform = transforms.Compose(
         [   
             transforms.Lambda(convert_transparent_to_rgb),
