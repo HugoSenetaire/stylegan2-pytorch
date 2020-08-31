@@ -65,6 +65,16 @@ if __name__ == '__main__':
     args.latent = 512
     args.n_mlp = 8
 
+    transform = transforms.Compose(
+        [   
+            transforms.Lambda(convert_transparent_to_rgb),
+            transforms.RandomHorizontalFlip(),
+            transforms.Resize((args.size,args.size)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+        ]
+    )
+
     dataset = Dataset(args.path,
         transform, args.size, 
         columns = args.labels,
