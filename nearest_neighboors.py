@@ -59,7 +59,7 @@ def create_cnn() :
 
 
 
-def extract_features(cnn, loader, inception, device):
+def extract_features(cnn, loader, device):
     pbar = tqdm(loader)
 
     feature_list = []
