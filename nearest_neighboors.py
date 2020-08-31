@@ -83,9 +83,7 @@ def extract_features(cnn, loader, device):
         if isinstance(img,list):
             img = img[1]
         img = img.to(device)
-        print(img)
         feature = cnn(img)
-        print(feature.shape)
         feature = feature.flatten(1)
         feature_list.append(feature.to('cpu'))
 
