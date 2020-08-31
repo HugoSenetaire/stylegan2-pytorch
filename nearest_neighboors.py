@@ -140,7 +140,7 @@ if __name__ == '__main__':
     )
     
     
-    features = extract_features(loader, cnn, device).numpy()
+    features = extract_features(cnn, loader, device).numpy()
     print(f'extracted {features.shape[0]} features')
 
 
