@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from inception import InceptionV3
 # from dataset import MultiResolutionDataset
-from dataset import Dataset
+from dataset import Dataset,SimpleDataset
 from utils import *
 import torch
 import torch.nn as nn
@@ -38,75 +38,58 @@ class Normalization(nn.Module):
         # normalize img
         return (img - self.mean) / self.std
 
-def image_loader(image_name):
-    image = Image.open(image_name)
-    loader = transforms.Compose([
-        transforms.Resize((512, 512)),  # scale imported image
-        transforms.ToTensor()])  # transform it into a torch tensor
-    # fake batch dimension required to fit network's input dimensions
-    image = loader(image).unsqueeze(0)
-    return image.to(device, torch.float)
-
-# def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
-#                                img,
-#                                final_layer= ['pool_16']):
-#     # cnn = copy.deepcopy(cnn)
-#     # normalization module
-#     normalization = Normalization(normalization_mean, normalization_std).to(device)
-#     # assuming that cnn is a nn.Sequential, so we make a new nn.Sequential
-#     # to put in modules that are supposed to be activated sequentially
-#     model = nn.Sequential(normalization)
-#     final = []
-#     i = 0  # increment every time we see a conv
-#     for layer in cnn.children():
-#         if isinstance(layer, nn.Conv2d):
-#             i += 1
-#             name = 'conv_{}'.format(i)
-#         elif isinstance(layer, nn.ReLU):
-#             name = 'relu_{}'.format(i)
-#             # The in-place version doesn't play very nicely with the ContentLoss
-#             # and StyleLoss we insert below. So we replace with out-of-place
-#             # ones here.
-#             layer = nn.ReLU(inplace=False)
-#         elif isinstance(layer, nn.MaxPool2d):
-#             name = 'pool_{}'.format(i)
-#         elif isinstance(layer, nn.BatchNorm2d):
-#             name = 'bn_{}'.format(i)
-#         else:
-#             raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
-#         model.add_module(name, layer)
-#         if name in final_layer:
-#             # add style loss:
-#             with torch.no_grad():
-#                 target_feature = model(img)
-#                 final.append(torch.flatten(target_feature, start_dim=1, end_dim=-1))
-#     return final[0]
 
 
-def compute_image_embedding(directory_images, sku):
-    cnn = models.vgg19(pretrained=True).features.to(device).eval()
-    cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-    cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
-    normalization = Normalization(normalization_mean, normalization_std).to(device)
-    sku = directory_images+sku+'.jpg'
-    img_list = [image_loader(sku)]
-    final = get_style_model_and_losses(cnn, cnn_normalization_mean, cnn_normalization_std, img_list)
-    return final
+
+def create_cnn() :
+    import ssl
+    ssl._create_default_https_context = ssl._create_unverified_context    
+    cnn = models.vgg19(pretrained=True).features.eval()
+    cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406])
+    cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225])
+    normalization = Normalization(cnn_normalization_mean, cnn_normalization_std)
+
+    cnn_final =nn.ModuleList()
+    cnn_final.append(normalization)
+    cnn_final.append(cnn)
+    return cnn_final 
+
+
+
+
 
 
 def extract_features(cnn, loader, inception, device):
     pbar = tqdm(loader)
 
     feature_list = []
-
-    for _,img,_,_ in pbar:
-        img = img.to(device)
-        feature = cnn(img)[0].view(img.shape[0], -1)
-        feature_list.append(feature.to('cpu'))
+    if loader is Dataset :
+        for _,img,_,_ in pbar:
+            img = img.to(device)
+            feature = cnn(img)[0].view(img.shape[0], -1)
+            feature_list.append(feature.to('cpu'))
+    else :
+        for img in pbar:
+            img = img.to(device)
+            feature = cnn(img)[0].view(img.shape[0], -1)
+            feature_list.append(feature.to('cpu'))
 
     features = torch.cat(feature_list, 0)
 
     return features
+
+
+def findNearestNeighboors(inputFeature, testFeature, nbNeighboor = 5):
+    listeClosest = []
+    listDistance = []
+    for i in range(len(testFeature)):
+        testedFeature = testFeature[i]
+        dist = np.subtract(inputFeature, testedFeature)**2
+        closest = np.argsort(dist)[:nbNeighboor]
+        dist = np.sort(dist)[:nbNeighboor]
+        listeClosest.append(closest)
+        listDistance.append(dist)
+    return listeClosest, listDistance
 
 
 if __name__ == '__main__':
@@ -131,9 +114,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print("Start loading inception")
-    inception = load_patched_inception_v3()
-    print("Inception loaded")
-    inception = nn.DataParallel(inception).eval().to(device)
+    cnn = create_cnn().to(device)
+
+
     print("Data parallel")
     transform = transforms.Compose(
         [   
@@ -156,19 +139,28 @@ if __name__ == '__main__':
         batch_size=args.batch,
         num_workers=4,
     )
-    # dset = MultiResolutionDataset(args.path, transform=transform, resolution=args.size)
-    # loader = DataLoader(dset, batch_size=args.batch, num_workers=4)
-
-    features = extract_features(loader, inception, device).numpy()
-
-    features = features[: args.n_sample]
-
+    
+    
+    features = extract_features(loader, cnn, device).numpy()
     print(f'extracted {features.shape[0]} features')
 
-    mean = np.mean(features, 0)
-    cov = np.cov(features, rowvar=False)
+    
+    dset = SimpleDataset(args.path, transform=transform, resolution=args.size)
+    loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
+    features_test = extract_features(loader2, cnn, device).numpy()
 
-    name = os.path.splitext(os.path.basename(args.path))[0]
+    list_neighboors, list_distance = findNearestNeighboors(features,features_test)
 
-    with open(f'inception_{name}.pkl', 'wb') as f:
-        pickle.dump({'mean': mean, 'cov': cov, 'size': args.size, 'path': args.path}, f)
+
+    dic ={}
+    for k in range(len(list_neighboors)) :
+        dic[k] = []
+        for i,index in enumerate(list_neighboors[k]):
+            dic[k].append((dataset.df.iloc[index],list_distance[k][i]))
+
+    print(dic)
+
+
+
+
+

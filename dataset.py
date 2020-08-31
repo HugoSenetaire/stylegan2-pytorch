@@ -22,6 +22,24 @@ from torch.utils import data
 import torch.nn.functional as F
 
 
+class SimpleDataset(data.Dataset):
+    def __init__(self, path, transform, resolution=256):
+        self.folder = path
+        self.list_image = os.listdir(self.folder)
+        self.resolution = resolution
+        self.transform = transform
+
+    def __len__(self):
+        return self.length
+
+    def __getitem__(self, index):
+        path = os.path.join(self.folder,self.list_image[i])
+        img = Image.open(path)
+        img = self.transform(img)
+        return img
+
+
+
 
 class OneHot():
     def __init__(self, list_values):

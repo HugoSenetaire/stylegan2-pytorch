@@ -4,40 +4,74 @@ import torch
 from torchvision import utils
 from model import Generator
 from tqdm import tqdm
-def generate(args, g_ema, device, mean_latent):
+def generate(args, g_ema, device, mean_latent, dataset):
 
     with torch.no_grad():
         g_ema.eval()
-        for i in tqdm(range(args.pics)):
-           sample_z = torch.randn(args.sample, args.latent, device=device)
 
-           sample, _ = g_ema([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
+        for i in tqdm(range(args.pics)):
+           sample_z = torch.randn(args.n_sample, args.latent, device=device)
+           sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(args.n_sample, device, args.label_method, args.inspiration_method)
+
+           sample, _ = g_ema([sample_z],labels = sample_label, truncation=args.truncation, truncation_latent=mean_latent)
            
            utils.save_image(
             sample,
-            f'sample/{str(i).zfill(6)}.png',
+            args.output_prefix + f'sample/{str(i).zfill(6)}.png',
             nrow=1,
             normalize=True,
             range=(-1, 1),
         )
 
 if __name__ == '__main__':
-    device = 'cuda'
-
+    device = "cuda"
     parser = argparse.ArgumentParser()
+    # Dataset parameters 
+    parser.add_argument("path", type=str)
+    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
+    parser.add_argument("--multiview", action = "store_true")
+    parser.add_argument("--labels", nargs='*', help='List of element used for classification', type=str, default = [])
+    parser.add_argument("--labels_inspirationnal", nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
+    parser.add_argument("--csv_path", type = str, default = None)  
+    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
+    parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")  
 
-    parser.add_argument('--size', type=int, default=1024)
-    parser.add_argument('--sample', type=int, default=1)
-    parser.add_argument('--pics', type=int, default=20)
-    parser.add_argument('--truncation', type=float, default=1)
-    parser.add_argument('--truncation_mean', type=int, default=4096)
-    parser.add_argument('--ckpt', type=str, default="stylegan2-ffhq-config-f.pt")
-    parser.add_argument('--channel_multiplier', type=int, default=2)
+
+    # Network parameters
+    parser.add_argument("--ckpt", type=str, default=None)
+
+
+    # Training parameters
+    parser.add_argument("--size", type=int, default=256)
+    parser.add_argument("--channel_multiplier", type=int, default=1)
+
+
+    # Utils parameters :
+    parser.add_argument("--wandb", action="store_true")
+    parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument("--output_prefix", type=str, default = None)
+    parser.add_argument("--n_sample", type=int, default=1)
+    parser.add_argument("--pics", type=int, default = 10)
+    
 
     args = parser.parse_args()
 
     args.latent = 512
     args.n_mlp = 8
+
+    dataset = Dataset(args.path,
+        transform, args.size, 
+        columns = args.labels,
+        columns_inspirationnal = args.labels_inspirationnal,
+        dataset_type = args.dataset_type,
+        multiview = args.multiview,
+        csv_path = args.csv_path
+    )
+    loader = DataLoader(
+        dataset,
+        batch_size=args.batch,
+        num_workers=4,
+    )
 
     g_ema = Generator(
         args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
@@ -52,4 +86,4 @@ if __name__ == '__main__':
     else:
         mean_latent = None
 
-    generate(args, g_ema, device, mean_latent)
+    generate(args, g_ema, device, mean_latent, dataset)
