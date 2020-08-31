@@ -59,11 +59,11 @@ def create_cnn() :
 
 
 
-def extract_features(cnn, loader, device):
+def extract_features(cnn, loader, device,dataset):
     pbar = tqdm(loader)
 
     feature_list = []
-    if loader is Dataset :
+    if dataset is Dataset :
         for _,img,_,_ in pbar:
             print(img)
             img = img.to(device)
@@ -141,13 +141,13 @@ if __name__ == '__main__':
     )
     
     
-    features = extract_features(cnn, loader, device).numpy()
+    features = extract_features(cnn, loader, device, dataset).numpy()
     print(f'extracted {features.shape[0]} features')
 
 
     dset = SimpleDataset(args.generated_dataset, transform=transform, resolution=args.size)
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
-    features_test = extract_features(loader2, cnn, device).numpy()
+    features_test = extract_features(loader2, cnn, device, dset).numpy()
 
     list_neighboors, list_distance = findNearestNeighboors(features,features_test)
 
