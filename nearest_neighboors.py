@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
     dset = SimpleDataset(args.generated_dataset, transform=transform, resolution=args.size)
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
-    features_test = extract_features(loader2, cnn, device).numpy()
+    features_test = extract_features(cnn, loader2, device).numpy()
 
     list_neighboors, list_distance = findNearestNeighboors(features,features_test)
 
