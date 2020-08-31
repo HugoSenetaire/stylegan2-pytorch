@@ -41,6 +41,7 @@ class Normalization(nn.Module):
 
 class CNN_final(nn.Module):
     def __init__(self, normalization, cnn):
+        super(CNN_final, self).__init__()
         self.normalization = normalization
         self.cnn = cnn
 
