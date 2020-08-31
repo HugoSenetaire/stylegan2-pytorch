@@ -59,21 +59,18 @@ def create_cnn() :
 
 
 
-def extract_features(cnn, loader, device,dataset):
+def extract_features(cnn, loader, device):
     pbar = tqdm(loader)
 
     feature_list = []
-    if dataset is Dataset :
-        for _,img,_,_ in pbar:
-            print(img)
-            img = img.to(device)
-            feature = cnn(img)[0].view(img.shape[0], -1)
-            feature_list.append(feature.to('cpu'))
-    else :
-        for img in pbar:
-            img = img.to(device)
-            feature = cnn(img)[0].view(img.shape[0], -1)
-            feature_list.append(feature.to('cpu'))
+    
+      
+    for img in pbar:
+        if isinstance(img,list):
+            img = img[1]
+        img = img.to(device)
+        feature = cnn(img)[0].view(img.shape[0], -1)
+        feature_list.append(feature.to('cpu'))
 
     features = torch.cat(feature_list, 0)
 
@@ -141,13 +138,13 @@ if __name__ == '__main__':
     )
     
     
-    features = extract_features(cnn, loader, device, dataset).numpy()
+    features = extract_features(cnn, loader, device).numpy()
     print(f'extracted {features.shape[0]} features')
 
 
     dset = SimpleDataset(args.generated_dataset, transform=transform, resolution=args.size)
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
-    features_test = extract_features(loader2, cnn, device, dset).numpy()
+    features_test = extract_features(loader2, cnn, device).numpy()
 
     list_neighboors, list_distance = findNearestNeighboors(features,features_test)
 
