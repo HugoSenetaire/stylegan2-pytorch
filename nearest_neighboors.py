@@ -45,10 +45,10 @@ class CNN_final(nn.Module):
         self.normalization = normalization
         self.cnn = cnn
 
-    def to(self, device):
-        self.normalization.mean = self.normalization.mean.to(device)
-        self.normalization.std = self.normalization.std.to(device)
-        self.cnn = self.cnn.to(device)
+    # def to(self, device):
+    #     self.normalization.mean = self.normalization.mean.to(device)
+    #     self.normalization.std = self.normalization.std.to(device)
+    #     self.cnn = self.cnn.to(device)
 
 
     def forward(self, img):
@@ -127,8 +127,9 @@ if __name__ == '__main__':
 
     print("Start loading inception")
     cnn = create_cnn().to(device)
-
-    print(cnn)
+    cnn.normalization.mean =  cnn.normalization.mean.to(device)
+    cnn.normalization.std = cnn.normalization.std.to(device)
+    
     print("Data parallel")
     transform = transforms.Compose(
         [   
