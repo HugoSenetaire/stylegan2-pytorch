@@ -84,6 +84,7 @@ def extract_features(cnn, loader, device):
             img = img[1]
         img = img.to(device)
         feature = cnn.forward(img)
+        print(feature.shape)
         feature = feature.flatten(1)
         feature_list.append(feature.to('cpu'))
 
@@ -114,7 +115,7 @@ if __name__ == '__main__':
 
     
     parser.add_argument('--size', type=int, default=256)
-    parser.add_argument('--batch', default=64, type=int, help='batch size')
+    parser.add_argument('--batch', default=4, type=int, help='batch size')
     parser.add_argument('--path', metavar='PATH', help='path to the folder picture file')
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
