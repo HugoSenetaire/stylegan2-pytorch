@@ -77,6 +77,8 @@ def extract_features(cnn, loader, device):
         if isinstance(img,list):
             img = img[1]
         img = img.to(device)
+        print(img)
+        print(cnn)
         feature = cnn(img)
         print(feature.shape)
         feature = feature.flatten(1)
