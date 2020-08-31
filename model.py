@@ -595,9 +595,6 @@ class Generator(nn.Module):
 
         out = self.input(latent)
 
-        
-
-        
         out = self.conv1(out, latent[:, 0], noise=noise[0])
         skip = self.to_rgb1(out, latent[:, 1])
 
