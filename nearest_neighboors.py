@@ -39,7 +39,15 @@ class Normalization(nn.Module):
         return (img - self.mean) / self.std
 
 
+class CNN_final(nn.Module):
+    def __init__(self, normalization, cnn):
+        self.normalization = normalization
+        self.cnn = cnn
 
+    def forward(self, img):
+        img = self.normalization(img)
+        img = self.cnn(img)
+        return img
 
 def create_cnn() :
     import ssl
@@ -49,9 +57,8 @@ def create_cnn() :
     cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225])
     normalization = Normalization(cnn_normalization_mean, cnn_normalization_std)
 
-    cnn_final =nn.ModuleList()
-    cnn_final.append(normalization)
-    cnn_final.append(cnn)
+    
+    cnn_final = CNN_final(normalization,cnn)
     return cnn_final 
 
 
