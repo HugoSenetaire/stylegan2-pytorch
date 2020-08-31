@@ -84,9 +84,8 @@ def extract_features(cnn, loader, device):
             img = img[1]
         img = img.to(device)
         feature = cnn.forward(img)
-        print(feature.shape)
         feature = feature.flatten(1)
-        feature_list.append(feature.to('cpu'))
+        feature_list.append(feature.detach())
 
     features = torch.cat(feature_list, 0)
 
