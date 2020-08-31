@@ -576,7 +576,7 @@ class Generator(nn.Module):
             else:
                 latent = styles[0]
 
-        elif len(styles) == len(self.convs):
+        elif len(styles) >= len(self.convs):
             latent = torch.cat([style.unsqueeze(1) for style in styles],1)
         
         else:
@@ -595,9 +595,6 @@ class Generator(nn.Module):
 
         out = self.input(latent)
 
-        
-
-        
         out = self.conv1(out, latent[:, 0], noise=noise[0])
         skip = self.to_rgb1(out, latent[:, 1])
 
