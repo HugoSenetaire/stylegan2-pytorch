@@ -91,11 +91,6 @@ if __name__ == '__main__':
         multiview = args.multiview,
         csv_path = args.csv_path
     )
-    loader = DataLoader(
-        dataset,
-        batch_size=args.batch,
-        num_workers=4,
-    )
 
     g_ema = Generator(
         args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
