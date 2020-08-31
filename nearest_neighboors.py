@@ -87,7 +87,7 @@ def extract_features(cnn, loader, device):
         feature = feature.flatten(1)
         feature_list.append(feature.detach())
 
-    features = torch.cat(feature_list, 0)
+    features = torch.cat(feature_list, 0).cpu()
 
     return features
 
