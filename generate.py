@@ -91,9 +91,10 @@ if __name__ == '__main__':
         multiview = args.multiview,
         csv_path = args.csv_path
     )
+    latent_label_dim = dataset.get_len()
 
     g_ema = Generator(
-        args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier
+        args.size, args.latent, args.n_mlp, channel_multiplier=args.channel_multiplier, latent_label_dim= latent_label_dim
     ).to(device)
     checkpoint = torch.load(args.ckpt)
 
