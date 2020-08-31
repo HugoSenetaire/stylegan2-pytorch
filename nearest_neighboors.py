@@ -46,9 +46,11 @@ class CNN_final(nn.Module):
         self.cnn = cnn
 
     def to(self, device):
-        super(CNN_final, self).to(device)
         self.normalization.mean.to(device)
         self.normalization.std.to(device)
+        self.cnn.to(device)
+
+
     def forward(self, img):
         img = self.normalization(img)
         img = self.cnn(img)
