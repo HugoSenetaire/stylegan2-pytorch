@@ -53,12 +53,9 @@ if __name__ == '__main__':
 
     # Network parameters
     parser.add_argument("--ckpt", type=str, default=None)
-
-
-    # Training parameters
-    parser.add_argument("--size", type=int, default=256)
+    parser.add_argument("--size", type=int, default=1024)
     parser.add_argument("--channel_multiplier", type=int, default=1)
-
+    parser.add_argument("--truncation", type=float, default = 1.0)
 
     # Utils parameters :
     parser.add_argument("--wandb", action="store_true")
