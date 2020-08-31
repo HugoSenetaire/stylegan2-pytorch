@@ -45,6 +45,10 @@ class CNN_final(nn.Module):
         self.normalization = normalization
         self.cnn = cnn
 
+    def to(self, device):
+        super(CNN_final, self).to(device)
+        self.normalization.mean.to(device)
+        self.normalization.std.to(device)
     def forward(self, img):
         img = self.normalization(img)
         img = self.cnn(img)
@@ -78,7 +82,6 @@ def extract_features(cnn, loader, device):
             img = img[1]
         img = img.to(device)
         print(img)
-        print(cnn)
         feature = cnn(img)
         print(feature.shape)
         feature = feature.flatten(1)
