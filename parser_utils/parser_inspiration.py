@@ -4,7 +4,7 @@ import random
 import os
 
 def create_parser_inspiration(parser):
-     parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
+    parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
                         extractor", nargs='*',
                         type=str, dest="featureExtractor")
     parser.add_argument('--input_image', type=str, dest="inputImage",
