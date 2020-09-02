@@ -47,8 +47,15 @@ def classification_loss(pred, label):
 
 def creativity_loss(pred,weights,device):
     batch,column_size = weights.shape
+    print("=============")
+    print("BEFORE PRED")
+    print(pred)
     pred_aux = pred.unsqueeze(1).expand(-1,column_size,-1).view(batch*column_size,-1)
+    print("AFTER PRED")
+    print(pred_aux)
     neo_labels = create_label(batch,column_size,device)
+    print("NEO LABELS")
+    print(neo_labels)
     weights_aux = weights.flatten()
     pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
     return torch.dot(weights_aux,pred_output)
