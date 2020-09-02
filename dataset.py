@@ -287,7 +287,7 @@ class Dataset(data.Dataset):
         dic_weights = {}
         for k in range(batch_size):
             previous_size = 0
-            for i,column in enumerate(self.columns):
+            for i,column in enumerate(self.columns_inspirationnal):
                 possibleLen = len(self.dic_inspirationnal[column])
                 aux_weights = torch.zeros((possibleLen,),dtype = torch.float32).new_full((possibleLen,),1./possibleLen)
                 weights[k][previous_size:previous_size+possibleLen]= aux_weights
