@@ -46,22 +46,11 @@ def classification_loss(pred, label):
 
 
 def creativity_loss(pred,weights,device):
-    print(weights.shape)
     batch,column_size = weights.shape
-    print("=============")
-    print("BEFORE PRED")
-    print(pred)
     pred_aux = pred.unsqueeze(1).expand(-1,column_size,-1).reshape(batch*column_size,-1)
-    print("AFTER PRED")
-    print(pred_aux)
     neo_labels = create_label(batch,column_size,device)
-    print("NEO LABELS")
-    print(neo_labels)
     weights_aux = weights.flatten()
     pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
-    print(pred_output)
-    print(torch.dot(weights_aux,pred_output))
-    print(torch.mean(pred_output))
     return torch.dot(weights_aux,pred_output)
 
     
@@ -73,9 +62,7 @@ def g_path_regularize(fake_img, latents, mean_path_length, decay=0.01):
         outputs=(fake_img * noise).sum(), inputs=latents, create_graph=True
     )
     path_lengths = torch.sqrt(grad.pow(2).sum(2).mean(1))
-
     path_mean = mean_path_length + decay * (path_lengths.mean() - mean_path_length)
-
     path_penalty = (path_lengths - path_mean).pow(2).mean()
 
     return path_penalty, path_mean.detach(), path_lengths
