@@ -308,9 +308,9 @@ if __name__ == "__main__":
     device = "cuda"
     parser = argparse.ArgumentParser()
 
-    create_parser_dataset(parser)
-    create_parser_network(parser)
-    create_parser_train(parser)
+    parser_dataset.create_parser_dataset(parser)
+    parser_network.create_parser_network(parser)
+    parser_train.create_parser_train(parser)
 
 
     args = parser.parse_args()
