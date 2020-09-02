@@ -55,7 +55,7 @@ def creativity_loss(pred,weights,device):
     print(pred.unsqueeze(1))
     print("pred expanded")
     print(pred.unsqueeze(1).expand(-1,column_size,-1))
-    pred_aux = pred.unsqueeze(1).expand(-1,column_size,-1).view(batch*column_size,-1)
+    pred_aux = pred.unsqueeze(1).expand(-1,column_size,-1).reshape(batch*column_size,-1)
     print("AFTER PRED")
     print(pred_aux)
     neo_labels = create_label(batch,column_size,device)
