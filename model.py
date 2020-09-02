@@ -577,12 +577,8 @@ class Generator(nn.Module):
                 latent = styles[0]
 
         elif len(styles) >= len(self.convs) and len(styles)>2:
-            print("STYLE SHAPE")
-            print(len(styles))
-            print(styles[0].shape)
+
             latent = torch.cat([style.unsqueeze(1) for style in styles],1)
-            print("LATENT SHAPE")
-            print(latent.shape)
         
         else:
             if inject_index is None:
@@ -596,8 +592,6 @@ class Generator(nn.Module):
         if self.latent_label_dim>0 :
             if labels is None :
                 print("Error label is None ")
-            print("SHAPE LABEL")
-            print(labels.shape)
             latent = self.forward_mixlabel(latent,labels)
 
         out = self.input(latent)
