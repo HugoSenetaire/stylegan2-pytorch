@@ -308,8 +308,6 @@ class Dataset(data.Dataset):
         #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
         for column in self.columns:
             dic_label[column] = torch.tensor(dic_label[column])
-        print(one_hot)
-        print(dic_label)
         return one_hot,dic_label
 
     def random_weights(self,batch_size):
@@ -366,6 +364,8 @@ class Dataset(data.Dataset):
                 sample_label, dic_label = self.random_one_hot(batch_size)
             else :
                 raise(ValueError("Label method not recognized"))
+            print("SAMPLE MANAGER SAMPLE LABEL")
+            print(sample_label)
             sample_label = sample_label.to(device)
             for column in self.columns :
                 dic_label[column] = dic_label[column].to(device)
