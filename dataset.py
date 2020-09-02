@@ -233,32 +233,46 @@ class Dataset(data.Dataset):
         if len(self.columns)==0 :
             return None
 
-        
-        aux = np.random.randint(len(self.dic[self.columns[0]]))
-        dic_label = {self.columns[0] : [aux]}
-        one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-        for i,column in enumerate(self.columns):
-            if i == 0 :
-                continue
-            aux = np.random.randint(len(self.dic[column]))
-            dic_label[column] = [aux]
-            one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            
-        
-        one_hot = one_hot[None,:]
-        for k in range(batch_size-1):
-            aux = np.random.randint(len(self.dic[self.columns[0]]))
-            dic_label[self.columns[0]].append(aux)
-            aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-            
-            for i,column in enumerate(self.columns):
-                if i == 0 :
-                    continue
 
+        
+        one_hot = torch.zeros((batch_size,self.get_len(type="label")))
+        dic_label = {}
+        for k in range(batch_size):
+            previous_size = 0
+            for i,column in enumerate(self.columns):
                 aux = np.random.randint(len(self.dic[column]))
-                dic_label[column].append(aux)
-                aux_one_hot = torch.cat((aux_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
+                if k==0 :
+                    dic_label[column] = [aux]
+                else :
+                    dic_label[column].append(aux)
+                one_hot[k][aux+previous_size]=1
+                previous_size +=len(self.dic[column])
+
+        # aux = np.random.randint(len(self.dic[self.columns[0]]))
+        # dic_label = {self.columns[0] : [aux]}
+        # one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        # for i,column in enumerate(self.columns):
+        #     if i == 0 :
+        #         continue
+        #     aux = np.random.randint(len(self.dic[column]))
+        #     dic_label[column] = [aux]
+        #     one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            
+        
+        # one_hot = one_hot[None,:]
+        # for k in range(batch_size-1):
+        #     aux = np.random.randint(len(self.dic[self.columns[0]]))
+        #     dic_label[self.columns[0]].append(aux)
+        #     aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            
+        #     for i,column in enumerate(self.columns):
+        #         if i == 0 :
+        #             continue
+
+        #         aux = np.random.randint(len(self.dic[column]))
+        #         dic_label[column].append(aux)
+        #         aux_one_hot = torch.cat((aux_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
         
         for column in self.columns:
             dic_label[column] = torch.tensor(dic_label[column])
@@ -269,6 +283,9 @@ class Dataset(data.Dataset):
     def listing_one_hot(self,batch_size):
         # TODO
         # Code beaucoup trop brouillon à modifier
+        if len(self.columns) == 0 :
+            return None
+        
         one_hot = torch.zeros((batch_size,self.get_len(type="label")))
         dic_label = {}
         for k in range(batch_size):
@@ -281,33 +298,7 @@ class Dataset(data.Dataset):
                     dic_label[column].append(aux)
                 one_hot[k][aux+previous_size]=1
                 previous_size +=len(self.dic[column])
-        # if len(self.columns)==0 :
-        #     return None
-        # aux = 0
-        # dic_label = {self.columns[0] : [aux]}
-        # one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-        # for i,column in enumerate(self.columns):
-        #     if i == 0 :
-        #         continue
-        #     aux = 0
-        #     dic_label[column ] = [aux]
-        #     one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            
-        
-        # one_hot = one_hot[None,:]
-        # for k in range(1,batch_size):
-        #     aux = k % len(self.dic[self.columns[0]])
-        #     dic_label[self.columns[0]].append(aux)
-        #     aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-        #     for i,column in enumerate(self.columns):
-        #         if i == 0 :
-        #             continue
-        #         aux = k % len(self.dic[column])
-        #         dic_label[column].append(aux)
 
-        #         final_aux = torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)
-        #         aux_one_hot = torch.cat((aux_one_hot,final_aux))
-        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
         for column in self.columns:
             dic_label[column] = torch.tensor(dic_label[column])
         return one_hot,dic_label
