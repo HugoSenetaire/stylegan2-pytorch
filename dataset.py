@@ -194,12 +194,14 @@ class Dataset(data.Dataset):
 
         
     
-    def get_len(self):
+    def get_len(self, type = None):
         size = 0
-        for column in self.columns:
-            size+=len(self.dic[column])
-        for column in self.columns_inspirationnal:
-            size+=len(self.dic_inspirationnal[column])
+        if type is None or type == "label":
+            for column in self.columns:
+                size+=len(self.dic[column])
+        if type is None or type == "inspirationnal":
+            for column in self.columns_inspirationnal:
+                size+=len(self.dic_inspirationnal[column])
 
         return size
     
@@ -267,7 +269,7 @@ class Dataset(data.Dataset):
     def listing_one_hot(self,batch_size):
         # TODO
         # Code beaucoup trop brouillon à modifier
-        one_hot = torch.zeros((batch_size,self.get_len()))
+        one_hot = torch.zeros((batch_size,self.get_len(type="label"))
         dic_label = {}
         for k in range(batch_size):
             previous_size = 0
