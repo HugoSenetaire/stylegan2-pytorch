@@ -4,6 +4,7 @@ import random
 import os
 
 def create_parser_inspiration(parser):
+    parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
                         extractor", nargs='*',
                         type=str, dest="featureExtractor")
