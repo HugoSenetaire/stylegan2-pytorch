@@ -46,6 +46,7 @@ def classification_loss(pred, label):
 
 
 def creativity_loss(pred,weights,device):
+    print(weights.shape)
     batch,column_size = weights.shape
     print("=============")
     print("BEFORE PRED")
