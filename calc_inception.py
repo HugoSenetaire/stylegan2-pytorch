@@ -12,9 +12,11 @@ import numpy as np
 from tqdm import tqdm
 
 from inception import InceptionV3
-# from dataset import MultiResolutionDataset
 from dataset import Dataset
 from utils import *
+from parser_utils import *
+
+
 
 class Inception3Feature(Inception3):
     def forward(self, x):
@@ -81,20 +83,14 @@ if __name__ == '__main__':
         description='Calculate Inception v3 features for datasets'
     )
 
-    
-    parser.add_argument('--size', type=int, default=256)
+    parser_dataset.create_parser_dataset(parser)
     parser.add_argument('--batch', default=64, type=int, help='batch size')
     parser.add_argument('--n_sample', type=int, default=50000)
     parser.add_argument('--flip', action='store_true')
-    parser.add_argument('path', metavar='PATH', help='path to datset lmdb file')
-    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
-    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
-    parser.add_argument("--multiview", action = "store_true")
-    parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
-    parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
-    parser.add_argument('--csv_path', type = str, default = None)   
-
     args = parser.parse_args()
+
+
+
     print("Start loading inception")
     inception = load_patched_inception_v3()
     print("Inception loaded")
@@ -109,7 +105,10 @@ if __name__ == '__main__':
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-    dataset = Dataset(args.path,
+
+
+
+    dataset = Dataset(args.folder,
         transform, args.size, 
         columns = args.labels,
         columns_inspirationnal = args.labels_inspirationnal,
@@ -122,8 +121,6 @@ if __name__ == '__main__':
         batch_size=args.batch,
         num_workers=4,
     )
-    # dset = MultiResolutionDataset(args.path, transform=transform, resolution=args.size)
-    # loader = DataLoader(dset, batch_size=args.batch, num_workers=4)
 
     features = extract_features(loader, inception, device).numpy()
 
@@ -134,7 +131,7 @@ if __name__ == '__main__':
     mean = np.mean(features, 0)
     cov = np.cov(features, rowvar=False)
 
-    name = os.path.splitext(os.path.basename(args.path))[0]
+    name = os.path.splitext(os.path.basename(args.folder))[0]
 
     with open(f'inception_{name}.pkl', 'wb') as f:
-        pickle.dump({'mean': mean, 'cov': cov, 'size': args.size, 'path': args.path}, f)
+        pickle.dump({'mean': mean, 'cov': cov, 'size': args.size, 'path': args.folder}, f)

@@ -534,19 +534,6 @@ if __name__ == "__main__":
     outVectors = outVectors.view(outVectors.size(0), -1)
     outVectors *= torch.rsqrt((outVectors**2).mean(dim=1, keepdim=True))
 
-    barycenter = outVectors.mean(dim=0)
-    barycenter *= torch.rsqrt((barycenter**2).mean())
-    meanAngles = (outVectors * barycenter).mean(dim=1)
-    meanDist = torch.sqrt(((barycenter-outVectors)**2).mean(dim=1)).mean(dim=0)
-    outDictData["Barycenter"] = {"meanDist": meanDist.item(),
-                                 "stdAngles": meanAngles.std().item(),
-                                 "meanAngles": meanAngles.mean().item()}
-
-    path = basePath + "_data.json"
-    outDictData["args"] = args
-
-    with open(path, 'w') as file:
-        json.dump(outDictData, file, indent=2)
 
     pathVectors = basePath + "vectors.pt"
     torch.save(outVectors, open(pathVectors, 'wb'))

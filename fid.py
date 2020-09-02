@@ -11,7 +11,7 @@ from model import Generator
 from calc_inception import load_patched_inception_v3
 from dataset import *
 from torchvision import transforms, utils
-
+from parser_utils import *
 from utils import *
 
 @torch.no_grad()
@@ -66,21 +66,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--truncation', type=float, default=1)
-    parser.add_argument('--truncation_mean', type=int, default=4096)
-    parser.add_argument('--batch', type=int, default=64)
-    parser.add_argument('--n_sample', type=int, default=50000)
-    parser.add_argument('--size', type=int, default=256)
-    parser.add_argument('--inception', type=str, default=None, required=True)
-    parser.add_argument("--channel_multiplier", type=int, default=1)
-    parser.add_argument('ckpt', metavar='CHECKPOINT')
-    parser.add_argument('--path', required=True)
-    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
-    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
-    parser.add_argument("--multiview", action = "store_true")
-    parser.add_argument('--labels', nargs='*', help='List of element used for classification', type=str, default = [])
-    parser.add_argument('--labels_inspirationnal', nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
-    parser.add_argument('--csv_path', type = str, default = None)    
+    parser_dataset.create_parser_dataset(parser)
+    parser_network.create_parser_network(parser)
+    parser_fid.create_parser_fid(parser)
+    
+
+   
     args = parser.parse_args()
 
 
@@ -97,7 +88,7 @@ if __name__ == '__main__':
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-    dataset = Dataset(args.path,
+    dataset = Dataset(args.folder,
         transform, args.size, 
         columns = args.labels,
         columns_inspirationnal = args.labels_inspirationnal,
@@ -117,7 +108,6 @@ if __name__ == '__main__':
     ).to(device)
 
     g.load_state_dict(ckpt['g_ema'])
-    # g = nn.DataParallel(g)
     g.eval()
 
     if args.truncation < 1:
@@ -138,7 +128,7 @@ if __name__ == '__main__':
     sample_mean = np.mean(features, 0)
     sample_cov = np.cov(features, rowvar=False)
 
-    with open(args.inception, 'rb') as f:
+    with open(args.feature_path, 'rb') as f:
         embeds = pickle.load(f)
         real_mean = embeds['mean']
         real_cov = embeds['cov']
