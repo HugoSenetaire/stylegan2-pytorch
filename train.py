@@ -22,6 +22,7 @@ except ImportError:
 
 from model import Generator, Discriminator
 from dataset import Dataset
+from parser import *
 from distributed import (
     get_rank,
     synchronize,
@@ -31,6 +32,7 @@ from distributed import (
 )
 from non_leaking import augment
 
+from parser_utils import *
 
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
@@ -305,55 +307,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 if __name__ == "__main__":
     device = "cuda"
     parser = argparse.ArgumentParser()
-    # Dataset parameters 
-    parser.add_argument("path", type=str)
-    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
-    parser.add_argument("--multiview", action = "store_true")
-    parser.add_argument("--labels", nargs='*', help='List of element used for classification', type=str, default = [])
-    parser.add_argument("--labels_inspirationnal", nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
-    parser.add_argument("--csv_path", type = str, default = None)  
-    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
-    parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")  
 
-
-    # Network parameters
-    parser.add_argument("--discriminator_type", type=str, default = "design", help = "option : bilinear/design ")
-    parser.add_argument("--latent", type = int, default = 512)
-    parser.add_argument("--n_mlp", type = int, default = 8)
-    parser.add_argument("--ckpt", type=str, default=None)
-
-
-    # Training parameters
-    parser.add_argument("--iter", type=int, default=800000)
-    parser.add_argument("--batch", type=int, default=16)
-    parser.add_argument("--progressive", action="store_true")
-    parser.add_argument("--size", type=int, default=256)
-    parser.add_argument("--upscale_every", type = int, default = 2000)
-    parser.add_argument("--max_size",type=int, default = 512)
-    parser.add_argument("--upscale_factor", type=int, default = 2)
-    parser.add_argument("--r1", type=float, default=10)
-    parser.add_argument("--path_regularize", type=float, default=2)
-    parser.add_argument("--path_batch_shrink", type=int, default=2)
-    parser.add_argument("--d_reg_every", type=int, default=16)
-    parser.add_argument("--g_reg_every", type=int, default=4)
-    parser.add_argument("--mixing", type=float, default=0.9)
-    parser.add_argument("--lr", type=float, default=0.002)
-    parser.add_argument("--channel_multiplier", type=int, default=2)
-    parser.add_argument("--augment", action="store_true")
-    parser.add_argument("--augment_p", type=float, default=0)
-    parser.add_argument("--ada_target", type=float, default=0.6)
-    parser.add_argument("--ada_length", type=int, default=500 * 1000)
-    parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
-    parser.add_argument("--lambda_inspiration_gen", type=float, default=1.0)
-
-
-    # Utils parameters :
-    parser.add_argument("--wandb", action="store_true")
-    parser.add_argument("--local_rank", type=int, default=0)
-    parser.add_argument("--output_prefix", type=str, default = None)
-    parser.add_argument("--save_img_every", type=int, default = 100)
-    parser.add_argument("--save_model_every", type = int, default = 1000)
-    parser.add_argument("--n_sample", type=int, default=64)
+    create_parser_dataset(parser)
+    create_parser_network(parser)
+    create_parser_train(parser)
 
 
 

@@ -530,6 +530,7 @@ if __name__ == "__main__":
     input = baseTransform(img)
     input = input.view(1, input.size(0), input.size(1), input.size(2))
 
+
     # pathsModel = getVal(kwargs, "featureExtractor", None)
     pathsModel = args.featureExtractor
     featureExtractors = []
@@ -596,8 +597,6 @@ if __name__ == "__main__":
 
     path = basePath + ".jpg"
     # visualisation.saveTensor(img, (img.size(2), img.size(3)), path)
-    print(type(img))
-    print(img.shape)
     # torch.save(img, open(path,'wb'))
 
     utils.save_image(
