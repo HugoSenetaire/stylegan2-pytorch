@@ -382,12 +382,6 @@ if __name__ == "__main__":
         multiview = args.multiview,
         csv_path = args.csv_path
     )
-    loader = data.DataLoader(
-        dataset,
-        batch_size=args.batch,
-        sampler=data_sampler(dataset, shuffle=True, distributed=args.distributed),
-        drop_last=True,
-    )
 
     latent_label_dim = dataset.get_len()
 
