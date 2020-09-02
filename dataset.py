@@ -269,7 +269,7 @@ class Dataset(data.Dataset):
     def listing_one_hot(self,batch_size):
         # TODO
         # Code beaucoup trop brouillon à modifier
-        one_hot = torch.zeros((batch_size,self.get_len(type="label"))
+        one_hot = torch.zeros((batch_size,self.get_len(type="label")))
         dic_label = {}
         for k in range(batch_size):
             previous_size = 0
