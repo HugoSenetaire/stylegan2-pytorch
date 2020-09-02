@@ -313,8 +313,6 @@ if __name__ == "__main__":
     create_parser_train(parser)
 
 
-
-
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -344,7 +342,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-    dataset = Dataset(args.path,
+    dataset = Dataset(args.folder,
         transform, args.size, 
         columns = args.labels,
         columns_inspirationnal = args.labels_inspirationnal,

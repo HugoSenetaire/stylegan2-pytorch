@@ -33,6 +33,8 @@ from distributed import (
 from utils import *
 from loss import *
 from non_leaking import augment
+from parser_utils import *
+
 
 from create_feature_extractor import FeatureTransform
 
@@ -334,68 +336,11 @@ def gradientDescentOnInput(model,
 
 
 
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
-
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
-
 if __name__ == "__main__":
     device = "cuda"
 
     parser = argparse.ArgumentParser()
-
-    parser.add_argument("path", type=str)
-    parser.add_argument("--batch", type=int, default=16)
-    parser.add_argument("--size", type=int, default=256)
-    parser.add_argument("--r1", type=float, default=10)
-    parser.add_argument("--ckpt", type=str, default=None)
-    parser.add_argument("--channel_multiplier", type=int, default=1)
-    parser.add_argument("--wandb", action="store_true")
-    parser.add_argument("--local_rank", type=int, default=0)
-    parser.add_argument("--augment", action="store_true")
-    parser.add_argument("--augment_p", type=float, default=0)
-    parser.add_argument("--ada_target", type=float, default=0.6)
-    parser.add_argument("--ada_length", type=int, default=500 * 1000)
-    parser.add_argument("--output_prefix", type=str, default = None)
-    parser.add_argument("--iter", type=int, default = 2000)
-    parser.add_argument('-f', '--featureExtractor', help="Path to the feature \
-                        extractor", nargs='*',
-                        type=str, dest="featureExtractor")
-    parser.add_argument('--input_image', type=str, dest="inputImage",
-                        help="Path to the input image.")
-    parser.add_argument('-N', type=int, dest="nRuns",
-                        help="Number of gradient descent to run at the same \
-                        time. Being too greedy may result in memory error.",
-                        default=1)
-    parser.add_argument('-l', type=float, dest="learningRate",
-                        help="Learning rate",
-                        default=1)
-    parser.add_argument('-S', '--suffix', type=str, dest='suffix',
-                        help="Output's suffix", default="inspiration")
-    parser.add_argument('-R', '--rLoss', type=float, dest='lambdaD',
-                        help="Realism penalty", default=0.03)
-    parser.add_argument('--nSteps', type=int, dest='nSteps',
-                        help="Number of steps", default=1000)
-    parser.add_argument('--weights', type=float, dest='weights',
-                        nargs='*', help="Weight of each classifier. Default \
-                        value is one. If specified, the number of weights must\
-                        match the number of feature exatrcators.")
-    parser.add_argument('--gradient_descent', help='gradient descent',
-                        action='store_true')
-    parser.add_argument('--random_search', help='Random search',
-                        action='store_true')
-    parser.add_argument('--nevergrad', type=str,
-                        choices=['CMA', 'DE', 'PSO', 'TwoPointsDE',
-                                 'PortfolioDiscreteOnePlusOne',
-                                 'DiscreteOnePlusOne', 'OnePlusOne'])
-    parser.add_argument('--save_descent', help='Save descent',
-                        action='store_true')
-
+    create
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -416,19 +361,25 @@ if __name__ == "__main__":
     
     args.latent = 512
     args.n_mlp = 8
-
     args.start_iter = 0
     size = args.size
-
     transform = transforms.Compose(
-        [   
-            transforms.Lambda(convert_transparent_to_rgb),
-            transforms.Resize(args.size),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-        ]
+            [   
+                transforms.Lambda(convert_transparent_to_rgb),
+                transforms.RandomHorizontalFlip(),
+                transforms.Resize((args.size,args.size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+    dataset = Dataset(args.folder,
+        transform, args.size, 
+        columns = args.labels,
+        columns_inspirationnal = args.labels_inspirationnal,
+        dataset_type = args.dataset_type,
+        multiview = args.multiview,
+        csv_path = args.csv_path
     )
-    dataset = Dataset(args.path, transform, args.size)
     loader = data.DataLoader(
         dataset,
         batch_size=args.batch,
@@ -438,24 +389,28 @@ if __name__ == "__main__":
 
     latent_label_dim = dataset.get_len()
 
-   
+
     generator = Generator(
         args.size, args.latent, args.n_mlp,
-         channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim
+        channel_multiplier=args.channel_multiplier,
+        latent_label_dim=latent_label_dim,
     ).to(device)
-     
+
+
     discriminator = Discriminator(
         args.size, channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim,
+        latent_label_dim= latent_label_dim,
+        dic_latent_label_dim=dataset.dic_column_dim,
+        dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
+        device=device,
+        discriminator_type=args.discriminator_type
     ).to(device)
-    
+
     g_ema = Generator(
         args.size, args.latent, args.n_mlp,
-         channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim
+        channel_multiplier=args.channel_multiplier,
+        latent_label_dim=latent_label_dim
     ).to(device)
-    g_ema.eval()
 
 
 
@@ -492,37 +447,15 @@ if __name__ == "__main__":
         )
 
 
-    # if get_rank() == 0 and wandb is not None and args.wandb:
-    #     wandb.init(project="stylegan 2")
-
-    # Get name for experience
-    # name = getVal(args, "name", None)
-    # name = args.name
-    # if name is None:
-        # raise ValueError("You need to input a name")
-
-    
-
-
-
-    # Get options
-    # scale = getVal(args, "scale", None)
-    # iter = getVal(args, "iter", None)
-    # nRuns = getVal(args, "nRuns", 1)
-    # scale = args.scale
+    # Get option
     iter = args.iter
     nRuns = args.nRuns
 
     # Load the image
-    ## targetSize = visualizer.model.getSize()
     targetSize = size
-    ## baseTransform = standardTransform(targetSize)
     baseTransform = transform
-    # visualizer = GANVisualizer(
-    #     pathModel, modelConfig, modelType, visualisation)
 
     # Treating image
-    # imgPath = getVal(args, "inputImage", None)
     imgPath = args.inputImage
     if imgPath is None:
         raise ValueError("You need to input an image path")
@@ -530,18 +463,10 @@ if __name__ == "__main__":
     input = baseTransform(img)
     input = input.view(1, input.size(0), input.size(1), input.size(2))
 
-
-    # pathsModel = getVal(kwargs, "featureExtractor", None)
     pathsModel = args.featureExtractor
     featureExtractors = []
     imgTransforms = []
-    visualisation = None
 
-    # if weights is not None:
-    #     if pathsModel is None or len(pathsModel) != len(weights):
-    #         raise AttributeError(
-    #             "The number of weights must match the number of models")
-    
 
     weights=None
 
@@ -583,7 +508,6 @@ if __name__ == "__main__":
                                                    imgTransforms,
                                                    dataset,
                                                    device,
-                                                   visualizer=visualisation,
                                                    lambdaD=args.lambdaD,
                                                    nSteps=args.nSteps,
                                                    weights=weights,
@@ -596,7 +520,6 @@ if __name__ == "__main__":
     torch.save(outVectors, open(pathVectors, 'wb'))
 
     path = basePath + ".jpg"
-    # visualisation.saveTensor(img, (img.size(2), img.size(3)), path)
     # torch.save(img, open(path,'wb'))
 
     utils.save_image(

@@ -5,7 +5,7 @@ import os
 
 
 def create_parser_dataset(parser):
-    parser.add_argument("path", type=str)
+    parser.add_argument("--folder", type=str)
     parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
     parser.add_argument("--multiview", action = "store_true")
     parser.add_argument("--labels", nargs='*', help='List of element used for classification', type=str, default = [])
