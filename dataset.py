@@ -247,32 +247,6 @@ class Dataset(data.Dataset):
                     dic_label[column].append(aux)
                 one_hot[k][aux+previous_size]=1
                 previous_size +=len(self.dic[column])
-
-        # aux = np.random.randint(len(self.dic[self.columns[0]]))
-        # dic_label = {self.columns[0] : [aux]}
-        # one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-        # for i,column in enumerate(self.columns):
-        #     if i == 0 :
-        #         continue
-        #     aux = np.random.randint(len(self.dic[column]))
-        #     dic_label[column] = [aux]
-        #     one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            
-        
-        # one_hot = one_hot[None,:]
-        # for k in range(batch_size-1):
-        #     aux = np.random.randint(len(self.dic[self.columns[0]]))
-        #     dic_label[self.columns[0]].append(aux)
-        #     aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-            
-        #     for i,column in enumerate(self.columns):
-        #         if i == 0 :
-        #             continue
-
-        #         aux = np.random.randint(len(self.dic[column]))
-        #         dic_label[column].append(aux)
-        #         aux_one_hot = torch.cat((aux_one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
         
         for column in self.columns:
             dic_label[column] = torch.tensor(dic_label[column])
@@ -304,47 +278,61 @@ class Dataset(data.Dataset):
         return one_hot,dic_label
 
     def random_weights(self,batch_size):
-        # TODO
-        # Code beaucoup trop brouillon à modifier
         if len(self.columns_inspirationnal)==0 :
             return None
 
         
-        possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
-        weights = torch.zeros((possibleLength,),dtype = torch.float32)
-        weights = weights.new_full((possibleLength,),1./possibleLength)
-        dic_weights = {self.columns_inspirationnal[0] : weights[None, :]}
-        one_hot = weights
-        for i,column in enumerate(self.columns_inspirationnal):
-            if i == 0 :
-                continue
-            possibleLength = len(self.dic_inspirationnal[column])
-            weights = torch.zeros((possibleLength,),dtype = torch.float32)
-            weights = weights.new_full((possibleLength,),1./possibleLength)
-            dic_weights[column] = [weights[None,:]]
-            one_hot = torch.cat((one_hot,weights))
+        totalLen = self.get_len(type="inspirationnal")
+        weights = torch.zeros((batch_size,totalLen))
+        dic_weights = {}
+        for k in range(batch_size):
+            previous_size = 0
+            for i,column in enumerate(self.columns):
+                possibleLen = len(self.dic_inspirationnal[column])
+                aux_weights = torch.zeros((possibleLen,),dtype = torch.float32).new_full((possibleLen,),1./possibleLen)
+                weights[k][previous_size:previous_size+possibleLen]= aux_weights
+                if k==0 :
+                    dic_weights[column] = aux_weights[None,:]
+                else :
+                    dic_weights[column]= torch.cat([dic_weights[column],aux_weights[None,:]])
+                previous_size +=possibleLen
+
+
+        return weights, dic_weights
+        # weights = torch.zeros((possibleLength,),dtype = torch.float32)
+        # weights = weights.new_full((possibleLength,),1./possibleLength)
+        # dic_weights = {self.columns_inspirationnal[0] : weights[None, :]}
+        # one_hot = weights
+        # for i,column in enumerate(self.columns_inspirationnal):
+        #     if i == 0 :
+        #         continue
+        #     possibleLength = len(self.dic_inspirationnal[column])
+        #     weights = torch.zeros((possibleLength,),dtype = torch.float32)
+        #     weights = weights.new_full((possibleLength,),1./possibleLength)
+        #     dic_weights[column] = [weights[None,:]]
+        #     one_hot = torch.cat((one_hot,weights))
             
         
-        one_hot = one_hot[None,:]
-        for k in range(1,batch_size):
-            possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
-            weights = torch.zeros((possibleLength,),dtype = torch.float32)
-            weights = weights.new_full((possibleLength,),1./possibleLength)
-            dic_weights[self.columns_inspirationnal[0]] = torch.cat([dic_weights[self.columns_inspirationnal[0]], weights[None,:]])
-            aux_one_hot = weights
+        # one_hot = one_hot[None,:]
+        # for k in range(1,batch_size):
+        #     possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
+        #     weights = torch.zeros((possibleLength,),dtype = torch.float32)
+        #     weights = weights.new_full((possibleLength,),1./possibleLength)
+        #     dic_weights[self.columns_inspirationnal[0]] = torch.cat([dic_weights[self.columns_inspirationnal[0]], weights[None,:]])
+        #     aux_one_hot = weights
           
-            for i,column in enumerate(self.columns_inspirationnal):
-                if i == 0 :
-                    continue
-                possibleLength = len(self.dic_inspirationnal[column])
-                weights = torch.zeros((possibleLength,),dtype = torch.float32)
-                weights = weights.new_full((possibleLength,),1./possibleLength)
-                dic_weights[column] = torch.cat([dic_weights[column], weights[None,:]])
-                aux_one_hot = torch.cat((aux_one_hot,weights))
+        #     for i,column in enumerate(self.columns_inspirationnal):
+        #         if i == 0 :
+        #             continue
+        #         possibleLength = len(self.dic_inspirationnal[column])
+        #         weights = torch.zeros((possibleLength,),dtype = torch.float32)
+        #         weights = weights.new_full((possibleLength,),1./possibleLength)
+        #         dic_weights[column] = torch.cat([dic_weights[column], weights[None,:]])
+        #         aux_one_hot = torch.cat((aux_one_hot,weights))
 
-            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
+        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
 
-        return one_hot,dic_weights
+        # return one_hot,dic_weights
 
     
 
@@ -357,9 +345,6 @@ class Dataset(data.Dataset):
                 sample_label, dic_label = self.random_one_hot(batch_size)
             else :
                 raise(ValueError("Label method not recognized"))
-            print("SAMPLE MANAGER SAMPLE LABEL")
-            print("Sample method : ", label_method)
-            print(sample_label)
             sample_label = sample_label.to(device)
             for column in self.columns :
                 dic_label[column] = dic_label[column].to(device)
