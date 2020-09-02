@@ -578,6 +578,7 @@ class Generator(nn.Module):
 
         elif len(styles) >= len(self.convs):
             latent = torch.cat([style.unsqueeze(1) for style in styles],1)
+            print(latent)
         
         else:
             if inject_index is None:
