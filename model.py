@@ -576,7 +576,7 @@ class Generator(nn.Module):
             else:
                 latent = styles[0]
 
-        elif len(styles) >= len(self.convs):
+        elif len(styles) >= len(self.convs) and len(styles)>2:
             print("STYLE SHAPE")
             print(len(styles))
             print(styles[0].shape)
