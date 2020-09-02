@@ -37,3 +37,4 @@ def create_parser_inspiration(parser):
                                  'DiscreteOnePlusOne', 'OnePlusOne'])
     parser.add_argument('--save_descent', help='Save descent',
                         action='store_true')
+    parser.add_argument('--iter', type = int, default = 3000, help= "Nb iter for descent")
