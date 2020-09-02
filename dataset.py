@@ -365,6 +365,7 @@ class Dataset(data.Dataset):
             else :
                 raise(ValueError("Label method not recognized"))
             print("SAMPLE MANAGER SAMPLE LABEL")
+            print("Sample method : ", label_method)
             print(sample_label)
             sample_label = sample_label.to(device)
             for column in self.columns :
