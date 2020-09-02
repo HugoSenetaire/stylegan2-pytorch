@@ -227,13 +227,8 @@ class Dataset(data.Dataset):
     ### Sampling methods
     
     def random_one_hot(self,batch_size):
-        # TODO
-        # Code beaucoup trop brouillon à modifier
-        
         if len(self.columns)==0 :
             return None
-
-
         
         one_hot = torch.zeros((batch_size,self.get_len(type="label")))
         dic_label = {}
@@ -255,8 +250,6 @@ class Dataset(data.Dataset):
 
 
     def listing_one_hot(self,batch_size):
-        # TODO
-        # Code beaucoup trop brouillon à modifier
         if len(self.columns) == 0 :
             return None
         
@@ -281,7 +274,6 @@ class Dataset(data.Dataset):
         if len(self.columns_inspirationnal)==0 :
             return None
 
-        
         totalLen = self.get_len(type="inspirationnal")
         weights = torch.zeros((batch_size,totalLen))
         dic_weights = {}
@@ -297,44 +289,34 @@ class Dataset(data.Dataset):
                     dic_weights[column]= torch.cat([dic_weights[column],aux_weights[None,:]])
                 previous_size +=possibleLen
 
+        return weights, dic_weights
+
+    def random_extended_weights(self,batch_size):
+        if len(self.columns_inspirationnal)==0 :
+            return None
+
+        totalLen = self.get_len(type="inspirationnal")
+        weights = torch.zeros((batch_size,totalLen))
+        dic_weights = {}
+        for k in range(batch_size):
+            previous_size = 0
+            for i,column in enumerate(self.columns_inspirationnal):
+                possibleLen = len(self.dic_inspirationnal[column])
+                nbFuzzy = np.random.randint(1,possibleLen) 
+                fuzzyTaken = np.random.choice(possibleLen, nbFuzzy, replace=False)
+                aux_weights = np.zeros((possibleLen,))
+                for taken in fuzzyTaken :
+                    aux_weights[k][taken+previous_size] = 1./nbFuzzy
+                aux_weights = torch.tensor(aux_weights, dtype=torch.float32)
+                weights[k][previous_size:previous_size+possibleLen]= aux_weights
+                if k==0 :
+                    dic_weights[column] = aux_weights[None,:]
+                else :
+                    dic_weights[column]= torch.cat([dic_weights[column],aux_weights[None,:]])
+                previous_size +=possibleLen
 
         return weights, dic_weights
-        # weights = torch.zeros((possibleLength,),dtype = torch.float32)
-        # weights = weights.new_full((possibleLength,),1./possibleLength)
-        # dic_weights = {self.columns_inspirationnal[0] : weights[None, :]}
-        # one_hot = weights
-        # for i,column in enumerate(self.columns_inspirationnal):
-        #     if i == 0 :
-        #         continue
-        #     possibleLength = len(self.dic_inspirationnal[column])
-        #     weights = torch.zeros((possibleLength,),dtype = torch.float32)
-        #     weights = weights.new_full((possibleLength,),1./possibleLength)
-        #     dic_weights[column] = [weights[None,:]]
-        #     one_hot = torch.cat((one_hot,weights))
-            
-        
-        # one_hot = one_hot[None,:]
-        # for k in range(1,batch_size):
-        #     possibleLength = len(self.dic_inspirationnal[self.columns_inspirationnal[0]])
-        #     weights = torch.zeros((possibleLength,),dtype = torch.float32)
-        #     weights = weights.new_full((possibleLength,),1./possibleLength)
-        #     dic_weights[self.columns_inspirationnal[0]] = torch.cat([dic_weights[self.columns_inspirationnal[0]], weights[None,:]])
-        #     aux_one_hot = weights
-          
-        #     for i,column in enumerate(self.columns_inspirationnal):
-        #         if i == 0 :
-        #             continue
-        #         possibleLength = len(self.dic_inspirationnal[column])
-        #         weights = torch.zeros((possibleLength,),dtype = torch.float32)
-        #         weights = weights.new_full((possibleLength,),1./possibleLength)
-        #         dic_weights[column] = torch.cat([dic_weights[column], weights[None,:]])
-        #         aux_one_hot = torch.cat((aux_one_hot,weights))
 
-        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
-
-        # return one_hot,dic_weights
-
-    
 
     def sample_manager(self, batch_size, device, label_method = "random", inspiration_method = "full_random"):
 
@@ -352,7 +334,8 @@ class Dataset(data.Dataset):
 
         if len(self.columns_inspirationnal)>0:
             if inspiration_method == 'fullrandom':
-                sample_weights, dic_weights = self.random_weights(batch_size)
+                # sample_weights, dic_weights = self.random_weights(batch_size)
+                sample_weights, dic_weights = self.random_extended_weights(batch_size)
             else :
                 raise(ValueError("Inspiration method not recognized"))
             sample_weights = sample_weights.to(device)
