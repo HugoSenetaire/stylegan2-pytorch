@@ -340,7 +340,9 @@ if __name__ == "__main__":
     device = "cuda"
 
     parser = argparse.ArgumentParser()
-    create
+    parser_network.create_parser_network()
+    parser_dataset.create_parser_dataset()
+    parser_inspiration.create_parser_inspiration()
     args = parser.parse_args()
 
     n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
