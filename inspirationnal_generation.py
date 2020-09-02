@@ -156,7 +156,7 @@ def gradientDescentOnInput(model,
 
     #noiseOut = model.test(varNoise, getAvG=True, toCPU=False)
     # label,_ = dataset.random_one_hot(input.size(0)).to(device)
-    label,_ = dataset.random_one_hot(input.size(0))
+    label,dic_label = dataset.random_one_hot(input.size(0))
     label = label.to(device)
     # print(label)
     noiseOut = model(varNoise,labels = label)
@@ -274,8 +274,8 @@ def gradientDescentOnInput(model,
                 loss.sum(dim=0).backward(retain_graph=retainGraph)
 
         if lambdaD > 0:
-
-            loss = -lambdaD * discriminator(noiseOut,labels = label)[:, 0]
+            print(discriminator(noiseOut,labels=label)
+            # loss = -lambdaD * discriminator(noiseOut,labels = label)[:, 0]
             sumLoss += loss
 
             if not randomSearch:
