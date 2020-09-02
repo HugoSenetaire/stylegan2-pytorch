@@ -60,6 +60,8 @@ def creativity_loss(pred,weights,device):
     weights_aux = weights.flatten()
     pred_output = torch.nn.functional.cross_entropy(pred_aux,neo_labels, reduce=False)
     print(pred_output)
+    print(torch.dot(weights_aux,pred_output))
+    print(torch.mean(pred_output))
     return torch.dot(weights_aux,pred_output)
 
     
