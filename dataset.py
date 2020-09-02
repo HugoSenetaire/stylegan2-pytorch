@@ -306,7 +306,7 @@ class Dataset(data.Dataset):
                 fuzzyTaken = np.random.choice(possibleLen, nbFuzzy, replace=False)
                 aux_weights = np.zeros((possibleLen,))
                 for taken in fuzzyTaken :
-                    aux_weights[k][taken+previous_size] = 1./nbFuzzy
+                    aux_weights[taken] = 1./nbFuzzy
                 aux_weights = torch.tensor(aux_weights, dtype=torch.float32)
                 weights[k][previous_size:previous_size+possibleLen]= aux_weights
                 if k==0 :
