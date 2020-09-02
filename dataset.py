@@ -278,7 +278,7 @@ class Dataset(data.Dataset):
                 else :
                     dic_label[column].append(aux)
                 one_hot[k][aux+previous_size]=1
-                previous_size +=len(self.columns[column])
+                previous_size +=len(self.dic[column])
         # if len(self.columns)==0 :
         #     return None
         # aux = 0
