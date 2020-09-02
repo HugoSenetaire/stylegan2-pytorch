@@ -94,7 +94,7 @@ def gradientDescentOnInput(model,
                            device,
                            weights=None,
                            visualizer=None,
-                           lambdaD=0.03,
+                           lambdaD=0.1,
                            nSteps=1000, #6000
                            randomSearch=False,
                            nevergrad=None,
