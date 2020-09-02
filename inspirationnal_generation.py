@@ -274,7 +274,7 @@ def gradientDescentOnInput(model,
                 loss.sum(dim=0).backward(retain_graph=retainGraph)
 
         if lambdaD > 0:
-            print(discriminator(noiseOut,labels=label)
+            print(discriminator(noiseOut,labels=label))
             # loss = -lambdaD * discriminator(noiseOut,labels = label)[:, 0]
             sumLoss += loss
 
