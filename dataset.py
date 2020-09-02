@@ -273,7 +273,7 @@ class Dataset(data.Dataset):
             previous_size = 0
             for i,column in enumerate(self.columns):
                 aux = k
-                if k=0 :
+                if k==0 :
                     dic_label[column] = [aux]
                 else :
                     dic_label[column].append(aux)
