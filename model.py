@@ -578,7 +578,8 @@ class Generator(nn.Module):
 
         elif len(styles) >= len(self.convs):
             print("STYLE SHAPE")
-            print(styles.shape)
+            print(len(styles))
+            print(styles[0].shape)
             latent = torch.cat([style.unsqueeze(1) for style in styles],1)
             print("LATENT SHAPE")
             print(latent.shape)
