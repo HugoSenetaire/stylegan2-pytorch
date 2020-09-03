@@ -215,7 +215,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
         if args.mask and args.mask_enforcer == "zero_based":
-            zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)s
+            zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
             zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask, noise = 'zero', randomize_noise = False)
 
 
