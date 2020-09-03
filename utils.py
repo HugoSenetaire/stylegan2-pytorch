@@ -71,7 +71,7 @@ def convert_to_greyscale(tensor):
 def saturation(tensor,device):
     return torch.where(tensor<0.98 * tensor.max(), torch.ones(tensor.shape).to(device)*-1., torch.ones(tensor.shape).to(device)*1.)
 
-def normalisation(tensor,device, normalisationLayer):
+def normalisation(tensor, normalisationLayer):
     tensor = normalisationLayer(tensor)
     return tensor
 
