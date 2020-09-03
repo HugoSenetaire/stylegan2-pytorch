@@ -71,6 +71,10 @@ def convert_to_greyscale(tensor):
 def saturation(tensor,device):
     return torch.where(tensor<0.98 * tensor.max(), torch.ones(tensor.shape).to(device)*-1., torch.ones(tensor.shape).to(device)*1.)
 
+def normalisation(tensor,device, normalisationLayer):
+    tensor = normalisationLayer(tensor)
+    return tensor
+
 def set_grad_none(model, targets):
     for n, p in model.named_parameters():
         if n in targets:
