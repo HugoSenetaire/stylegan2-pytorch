@@ -213,9 +213,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else :
             random_mask = None
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
         fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
-        zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask, noise = 'zero', randomize_noise = False)
+        if args.mask and args.mask_enforcer == "zero_based":
+            zero_noise = mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)s
+            zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask, noise = 'zero', randomize_noise = False)
 
 
 
@@ -229,14 +230,12 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
         if args.mask :
-            shape_loss = g_shape_loss(zero_img, random_mask)
-            print(real_img.max())
-            print(real_img.min())
-            print(random_mask.max())
-            print(random_mask.min())
-            print(zero_img.max())
-            print(zero_img.min())
-            non_saturating_loss = g_nonsaturating_loss(fake_pred)
+            if args.mask_enforcer == "zero_based":
+                shape_loss = g_shape_loss(zero_img, random_mask)
+                non_saturating_loss = g_nonsaturating_loss(fake_pred)
+            elif args.mask_enforcer == "saturation":
+                new_shape = torch.where(fake_img<0.98 * fake_img.max(), -1., 1.)
+                shape_loss = g_shape_loss()
             g_loss = non_saturating_loss + shape_loss
             loss_dict["gmask"] = shape_loss
             loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
