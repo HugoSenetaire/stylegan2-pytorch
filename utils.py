@@ -41,7 +41,13 @@ def make_noise(batch, latent_dim, n_noise, device):
 
 
 
+def make_zero_noise(batch, latent_dim, n_noise, device):
+    if n_noise == 1:
+        return torch.zeros(batch, latent_dim, device=device)
 
+    noises = torch.zeros(n_noise, batch, latent_dim, device=device).unbind(0)
+
+    return noises
 
 def mixing_noise(batch, latent_dim, prob, device, zero = False):
     if not zero :
