@@ -186,9 +186,9 @@ class Dataset(data.Dataset):
         path_mask = os.path.join(self.folder_mask,name+".jpg")
         if self.transform_mask is not None :
             mask = Image.open(path_mask).convert('L')
-            print(np.shape(mask))
-            mask_transform = self.transform_mask(mask)
             print(mask.shape)
+            mask_transform = self.transform_mask(mask)
+            print(mask_transform)
         else :
             mask_transform = None
     
