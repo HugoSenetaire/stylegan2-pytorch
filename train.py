@@ -261,7 +261,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
             random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(path_batch_size, device, "random", args.inspiration_method)
 
-             if args.mask :
+            if args.mask :
                 random_mask = dataset.random_mask(path_batch_size)
             else :
                 random_mask = None
@@ -296,9 +296,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         d_loss_val = loss_reduced["d"].mean().item()
         g_loss_val = loss_reduced["g"].mean().item()
+
+        
         if args.mask :
             g_classic_loss = loss_reduced["gclassic"].mean().item()
             g_mask_loss = loss_reduced["gmask"].mean().item()
+
+
         r1_val = loss_reduced["r1"].mean().item()
         path_loss_val = loss_reduced["path"].mean().item()
         real_score_val = loss_reduced["real_score"].mean().item()
