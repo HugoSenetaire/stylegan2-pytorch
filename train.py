@@ -414,6 +414,7 @@ if __name__ == "__main__":
             [
                 transforms.Resize((args.size,args.size)),
                 transforms.ToTensor(),
+                # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
             ]
         )
         args.mask = True
