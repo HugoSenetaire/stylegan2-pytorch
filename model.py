@@ -650,6 +650,7 @@ class Generator(nn.Module):
                 print("Error mask is None")
 
             print(mask)
+            print(mask.shape)
             mask_output = self.mask_extractor[0](mask)
             for layer in self.mask_extractor[1:] :
                 mask_output = layer(mask_output)
