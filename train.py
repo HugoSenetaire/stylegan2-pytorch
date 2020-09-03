@@ -230,6 +230,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.mask :
             shape_loss = g_shape_loss(zero_img, random_mask)
+            print(random_mask.max())
+            print(random_mask.min())
+            print(zero_img.max())
+            print(zero_img.min())
             non_saturating_loss = g_nonsaturating_loss(fake_pred)
             g_loss = non_saturating_loss + shape_loss
             loss_dict["gmask"] = shape_loss
