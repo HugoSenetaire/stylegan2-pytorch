@@ -243,7 +243,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 fake_img_grey_scale = normalisation(fake_img_grey_scale,normalisationLayer)
                 # print(fake_img_grey_scale.shape)
                 # print(fake_img_grey_scale[0])
-                random_mask_saturated = saturation(random_mask, device)
+                random_mask_saturated = saturation(random_mask, device).unsqueeze()
                 # print(random_mask_saturated.shape)
                 # print(random_mask_saturated[0])
                 new_shape = saturation(fake_img_grey_scale, device)
