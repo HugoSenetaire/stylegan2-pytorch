@@ -68,6 +68,9 @@ def convert_to_greyscale(tensor):
     tensor_greyscale = 0.21 * tensor[:,0,:,:] + 0.72 * tensor[:,1,:,:]  + 0.07 * tensor[:,2,:,:]
     return tensor_greyscale
 
+def saturation(tensor):
+    return torch.where(tensor<0.98 * tensor.max(), torch.ones(tensor.shape).to(device)*-1., torch.ones(tensor.shape).to(device)*1.)
+
 def set_grad_none(model, targets):
     for n, p in model.named_parameters():
         if n in targets:
