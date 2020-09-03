@@ -25,7 +25,7 @@ def create_parser_train(parser):
     parser.add_argument("--ada_length", type=int, default=500 * 1000)
     parser.add_argument("--lambda_classif_gen", type=float, default = 1.0)
     parser.add_argument("--lambda_inspiration_gen", type=float, default=1.0)
-    parser.add_argument("--mask_enforcer", type=str, default = "zero_based", "Options : zero_based, saturation")
+    parser.add_argument("--mask_enforcer", type=str, default = "zero_based",hekp = "Options : zero_based, saturation")
 
 
     # Utils parameters :
