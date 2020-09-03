@@ -235,7 +235,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 non_saturating_loss = g_nonsaturating_loss(fake_pred)
             elif args.mask_enforcer == "saturation":
                 new_shape = torch.where(fake_img<0.98 * fake_img.max(), torch.ones(fake_img.shape).to(device)*-1., torch.ones(fake_img.shape).to(device)*1.)
-                shape_loss = g_shape_loss()
+                shape_loss = g_shape_loss(new_shape, random_mask)
             g_loss = non_saturating_loss + shape_loss
             loss_dict["gmask"] = shape_loss
             loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
