@@ -495,7 +495,6 @@ class Generator(nn.Module):
         previous_num_layers = self.num_layers
         self.num_layers = (self.log_size - 2) * 2 + 1
 
-
         for layer_idx in range(self.num_layers):
             res = (layer_idx + 5) // 2
             shape = [1, 1, 2 ** res, 2 ** res]

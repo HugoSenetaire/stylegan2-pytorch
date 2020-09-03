@@ -297,7 +297,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         d_loss_val = loss_reduced["d"].mean().item()
         g_loss_val = loss_reduced["g"].mean().item()
 
-        
+
         if args.mask :
             g_classic_loss = loss_reduced["gclassic"].mean().item()
             g_mask_loss = loss_reduced["gmask"].mean().item()
@@ -405,7 +405,7 @@ if __name__ == "__main__":
     if args.mask is not None :
         transform_mask = transforms.Compose(
             [
-                transforms.Resize(args.size),
+                transforms.Resize((args.size,args.size)),
                 transforms.ToTensor(),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
             ]

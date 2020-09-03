@@ -1,4 +1,3 @@
-
 import math
 import random
 import os
@@ -95,7 +94,16 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
+
+    transform_mask = transforms.Compose(
+            [
+                transforms.Resize((dataset.image_size, dataset.image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
     dataset.transform = transform
+    dataset.transform_mask = transform_mask
 
 
     
