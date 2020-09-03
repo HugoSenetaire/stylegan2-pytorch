@@ -107,7 +107,7 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
             [
                 transforms.Resize((dataset.image_size, dataset.image_size)),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+                # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
             ]
         )
     dataset.transform = transform
