@@ -117,6 +117,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                                 )
 
         real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
+
         real_label = real_label.to(device)
         real_img = real_img.to(device)
         real_mask = real_mask.to(device)
@@ -237,6 +238,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 new_shape = torch.where(fake_img<0.98 * fake_img.max(), torch.ones(fake_img.shape).to(device)*-1., torch.ones(fake_img.shape).to(device)*1.)
                 print(fake_img[0][0])
                 print(fake_img.max())
+                print(new_shape.shape)
+                print(fake_img.shape)
                 print(new_shape[0][0])
                 print(random_mask[0][0])
                 shape_loss = g_shape_loss(new_shape, random_mask)
