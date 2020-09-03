@@ -426,10 +426,6 @@ class Generator(nn.Module):
                 self.mask_extractor.append(ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True))
                 in_channel_mask = out_channel_mask
 
-<<<<<<< HEAD
-
-=======
->>>>>>> progressive_mask_conditionning
         self.channels = {
             4: 512 ,
             8: 512 ,
