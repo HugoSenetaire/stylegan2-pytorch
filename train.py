@@ -236,8 +236,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
             elif args.mask_enforcer == "saturation":
                 fake_img_grey_scale = convert_to_greyscale(fake_img)
-                random_mask_saturated = saturation(random_mask)
-                new_shape = convert_to_greyscale(fake_img_grey_scale)
+                random_mask_saturated = saturation(random_mask,device)
+                new_shape = saturation(fake_img_grey_scale,device)
                 shape_loss = g_shape_loss(new_shape, random_mask_saturated)
             loss_dict["gclassic"] = g_loss
             g_loss += shape_loss
