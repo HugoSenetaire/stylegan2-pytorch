@@ -228,7 +228,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             fake_pred = select_index_discriminator(fake_pred,random_label)
 
 
-         if args.mask :
+        if args.mask :
             shape_loss = g_shape_loss(zero_img, random_mask)
             non_saturating_loss = g_nonsaturating_loss(fake_pred)
             g_loss = non_saturating_loss + shape_loss
