@@ -228,19 +228,17 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.discriminator_type == "bilinear":
             fake_pred = select_index_discriminator(fake_pred,random_label)
 
-
+        g_loss = g_nonsaturating_loss(fake_pred)
         if args.mask :
             if args.mask_enforcer == "zero_based":
                 shape_loss = g_shape_loss(zero_img, random_mask)
-                non_saturating_loss = g_nonsaturating_loss(fake_pred)
+
             elif args.mask_enforcer == "saturation":
                 new_shape = torch.where(fake_img<0.98 * fake_img.max(), torch.ones(fake_img.shape).to(device)*-1., torch.ones(fake_img.shape).to(device)*1.)
                 shape_loss = g_shape_loss(new_shape, random_mask)
-            g_loss = non_saturating_loss + shape_loss
+            g_loss += shape_loss
             loss_dict["gmask"] = shape_loss
-            loss_dict["gclassic"] =  g_nonsaturating_loss(fake_pred)
-        else :
-            g_loss = g_nonsaturating_loss(fake_pred)
+
 
         # Not sure it is really necessary if no conditionning, would be for the creativity loss :
         if args.discriminator_type == "design":
