@@ -235,14 +235,14 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
             elif args.mask_enforcer == "saturation":
                 new_shape = torch.where(fake_img<0.98 * fake_img.max(), torch.ones(fake_img.shape).to(device)*-1., torch.ones(fake_img.shape).to(device)*1.)
-                print(new_shape)
+                print(new_shape[0][0])
+                print(random_mask[0][0])
                 shape_loss = g_shape_loss(new_shape, random_mask)
             loss_dict["gclassic"] = g_loss
             g_loss += shape_loss
             loss_dict["gmask"] = shape_loss
 
 
-        # Not sure it is really necessary if no conditionning, would be for the creativity loss :
         if args.discriminator_type == "design":
             if latent_label_dim>0 :
                 for column in dataset.columns :
