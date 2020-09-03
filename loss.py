@@ -32,7 +32,11 @@ def d_r1_loss(real_pred, real_img):
 
     return grad_penalty
 
+def g_shape_loss(zero_pred,mask):
+    loss = torch.nn.L1Loss(reduction = 'sum')
+    return loss(zero_pred,mask)
 
+    
 def g_nonsaturating_loss(fake_pred):
     loss = F.softplus(-fake_pred).mean()
 

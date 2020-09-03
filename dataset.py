@@ -12,6 +12,7 @@ from shutil import rmtree
 from functools import partial
 import multiprocessing
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import copy
@@ -69,11 +70,15 @@ class Dataset(data.Dataset):
         dataset_type = "unique",
         multiview = False,
         csv_path = None,
-        transparent = False):
+        transparent = False,
+        transform_mask = None):
 
 
         super().__init__()
         self.folder = folder
+
+        self.transform_mask = transform_mask
+        self.folder_mask = self.folder + "_masks"
         self.image_size = image_size
         self.columns = columns
         self.columns_inspirationnal = columns_inspirationnal
@@ -137,6 +142,7 @@ class Dataset(data.Dataset):
             print(self.df[column].value_counts())
 
         self.transform = transform
+        self.transform_mask = transform_mask
 
     def __len__(self):
         return len(self.df)
@@ -176,6 +182,13 @@ class Dataset(data.Dataset):
         # TODO Very bad way to deal with the problem of the dataset
         img = Image.open(path).convert('RGB').resize((self.image_size,self.image_size))
         img_transform = self.transform(img)
+
+        path_mask = os.path.join(self.folder_mask,name+".jpg")
+        if self.transform_mask is not None :
+            mask = Image.open(path_mask).convert('RGB')
+            mask_transform = self.transform_mask(mask)
+        else :
+            mask_transform = None
     
         x,dic_label = self._create_one_hot(data, self.columns,self.dic)
         y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
@@ -183,13 +196,13 @@ class Dataset(data.Dataset):
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0 :
                 x = torch.cat([x,y])
-            return x, img_transform, dic_label, dic_inspiration
+            return x, img_transform, dic_label, dic_inspiration, mask_transform
 
         elif len(self.columns_inspirationnal)>0:
-            return y, img_transform, dic_label, dic_inspiration
+            return y, img_transform, dic_label, dic_inspiration, mask_transform
             
         else :
-            return -1, img_transform, dic_label, dic_inspiration
+            return -1, img_transform, dic_label, dic_inspiration, mask_transform
    
 
         
@@ -358,6 +371,30 @@ class Dataset(data.Dataset):
             return output,None,dic_weights
         else :
             return None,None,None
+
+        
+    def random_mask(self,batch_size, return_name = False):
+        list_name = []
+        index = np.random.randint(0,len(self.df))
+        data = self.df.iloc[index]
+        name = data.image_id
+        path_mask = os.path.join(self.folder_mask,name+".jpg")
+        mask = Image.open(path_mask).convert('RGB')
+        mask_transform = self.transform_mask(mask)
+        total = mask_transform[None, :, :, :]
+        list_name.append(name)
+        for i in range(batch_size-1):
+            index = np.random.randint(0,len(self.df))
+            data = self.df.iloc[index]
+            name = data.image_id
+            path_mask = os.path.join(self.folder_mask,name+".jpg")
+            mask = Image.open(path_mask).convert('RGB')
+            mask_transform = self.transform_mask(mask)[None,:,:,:]
+            total = torch.cat([total,mask_transform],dim=0)
+            list_name.append(name)
+        if return_name :
+            return total,list_name
+        return total
 
 ## Manage category for exploration of latent space :
     def category_manager(self, batch_size, device, label_list = None, label_inspiration_list = None, label_method = "random", inspiration_method = "full_random"):

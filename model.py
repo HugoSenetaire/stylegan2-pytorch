@@ -373,16 +373,37 @@ class Generator(nn.Module):
         channel_multiplier=2,
         blur_kernel=[1, 3, 3, 1],
         lr_mlp=0.01,
+        mask = False,
     ):
         super().__init__()
 
         self.size = size
+        self.mask = mask
         self.blur_kernel = blur_kernel
         self.style_dim = style_dim 
         
         self.latent_label_dim = latent_label_dim
         self.total_style_dim = self.style_dim + self.latent_label_dim
+        log_size = int(math.log(size, 2))
+        self.log_size = log_size
+
+        self.channels_mask = {
+            4: 256,
+            8: 128 ,
+            16: 128,
+            32: 64,
+            64: 64 * channel_multiplier,
+            128: 32 * channel_multiplier,
+            256: 16 * channel_multiplier,
+            512: 8 * channel_multiplier,
+            1024: 4 * channel_multiplier,
+        }
+
+        if mask :
+            self.total_style_dim += 4*4*self.channels_mask[4]
         
+        
+
         
         layers = [PixelNorm()]
 
@@ -394,8 +415,21 @@ class Generator(nn.Module):
             )
 
         self.style = nn.Sequential(*layers)
+        
 
+        if mask :
+            self.mask_extractor = nn.ModuleList()
+            in_channel_mask = self.channels_mask[size]
+            self.mask_extractor.append(ConvLayer(3, self.channels_mask[size], 1))
+            for i in range(log_size, 2, -1):
+                out_channel_mask = self.channels_mask[2 ** (i - 1)]
+                self.mask_extractor.append(ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True))
+                in_channel_mask = out_channel_mask
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> progressive_mask_conditionning
         self.channels = {
             4: 512 ,
             8: 512 ,
@@ -418,7 +452,6 @@ class Generator(nn.Module):
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
       
-
         self.convs = nn.ModuleList()
         self.upsamples = nn.ModuleList()
         self.to_rgbs = nn.ModuleList()
@@ -484,6 +517,8 @@ class Generator(nn.Module):
                     blur_kernel=self.blur_kernel,
                 ).to(device)
             )
+
+            
         if optim is not None :
             optim.add_param_group({"params":self.convs[-1].parameters()})
 
@@ -492,12 +527,23 @@ class Generator(nn.Module):
                 out_channel, out_channel, 3, self.total_style_dim, blur_kernel=self.blur_kernel
             ).to(device)
         )
+        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
+
+
+        in_channel_mask = self.channels_mask[self.size]
+        out_channel_mask = self.channels_mask[self.size/2]
+        self.mask_extractor[0] = ConvLayer(3, in_channel_mask, 1).to(device)
+        toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True).to(device)
+        self.mask_extractor.insert(1,toadd_conv)
+
         if optim is not None :
             optim.add_param_group({"params":self.convs[-1].parameters()})
-
-        self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
-        if optim is not None :
+            optim.add_param_group({"params":self.convs[-2].parameters()})
             optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
+            optim.add_param_group({"params":self.mask_extractor[0].parameters()})
+            optim.add_param_group({"params":self.mask_extractor[1].parameters()})
+
+
         
         self.n_latent = self.log_size * 2 - 2
 
@@ -537,6 +583,7 @@ class Generator(nn.Module):
         self,
         styles,
         labels = None,
+        mask = None,
         return_latents=False,
         inject_index=None,
         truncation=1,
@@ -556,6 +603,16 @@ class Generator(nn.Module):
                 noise = [
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
+
+        elif noise == 'zero' and mask is not None:
+            device = self.input.input.device
+            batch, _, _, _ = mask.shape
+            noise = []
+            for layer_idx in range(self.num_layers):
+                res = (layer_idx + 5) // 2
+                shape = [batch, 1, 2 ** res, 2 ** res]
+                noise.append(torch.zeros(shape).to(device))
+
 
         if truncation < 1:
             style_t = []
@@ -588,21 +645,31 @@ class Generator(nn.Module):
             latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
 
             latent = torch.cat([latent, latent2], 1)
-        
+
+
         if self.latent_label_dim>0 :
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
 
+        if self.mask :
+            if mask is None :
+                print("Error mask is None")
+            mask_output = self.mask_extractor[0](mask)
+            for layer in self.mask_extractor[1:] :
+                mask_output = layer(mask_output)
+            mask_output = mask_output.flatten(1)
+            latent = self.forward_mixlabel(latent,mask_output)
+        
         out = self.input(latent)
-
+        
         out = self.conv1(out, latent[:, 0], noise=noise[0])
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
-        ):
+        ):  
             out = conv1(out, latent[:, i], noise=noise1)
             out = conv2(out, latent[:, i + 1], noise=noise2)
             skip = to_rgb(out, latent[:, i + 2], skip)
@@ -616,6 +683,7 @@ class Generator(nn.Module):
 
         else:
             return image, None
+
 
 
 class ConvLayer(nn.Sequential):
