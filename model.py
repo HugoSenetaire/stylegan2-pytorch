@@ -514,9 +514,7 @@ class Generator(nn.Module):
                 ).to(device)
             )
 
-            
-        if optim is not None :
-            optim.add_param_group({"params":self.convs[-1].parameters()})
+
 
         self.convs.append(
             StyledConv(

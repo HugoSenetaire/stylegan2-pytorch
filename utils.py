@@ -49,6 +49,8 @@ def make_zero_noise(batch, latent_dim, n_noise, device):
 
     return noises
 
+
+
 def mixing_noise(batch, latent_dim, prob, device, zero = False):
     if not zero :
         if prob > 0 and random.random() < prob:
