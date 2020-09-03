@@ -271,7 +271,8 @@ class Dataset(data.Dataset):
         for k in range(batch_size):
             previous_size = 0
             for i,column in enumerate(self.columns):
-                aux = k
+                aux = k%len(self.dic[column])
+                print()
                 if k==0 :
                     dic_label[column] = [aux]
                 else :
