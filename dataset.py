@@ -380,8 +380,8 @@ class Dataset(data.Dataset):
         data = self.df.iloc[index]
         name = data.image_id
         path_mask = os.path.join(self.folder_mask,name+".jpg")
-        mask = Image.open(path_mask).convert('RGB')
-        mask_transform = self.transform_mask(mask)
+        mask = Image.open(path_mask).convert('L')
+        mask_transform = self.transform_mask(mask).unsqueeze(1)
         total = mask_transform[None, :, :, :]
         list_name.append(name)
         for i in range(batch_size-1):
@@ -389,8 +389,8 @@ class Dataset(data.Dataset):
             data = self.df.iloc[index]
             name = data.image_id
             path_mask = os.path.join(self.folder_mask,name+".jpg")
-            mask = Image.open(path_mask).convert('RGB')
-            mask_transform = self.transform_mask(mask)[None,:,:,:]
+            mask = Image.open(path_mask).convert('L')
+            mask_transform = self.transform_mask(mask).unsqueeze(1)
             total = torch.cat([total,mask_transform],dim=0)
             list_name.append(name)
         if return_name :
