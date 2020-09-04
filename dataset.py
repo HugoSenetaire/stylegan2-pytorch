@@ -424,8 +424,7 @@ class Dataset(data.Dataset):
                 one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
             else :
                 print("Inside 3")
-                sample_weights, dic_weights = self.random_weights(batch_size)
-                sample_weights = sample_weights
+                one_hot_weights, dic_weights = self.random_weights(batch_size)
 
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0:
