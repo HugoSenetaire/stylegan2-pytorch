@@ -464,7 +464,7 @@ class Dataset(data.Dataset):
             f.write(str(label_dic))
             f.write("\n")
 
-        if len(label_dic) != batch_size or len(label_dic)!= nb_columns :
+        if len(label_dic) != batch_size or len(label_dic[0])!= nb_columns :
             raise Exception("list of label do not have the right size")
 
         if len(self.columns_inspirationnal)==0 :
