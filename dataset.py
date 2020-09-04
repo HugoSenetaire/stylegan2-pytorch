@@ -453,31 +453,7 @@ class Dataset(data.Dataset):
 
 
         return one_hot
-        # aux = label_list[0][0]
-        # one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-        # for i,column in enumerate(self.columns):
-        #     if i == 0 :
-        #         continue
 
-        #     aux = label_list[0][i]
-        #     one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            
-        # one_hot = one_hot[None,:]
-
-        # for k in range(1,batch_size):
-        #     if k == 0 :
-        #         continue
-        #     aux = label_list[k][0]
-        #     aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-            
-          
-        #     for i,column in enumerate(self.columns_inspirationnal):
-        #         if i == 0 :
-        #             continue
-        #         aux = label_list[k][i]
-        #         aux_one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-
-        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
 
 
 
