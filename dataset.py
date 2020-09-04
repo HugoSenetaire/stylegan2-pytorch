@@ -401,10 +401,7 @@ class Dataset(data.Dataset):
     def category_manager(self, batch_size, device, label_list = None, label_inspiration_list = None, label_method = "random", inspiration_method = "full_random"):
         # if label_list is None :
             # raise Exception("Label should be given to control the category")
-        
-        print("CATEGORY MANAGER")
-        print(self.columns_inspirationnal)
-        print("TEST",label_inspiration_list)
+
         if len(self.columns)>0 :
             if label_list is not None :
                 one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size)
@@ -418,12 +415,9 @@ class Dataset(data.Dataset):
                 one_hot_label = sample_label
 
         if len(self.columns_inspirationnal)>0:
-            print("Inside 1")
             if label_inspiration_list is not None :
-                print("Inside 2")
                 one_hot_weights = self.create_inspiration_weights(label_inspiration_list, batch_size).to(device)
             else :
-                print("Inside 3")
                 one_hot_weights, dic_weights = self.random_weights(batch_size)
 
         if len(self.columns)>0:
