@@ -404,6 +404,7 @@ class Dataset(data.Dataset):
         
         print("CATEGORY MANAGER")
         print(self.columns_inspirationnal)
+        print(label_inspiration_list)
         if len(self.columns)>0 :
             if label_list is not None :
                 one_hot_label = self.create_label_one_hot(label_list,batch_size=batch_size)
