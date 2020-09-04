@@ -458,7 +458,7 @@ class Dataset(data.Dataset):
 
     def create_inspiration_weights(self, label_dic,batch_size = 1):
         nb_columns = len(self.columns)
-        if len(label_list) != batch_size or len(label_list[0])!= nb_columns :
+        if len(label_dic) != batch_size or len(label_dic)!= nb_columns :
             raise Exception("list of label do not have the right size")
 
         if len(self.columns_inspirationnal)==0 :
