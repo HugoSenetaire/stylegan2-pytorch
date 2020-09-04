@@ -462,7 +462,7 @@ class Dataset(data.Dataset):
         with open("debug.txt", "a") as f :
             f.write("Create_inspiration_weights")
             f.write(str(label_dic))
-            f.wrte("\n")
+            f.write("\n")
 
         if len(label_dic) != batch_size or len(label_dic)!= nb_columns :
             raise Exception("list of label do not have the right size")
