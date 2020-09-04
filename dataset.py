@@ -436,41 +436,75 @@ class Dataset(data.Dataset):
 
     def create_label_one_hot(self, label_list,batch_size = 1):
         nb_columns = len(self.columns)
+
+
+        if batch_size!= len(label_list) :
+            batch_size = len(label_list)
         if len(label_list) != batch_size or len(label_list[0])!= nb_columns :
             raise Exception("list of label do not have the right size")
 
-        aux = label_list[0][0]
-        one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-        for i,column in enumerate(self.columns):
-            if i == 0 :
-                continue
-
-            aux = label_list[0][i]
-            one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
-            
-        one_hot = one_hot[None,:]
-
-        for k in range(1,batch_size):
-            if k == 0 :
-                continue
-            aux = label_list[k][0]
-            aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
-            
-          
-            for i,column in enumerate(self.columns_inspirationnal):
-                if i == 0 :
-                    continue
+        one_hot = torch.zeros((batch_size,self.get_len(type="label")))
+        for k in range(batch_size):
+            previous_size = 0
+            for i,column in enumerate(self.columns):
                 aux = label_list[k][i]
-                aux_one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+                one_hot[k][aux+previous_size]=1
+                previous_size +=len(self.dic[column])
 
-            one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
 
         return one_hot
+        # aux = label_list[0][0]
+        # one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+        # for i,column in enumerate(self.columns):
+        #     if i == 0 :
+        #         continue
+
+        #     aux = label_list[0][i]
+        #     one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+            
+        # one_hot = one_hot[None,:]
+
+        # for k in range(1,batch_size):
+        #     if k == 0 :
+        #         continue
+        #     aux = label_list[k][0]
+        #     aux_one_hot = torch.zeros(len(self.dic[self.columns[0]])).scatter_(0, torch.tensor([aux]), 1.0)
+            
+          
+        #     for i,column in enumerate(self.columns_inspirationnal):
+        #         if i == 0 :
+        #             continue
+        #         aux = label_list[k][i]
+        #         aux_one_hot = torch.cat((one_hot,torch.zeros(len(self.dic[column])).scatter_(0, torch.tensor([aux]), 1.0)))
+
+        #     one_hot = torch.cat((one_hot,aux_one_hot[None,:]),dim=0)
 
 
-    def create_inspiration_weights(self, label_list,batch_size = 1):
+
+    def create_inspiration_weights(self, label_dic,batch_size = 1):
         nb_columns = len(self.columns)
         if len(label_list) != batch_size or len(label_list[0])!= nb_columns :
             raise Exception("list of label do not have the right size")
+
+        if len(self.columns_inspirationnal)==0 :
+            return None
+
+        totalLen = self.get_len(type="inspirationnal")
+        weights = torch.zeros((batch_size,totalLen))
+        dic_weights = {}
+        for k in range(batch_size):
+            previous_size = 0
+            for i,column in enumerate(self.columns_inspirationnal):
+                possibleLen = len(self.dic_inspirationnal[column])
+                nbFuzzy = len(label_dic[0][column])
+                fuzzyTaken = label_dic[0][column]
+                aux_weights = np.zeros((possibleLen,))
+                for taken in fuzzyTaken :
+                    aux_weights[taken] = 1./nbFuzzy
+                aux_weights = torch.tensor(aux_weights, dtype=torch.float32)
+                weights[k][previous_size:previous_size+possibleLen]= aux_weights
+                previous_size +=possibleLen
+
+        return weights
         
-        raise NotImplementedError
+
