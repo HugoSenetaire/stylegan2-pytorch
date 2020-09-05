@@ -105,6 +105,7 @@ def create_fake_label(tensor,device):
     batch_size = tensor.shape[0]
     column_size = tensor.shape[1]
     fake_label = torch.ones((batch_size,),dtype=torch.long)*(column_size+1)
+    return fake_label
 
 def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     generator.add_scale(g_optim,device =device)
