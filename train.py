@@ -132,9 +132,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
         if args.mask :
             random_mask = dataset.random_mask(args.batch)
+            random_mask = random_mask.to(device)
         else :
             random_mask = None
-        random_mask = random_mask.to(device)
+        
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
   
         fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
@@ -294,10 +295,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
             if args.mask :
                 random_mask = dataset.random_mask(path_batch_size)
+                random_mask = random_mask.to(device)
+
             else :
                 random_mask = None
 
-            random_mask = random_mask.to(device)
             fake_img, latents = generator(noise, labels = random_label, return_latents=True, mask = random_mask)
 
             path_loss, mean_path_length, path_lengths = g_path_regularize(
