@@ -160,8 +160,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             d_loss = d_logistic_loss(real_pred, fake_pred)
 
         elif args.discriminator_type == "AMGAN":
-            random_label = create_fake_label(random_label)
-            real_label = add_zero(real_label)
+            random_label = create_fake_label(random_label,device)
+            real_label = add_zero(real_label,device)
             d_loss = classification_loss(fake_pred,random_label) + classification_loss(real_pred,real_label)
         
         
@@ -239,7 +239,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         
 
         if args.discriminator_type == "AMGAN":
-            random_label = add_zero(random_label)
+            random_label = add_zero(random_label,device)
             g_loss = classification_loss(fake_pred,random_label)
         else :
             g_loss = g_nonsaturating_loss(fake_pred)
