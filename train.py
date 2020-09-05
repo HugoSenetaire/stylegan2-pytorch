@@ -253,6 +253,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             g_loss = classification_loss(fake_pred, random_dic_label[dataset.columns[0]])
         else :
             g_loss = g_nonsaturating_loss(fake_pred)
+
+
         if args.mask :
             if args.mask_enforcer == "zero_based":
                 shape_loss = g_shape_loss(zero_img, random_mask)
@@ -439,7 +441,6 @@ if __name__ == "__main__":
                 # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
             ]
         )
-        args.mask = True
     else :
         args.mask = False
         transform_mask = None
