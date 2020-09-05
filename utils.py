@@ -101,7 +101,7 @@ def create_fake_label_vector(tensor,device):
     fake_label[:,-1] = torch.ones((batch_size,)).to(device)
     return fake_label.long().to(device)
 
-def create_fake_label(tenor,device):
+def create_fake_label(tensor,device):
     batch_size = tensor.shape[0]
     column_size = tensor.shape[1]
     fake_label = torch.ones((batch_size,),dtype=torch.long)*(column_size+1)
