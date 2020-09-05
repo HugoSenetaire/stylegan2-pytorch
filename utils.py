@@ -91,7 +91,7 @@ def select_index_discriminator(output_discriminator, label):
 def add_zero(tensor,device):
     batch_size = tensor.shape[0]
     new_zero = torch.zeros((batch_size,1)).to(device)
-    tensor = torch.cat([tensor,new_zero],dim =1).double()
+    tensor = torch.cat([tensor,new_zero],dim =1).long()
     return tensor.to(device)
 
 def create_fake_label(tensor,device):
