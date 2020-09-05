@@ -97,9 +97,9 @@ def add_zero(tensor,device):
 def create_fake_label(tensor,device):
     batch_size = tensor.shape[0]
     column_size = tensor.shape[1]
-    fake_label = torch.zeros((batch_size,column_size+1),dtype = torch.float64)
+    fake_label = torch.zeros((batch_size,column_size+1))
     fake_label[:,-1] = torch.ones((batch_size,)).to(device)
-    return fake_label.to(device)
+    return fake_label.long().to(device)
 
 def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     generator.add_scale(g_optim,device =device)
