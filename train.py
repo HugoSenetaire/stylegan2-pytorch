@@ -163,7 +163,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             # random_label = create_fake_label(random_label,device)
             # real_label = add_zero(real_label,device)
             # d_loss = classification_loss(fake_pred,random_label) + classification_loss(real_pred,real_label)
-            d_loss = classification_loss(fake_pred,len(dataset.columns).to(device)) + classification_loss(real_pred,real_dic_label[dataset.columns[0]].to(device))
+            d_loss = classification_loss(fake_pred,torch.tensor(len(dataset.columns)).to(device)) + classification_loss(real_pred,real_dic_label[dataset.columns[0]].to(device))
         
         
         
