@@ -347,7 +347,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                 (
                     f"d: {d_loss_val:.4f}; g: {g_loss_val:.4f}; r1: {r1_val:.4f};"
                     f"path: {path_loss_val:.4f}; mean path: {mean_path_length_avg:.4f};"
-                    f"augment: {ada_aug_p:.4f}; gmask:{g_mask_loss:.4f}; gclassic:{g_classic_loss:.4f};"
+                    f"augment: {ada_aug_p:.4f}; gclassic:{g_classic_loss:.4f};"
                 )
             )
 
@@ -356,7 +356,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
                     {
                         "Generator": g_loss_val,
                         "Classic Generator": g_classic_loss,
-                        "Mask Generator": g_mask_loss,
                         "Discriminator": d_loss_val,
                         "Augment": ada_aug_p,
                         "Rt": r_t_stat,
