@@ -824,7 +824,13 @@ class Discriminator(nn.Module):
                     EqualLinear(channels[4], self.latent_label_dim),
                 )
 
-        
+        elif self.discriminator_type == "AMGAN":
+            self.final_linear = nn.Sequential(
+                    EqualLinear(channels[4] * 4 * 4, channels[4], activation='fused_lrelu'),
+                    EqualLinear(channels[4], self.latent_label_dim+1),
+                )
+        else :
+            raise ValueError("Discriminator type not recognised")
 
 
 
@@ -883,5 +889,11 @@ class Discriminator(nn.Module):
 
         elif self.discriminator_type == "bilinear":
             return out_real_fake, None, None
+
+        elif self.discriminator_type == "AMGAN":
+            return out_real_fake, None, None
+
+        else :
+            raise ValueError("Discriminator type not recognised")
 
 

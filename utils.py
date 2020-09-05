@@ -87,6 +87,20 @@ def select_index_discriminator(output_discriminator, label):
     filtered_output = output_discriminator.masked_select(index)
     return filtered_output
 
+
+def add_zero(tensor):
+    batch_size = tensor.shape[0]
+    new_zero = torch.zeros((batch_size,1))
+    tensor = torch.cat([tensor,new_zero],dim =1)
+    return tensor
+
+def create_fake_label(tensor):
+    batch_size = tensor.shape[0]
+    column_size = tensor.shape[1]
+    fake_label = torch.zeros((batch_size,column_size+1))
+    fake_label[:,-1] = torch.ones((batch_size,1))
+    return fake_label
+
 def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     generator.add_scale(g_optim,device =device)
     discriminator.add_scale(d_optim,device =device)

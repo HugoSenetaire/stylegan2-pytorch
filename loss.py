@@ -37,9 +37,9 @@ def g_shape_loss(zero_pred,mask):
     return loss(zero_pred,mask)
 
     
+
 def g_nonsaturating_loss(fake_pred):
     loss = F.softplus(-fake_pred).mean()
-
     return loss
 
 

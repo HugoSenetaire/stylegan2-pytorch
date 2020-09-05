@@ -142,7 +142,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
             fake_img, _ = augment(fake_img, ada_aug_p)
-
         else:
             real_img_aug = real_img
 
@@ -160,6 +159,11 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             real_pred = select_index_discriminator(real_pred, real_label)
             d_loss = d_logistic_loss(real_pred, fake_pred)
 
+        elif args.discriminator_type == "AMGAN":
+            random_label = create_fake_label(random_label)
+            real_label = add_zero(real_label)
+            d_loss = classification_loss(fake_pred,random_label) + classification_loss(real_pred,real_label)
+        
         
         
 
@@ -232,8 +236,13 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
         if args.discriminator_type == "bilinear":
             fake_pred = select_index_discriminator(fake_pred,random_label)
+        
 
-        g_loss = g_nonsaturating_loss(fake_pred)
+        if args.discriminator_type == "AMGAN":
+            random_label = add_zero(random_label)
+            g_loss = classification_loss(fake_pred,random_label)
+        else :
+            g_loss = g_nonsaturating_loss(fake_pred)
         if args.mask :
             if args.mask_enforcer == "zero_based":
                 shape_loss = g_shape_loss(zero_img, random_mask)
@@ -253,7 +262,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if latent_label_dim>0 :
                 for column in dataset.columns :
                     g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
-
                 for column in dataset.columns_inspirationnal :
                     g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
             
