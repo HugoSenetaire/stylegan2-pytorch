@@ -118,6 +118,6 @@ if __name__ == '__main__':
             print(category)
             g.load_state_dict(ckpt['g_ema'])
             g.eval()
-            extract_feature_from_samples(
+            generate_samples(
                 g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args, label_name = category, element = name_element
             )
