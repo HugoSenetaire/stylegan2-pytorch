@@ -77,7 +77,7 @@ if __name__ == '__main__':
     parser_dataset.create_parser_dataset(parser)
     parser_network.create_parser_network(parser)
     parser_fid.create_parser_fid(parser)
-    parser.add_argument("--output_prefix", type="str")
+    parser.add_argument("--output_prefix", type=str)
 
    
     args = parser.parse_args()
