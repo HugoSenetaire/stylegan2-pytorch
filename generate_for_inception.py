@@ -114,6 +114,15 @@ if __name__ == '__main__':
             if not os.path.exists(os.path.join("outputgenerate",name_element,category)):
                 os.makedirs(os.path.join("outputgenerate",name_element,category))
             ckpt = torch.load(element)
+
+
+            if args.truncation < 1:
+                with torch.no_grad():
+                    mean_latent = g.mean_latent(args.truncation_mean)
+
+            else:
+                mean_latent = None
+
             print("element", element)
             print(category)
             g.load_state_dict(ckpt['g_ema'])
