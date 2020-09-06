@@ -567,6 +567,7 @@ class Generator(nn.Module):
 
     def forward_mixlabel(self,styles,labels):
         labels = labels.unsqueeze(0)
+        print(labels)
         labels = torch.cat([labels]*styles.shape[1], dim = 0).transpose(0,1)
         neostyles = torch.cat((styles,labels),dim = 2)
         return neostyles

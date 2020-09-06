@@ -474,10 +474,9 @@ class Dataset(data.Dataset):
         for k in range(batch_size):
             previous_size = 0
             for i,column in enumerate(self.columns):
-                print(k)
+     
         
                 aux = label_list[k][i]
-                print(aux)
                 one_hot[k][aux+previous_size]=1
                 previous_size +=len(self.dic[column])
 
