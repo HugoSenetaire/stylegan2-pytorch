@@ -445,6 +445,10 @@ if __name__ == "__main__":
         args.mask = False
         transform_mask = None
 
+
+    print("MASK")
+    print(transform_mask)
+    print(args.mask)
     dataset = Dataset(args.folder,
         transform, args.size, 
         columns = args.labels,
