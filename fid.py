@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     args.latent = 512
     args.n_mlp = 8
-    ckpt = torch.load(args.ckpt)
+    
 
     transform = transforms.Compose(
         [   
@@ -109,32 +109,36 @@ if __name__ == '__main__':
          latent_label_dim=latent_label_dim
     ).to(device)
 
-    g.load_state_dict(ckpt['g_ema'])
-    g.eval()
-
-    if args.truncation < 1:
-        with torch.no_grad():
-            mean_latent = g.mean_latent(args.truncation_mean)
-
-    else:
-        mean_latent = None
-
     inception = load_patched_inception_v3().to(device)
     inception.eval()
 
-    features = extract_feature_from_samples(
-        g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args
-    ).numpy()
-    print(f'extracted {features.shape[0]} features')
+    for element in args.ckpt_FID :
+        ckpt = torch.load(args.ckpt)
+        print("element"; element)
+        g.load_state_dict(ckpt['g_ema'])
+        g.eval()
 
-    sample_mean = np.mean(features, 0)
-    sample_cov = np.cov(features, rowvar=False)
+        if args.truncation < 1:
+            with torch.no_grad():
+                mean_latent = g.mean_latent(args.truncation_mean)
 
-    with open(args.feature_path, 'rb') as f:
-        embeds = pickle.load(f)
-        real_mean = embeds['mean']
-        real_cov = embeds['cov']
+        else:
+            mean_latent = None
 
-    fid = calc_fid(sample_mean, sample_cov, real_mean, real_cov)
 
-    print('fid:', fid)
+        features = extract_feature_from_samples(
+            g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args
+        ).numpy()
+        print(f'extracted {features.shape[0]} features')
+
+        sample_mean = np.mean(features, 0)
+        sample_cov = np.cov(features, rowvar=False)
+
+        with open(args.feature_path, 'rb') as f:
+            embeds = pickle.load(f)
+            real_mean = embeds['mean']
+            real_cov = embeds['cov']
+
+        fid = calc_fid(sample_mean, sample_cov, real_mean, real_cov)
+
+        print('fid:', fid)
