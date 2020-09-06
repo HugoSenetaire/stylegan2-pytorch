@@ -72,7 +72,7 @@ class Dataset(data.Dataset):
         csv_path = None,
         transparent = False,
         transform_mask = None,
-        limitation = None):
+        limit_category = None):
 
 
         super().__init__()
@@ -106,10 +106,10 @@ class Dataset(data.Dataset):
                 list_possible_value = []
                 for k, value in enumerate(self.df[column].unique()):
                     #print(value,type(value))
-                    if limitation is not None or category != "None" :
+                    if limit_category is not None or category != "None" :
                         if len(columns)>1:
-                            raise NotImplemented("Limitation should only be used by calc_inception and columns should only be unique")
-                        if value != limitation :
+                            raise NotImplemented("limit_category should only be used by calc_inception and columns should only be unique")
+                        if value != limit_category :
                             continue
                     if self.df[column].value_counts()[value] > 50:
                         list_possible_value.append(value)
