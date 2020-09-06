@@ -51,6 +51,7 @@ def generate_samples(
     features = []
 
     for batch in batch_sizes:
+        print("INSIDE")
         latent = torch.randn(batch, 512, device=device)
         if label_name is None or label_name == 'None':
             print("ERROR")
