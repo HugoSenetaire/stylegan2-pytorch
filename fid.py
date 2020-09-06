@@ -39,7 +39,8 @@ def extract_feature_from_samples(
             sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
         else :
             label_list = find_corresponding_label(label_name, batch_size)
-            sample_label = category_manager(self, batch_size, device, label_list = label_list)
+            print(label_list)
+            sample_label = dataset.category_manager(self, batch_size, device, label_list = label_list)
         img, _ = generator([latent],sample_label, truncation=truncation, truncation_latent=truncation_latent)
         feat = inception(img)[0].view(img.shape[0], -1)
         features.append(feat.to('cpu'))
