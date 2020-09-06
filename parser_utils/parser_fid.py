@@ -10,3 +10,4 @@ def create_parser_fid(parser):
     parser.add_argument('--batch', type=int, default=64)
     parser.add_argument('--n_sample', type=int, default=50000)
     parser.add_argument('--feature_path', type=str, default=None, required=True, help = 'extracted features from the dataset')
+    parser.add_argument("--local_rank", type=int, default=0)
