@@ -193,17 +193,12 @@ class Dataset(data.Dataset):
             mask = Image.open(path_mask).convert('L')
             mask_transform = self.transform_mask(mask).unsqueeze(1)
         else :
-            mask_transform = None
+            mask_transform = -1
     
         x,dic_label = self._create_one_hot(data, self.columns,self.dic)
         y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
 
-        print(x)
-        print(img_transform)
-        print(dic_label)
-        print(dic_inspiration)
-        print(mask_transform)
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0 :
                 x = torch.cat([x,y])
