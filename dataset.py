@@ -105,7 +105,9 @@ class Dataset(data.Dataset):
             for column in columns :
                 list_possible_value = []
                 for k, value in enumerate(self.df[column].unique()):
-                    #print(value,type(value))
+                    #print(value,type(value))$
+                    print("DATASET DEBUG LIMIT CATEGORY")
+                    print(limit_category)
                     if limit_category is not None or category != "None" :
                         if len(columns)>1:
                             raise NotImplemented("limit_category should only be used by calc_inception and columns should only be unique")
