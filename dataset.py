@@ -109,6 +109,7 @@ class Dataset(data.Dataset):
                     print("DATASET DEBUG LIMIT CATEGORY")
                     print(limit_category)
                     if limit_category is not None or category != "None" :
+                        print("INSIDE")
                         if len(columns)>1:
                             raise NotImplemented("limit_category should only be used by calc_inception and columns should only be unique")
                         if value != limit_category :
