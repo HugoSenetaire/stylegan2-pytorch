@@ -42,8 +42,8 @@ def extract_feature_from_samples(
             print(label_list)
             sample_label = dataset.category_manager( batch_size, device, label_list = label_list)
         img, _ = generator([latent],sample_label, truncation=truncation, truncation_latent=truncation_latent)
-        feat = inception(img)[0].view(img.shape[0], -1)
-        features.append(feat.to('cpu'))
+        feat = inception(img)[0].view(img.shape[0], -1).to('cpu')
+        features.append(feat)
 
     features = torch.cat(features, 0)
 
