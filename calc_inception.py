@@ -68,6 +68,7 @@ def extract_features(loader, inception, device):
 
     for _,img,_,_ in pbar:
         img = img.to(device)
+        print(img)
         feature = inception(img)[0].view(img.shape[0], -1)
         feature_list.append(feature.to('cpu'))
 
@@ -93,9 +94,10 @@ if __name__ == '__main__':
 
 
     print("Start loading inception")
-    inception = load_patched_inception_v3()
+    # inception = load_patched_inception_v3()
+    inception = None
     print("Inception loaded")
-    inception = nn.DataParallel(inception).eval().to(device)
+    # inception = nn.DataParallel(inception).eval().to(device)
     print("Data parallel")
     transform = transforms.Compose(
         [   
