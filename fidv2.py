@@ -109,8 +109,6 @@ if __name__ == '__main__':
     )
   
 
-    latent_label_dim = dataset.get_len()
-
    
     inception = load_patched_inception_v3().to(device)
     inception.eval()
