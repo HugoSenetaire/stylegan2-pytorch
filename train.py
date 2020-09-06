@@ -433,7 +433,7 @@ if __name__ == "__main__":
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
         ]
     )
-    if args.mask is not None :
+    if args.mask is True :
         transform_mask = transforms.Compose(
             [
                 transforms.Resize((args.size,args.size)),
