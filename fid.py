@@ -127,7 +127,7 @@ if __name__ == '__main__':
     inception.eval()
 
     for element in args.ckpt_FID :
-        for category in limit_category :
+        for category in args.limit_category :
             ckpt = torch.load(element)
             print("element", element)
             print(category)
