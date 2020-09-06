@@ -71,7 +71,8 @@ class Dataset(data.Dataset):
         multiview = False,
         csv_path = None,
         transparent = False,
-        transform_mask = None):
+        transform_mask = None,
+        limitation = None):
 
 
         super().__init__()
@@ -105,6 +106,11 @@ class Dataset(data.Dataset):
                 list_possible_value = []
                 for k, value in enumerate(self.df[column].unique()):
                     #print(value,type(value))
+                    if limitation is not None :
+                        if len(columns)>1:
+                            raise NotImplemented("Limitation should only be used by calc_inception and columns should only be unique")
+                        if value != limitation :
+                            continue
                     if self.df[column].value_counts()[value] > 50:
                         list_possible_value.append(value)
                 self.dic[column] = copy.deepcopy(list_possible_value)

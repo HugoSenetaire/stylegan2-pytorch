@@ -87,6 +87,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch', default=64, type=int, help='batch size')
     parser.add_argument('--n_sample', type=int, default=50000)
     parser.add_argument('--flip', action='store_true')
+    parser.add_argument('--limit_category', nargs='*', help = 'List of element used for inspiration algorithm', type = str, default = ["None"])
     args = parser.parse_args()
 
 
@@ -106,32 +107,34 @@ if __name__ == '__main__':
         ]
     )
 
+    for category in limit_category :
 
+            dataset = Dataset(args.folder,
+                transform, args.size, 
+                columns = args.labels,
+                columns_inspirationnal = args.labels_inspirationnal,
+                dataset_type = args.dataset_type,
+                multiview = args.multiview,
+                csv_path = args.csv_path,
+                limit_category = category
+            )
+            loader = DataLoader(
+                dataset,
+                batch_size=args.batch,
+                num_workers=4,
+            )
 
-    dataset = Dataset(args.folder,
-        transform, args.size, 
-        columns = args.labels,
-        columns_inspirationnal = args.labels_inspirationnal,
-        dataset_type = args.dataset_type,
-        multiview = args.multiview,
-        csv_path = args.csv_path
-    )
-    loader = DataLoader(
-        dataset,
-        batch_size=args.batch,
-        num_workers=4,
-    )
+            features = extract_features(loader, inception, device).numpy()
 
-    features = extract_features(loader, inception, device).numpy()
+            features = features[: args.n_sample]
 
-    features = features[: args.n_sample]
+            print(f'extracted {features.shape[0]} features')
 
-    print(f'extracted {features.shape[0]} features')
+            mean = np.mean(features, 0)
+            cov = np.cov(features, rowvar=False)
 
-    mean = np.mean(features, 0)
-    cov = np.cov(features, rowvar=False)
+            name = os.path.splitext(os.path.basename(args.folder))[0]
 
-    name = os.path.splitext(os.path.basename(args.folder))[0]
-
-    with open(f'inception_{name}.pkl', 'wb') as f:
-        pickle.dump({'mean': mean, 'cov': cov, 'size': args.size, 'path': args.folder}, f)
+            with open(f'inception_{name}_{category}.pkl', 'wb') as f:
+                pickle.dump({'mean': mean, 'cov': cov, 'size': args.size, 'path': args.folder}, f)
+   
