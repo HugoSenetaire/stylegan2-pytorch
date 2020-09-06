@@ -62,8 +62,7 @@ def calc_fid(sample_mean, sample_cov, real_mean, real_cov, eps=1e-6):
 
 
 if __name__ == '__main__':
-    device = 'cuda'
-    torch.cuda.set_device(args.local_rank)
+    
     parser = argparse.ArgumentParser()
 
     parser_dataset.create_parser_dataset(parser)
@@ -74,6 +73,9 @@ if __name__ == '__main__':
    
     args = parser.parse_args()
 
+    print(args)
+    device = 'cuda'
+    torch.cuda.set_device(args.local_rank)
 
     args.latent = 512
     args.n_mlp = 8
