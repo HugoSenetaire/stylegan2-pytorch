@@ -26,7 +26,12 @@ import torch.nn.functional as F
 class SimpleDataset(data.Dataset):
     def __init__(self, path, transform, resolution=256):
         self.folder = path
-        self.list_image = os.listdir(self.folder)
+        self.list_image = []
+        for i,element in enumerate(os.listdir(self.folder)) :
+            if element.endswith(".png"):
+                self.list_image.append(element)
+      
+        
         self.resolution = resolution
         self.transform = transform
 
