@@ -51,15 +51,12 @@ def generate_samples(
     features = []
 
     for batch in batch_sizes:
-        print("INSIDE")
         latent = torch.randn(batch, 512, device=device)
         if label_name is None or label_name == 'None':
-            print("ERROR")
             sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
         else :
-            label_list = find_corresponding_label(label_name, batch_size)
-            print(label_list)
-            sample_label = dataset.category_manager( batch_size, device, label_list = label_list)
+            label_list = find_corresponding_label(label_name, batch)
+            sample_label = dataset.category_manager( batch, device, label_list = label_list)
         img, _ = generator([latent],sample_label, truncation=truncation, truncation_latent=truncation_latent)
 
         utils.save_image(
@@ -120,7 +117,6 @@ if __name__ == '__main__':
          latent_label_dim=latent_label_dim
     ).to(device)
 
-    print("start goddamit")
     for element in args.ckpt_FID :
         name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :
