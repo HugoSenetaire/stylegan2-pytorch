@@ -107,7 +107,7 @@ if __name__ == '__main__':
         ]
     )
 
-    for category in limit_category :
+    for category in args.limit_category :
             dataset = Dataset(args.folder,
                 transform, args.size, 
                 columns = args.labels,
