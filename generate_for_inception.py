@@ -120,7 +120,7 @@ if __name__ == '__main__':
          latent_label_dim=latent_label_dim
     ).to(device)
 
-
+    print("start goddamit")
     for element in args.ckpt_FID :
         name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :
