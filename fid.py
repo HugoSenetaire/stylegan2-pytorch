@@ -150,7 +150,7 @@ if __name__ == '__main__':
             sample_mean = np.mean(features, 0)
             sample_cov = np.cov(features, rowvar=False)
 
-            with open(args.feature_path, 'rb') as f:
+            with open(args.feature_path.replace(".pkl",f"_{category}.pkl"), 'rb') as f:
                 embeds = pickle.load(f)
                 real_mean = embeds['mean']
                 real_cov = embeds['cov']
