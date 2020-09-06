@@ -33,7 +33,7 @@ def extract_feature_from_samples(
     batch_sizes = [batch_size] * n_batch + [resid]
     features = []
 
-    for batch in tqdm(range(len(batch_sizes)-1)):
+    for i in tqdm(range(len(batch_sizes)-1)):
         batch = batch_sizes[i]
         latent = torch.randn(batch, 512, device=device)
         if label_name is None or label_name == 'None':
