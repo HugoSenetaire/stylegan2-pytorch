@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     for element in args.ckpt_FID :
         ckpt = torch.load(args.ckpt)
-        print("element"; element)
+        print("element", element)
         g.load_state_dict(ckpt['g_ema'])
         g.eval()
 
