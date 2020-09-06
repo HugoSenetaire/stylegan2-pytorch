@@ -19,7 +19,7 @@ from utils import *
 
 def find_corresponding_label(label_name, batch_size):
     
-    label_index = dataset.get_onehot(label_name)
+    label_index = dataset.get_onehot_fromvalue(label_name)
     label_list = np.ones((batch_size,1)) * label_index
     return label_list
 
