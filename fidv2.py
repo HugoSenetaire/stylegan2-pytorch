@@ -110,9 +110,9 @@ if __name__ == '__main__':
   
 
    
-    inception = load_patched_inception_v3().to(device)
-    inception.eval()
-    # inception = None
+    # inception = load_patched_inception_v3().to(device)
+    # inception.eval()
+    inception = None
     for element in args.ckpt_FID :
         name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :

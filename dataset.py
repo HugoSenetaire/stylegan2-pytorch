@@ -31,7 +31,7 @@ class SimpleDataset(data.Dataset):
         self.transform = transform
 
     def __len__(self):
-        return self.length
+        return len(list_image)
 
     def __getitem__(self, index):
         path = os.path.join(self.folder,self.list_image[i])
