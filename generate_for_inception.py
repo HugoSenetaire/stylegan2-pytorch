@@ -33,7 +33,7 @@ from parser_utils import *
 from utils import *
 
 def generate_samples(
-    generator, inception, truncation, truncation_latent, batch_size, n_sample, device, args, label_name =None, element = None
+    generator, truncation, truncation_latent, batch_size, n_sample, device, args, label_name =None, element = None
 ):
     n_batch = n_sample // batch_size
     resid = n_sample - (n_batch * batch_size)
@@ -119,5 +119,5 @@ if __name__ == '__main__':
             g.load_state_dict(ckpt['g_ema'])
             g.eval()
             generate_samples(
-                g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args, label_name = category, element = name_element
+                g,  args.truncation, mean_latent, args.batch, args.n_sample, device, args, label_name = category, element = name_element
             )
