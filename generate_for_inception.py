@@ -50,7 +50,6 @@ if __name__ == '__main__':
     parser_dataset.create_parser_dataset(parser)
     parser_network.create_parser_network(parser)
     parser_fid.create_parser_fid(parser)
-    args.batch_size = 1
 
    
     args = parser.parse_args()
@@ -58,6 +57,7 @@ if __name__ == '__main__':
     print(args)
     device = 'cuda'
     torch.cuda.set_device(args.local_rank)
+    args.batch_size = 1
 
     args.latent = 512
     args.n_mlp = 8
