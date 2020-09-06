@@ -250,7 +250,7 @@ class Dataset(data.Dataset):
     #     liste = torch.tensor(liste)
     #     return liste
     def get_onehot_fromvalue(self,value):
-        if len(self.columns)>0 :
+        if len(self.columns)>1 :
             raise ValueError("This is only to be used in test FID with one column")
         column = self.columns[0]
         onehot_index = self.encoder[column].apply(value)

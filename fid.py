@@ -123,9 +123,9 @@ if __name__ == '__main__':
          latent_label_dim=latent_label_dim
     ).to(device)
 
-    inception = load_patched_inception_v3().to(device)
-    inception.eval()
-
+    # inception = load_patched_inception_v3().to(device)
+    # inception.eval()
+    inception = None
     for element in args.ckpt_FID :
         for category in args.limit_category :
             ckpt = torch.load(element)
