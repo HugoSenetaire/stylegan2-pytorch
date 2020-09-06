@@ -106,7 +106,7 @@ class Dataset(data.Dataset):
                 list_possible_value = []
                 for k, value in enumerate(self.df[column].unique()):
                     #print(value,type(value))
-                    if limitation is not None :
+                    if limitation is not None or category != "None" :
                         if len(columns)>1:
                             raise NotImplemented("Limitation should only be used by calc_inception and columns should only be unique")
                         if value != limitation :
