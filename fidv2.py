@@ -116,8 +116,7 @@ if __name__ == '__main__':
     for element in args.ckpt_FID :
         name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :
-            sample_mean = np.mean(features, 0)
-            sample_cov = np.cov(features, rowvar=False)
+            
 
             folder_total = os.path.join(os.path.join(args.generated_images,name_element,category))
             dataset = SimpleDataset(folder_total,
@@ -131,7 +130,8 @@ if __name__ == '__main__':
             )
             features = extract_features(loader, inception, device).numpy()
             print(f'extracted {features.shape[0]} features')
-
+            sample_mean = np.mean(features, 0)
+            sample_cov = np.cov(features, rowvar=False)
             with open(args.feature_path.replace(".pkl",f"_{category}.pkl"), 'rb') as f:
                 embeds = pickle.load(f)
                 real_mean = embeds['mean']
