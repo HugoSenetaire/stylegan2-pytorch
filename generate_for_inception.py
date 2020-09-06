@@ -56,6 +56,7 @@ def generate_samples(
             sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
         else :
             label_list = find_corresponding_label(label_name, batch_size)
+            print(label_list)
             sample_label = dataset.category_manager( batch_size, device, label_list = label_list)
         img, _ = generator([latent],sample_label, truncation=truncation, truncation_latent=truncation_latent)
 
