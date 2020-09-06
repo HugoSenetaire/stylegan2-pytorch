@@ -50,7 +50,8 @@ def generate_samples(
     batch_sizes = [batch_size] * n_batch + [resid]
     features = []
 
-    for batch in batch_sizes:
+    for i in tqdm(range(len(batch_sizes)-1)):
+        batch = batch_sizes[i]
         latent = torch.randn(batch, 512, device=device)
         if label_name is None or label_name == 'None':
             sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
@@ -61,7 +62,7 @@ def generate_samples(
 
         utils.save_image(
                         img,
-                        os.path.join(f"outputgenerate/{element}/{label_name}/{str(batch).zfill(6)}.png"),
+                        os.path.join(f"outputgenerate/{element}/{label_name}/{str(i).zfill(6)}.png"),
                         nrow=1,
                         normalize=True,
                         range=(-1, 1),
