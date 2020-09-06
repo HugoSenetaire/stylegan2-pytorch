@@ -109,14 +109,15 @@ if __name__ == '__main__':
 
 
     for element in args.ckpt_FID :
+        name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :
-            if not os.path.exists(os.path.join("outputgenerate",element,category)):
-                os.makedirs(os.path.join("outputgenerate",element,category))
+            if not os.path.exists(os.path.join("outputgenerate",name_element,category)):
+                os.makedirs(os.path.join("outputgenerate",name_element,category))
             ckpt = torch.load(element)
             print("element", element)
             print(category)
             g.load_state_dict(ckpt['g_ema'])
             g.eval()
             extract_feature_from_samples(
-                g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args, label_name = category, element = element
+                g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args, label_name = category, element = name_element
             )
