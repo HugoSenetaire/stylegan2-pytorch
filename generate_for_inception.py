@@ -32,6 +32,16 @@ from torchvision import transforms, utils
 from parser_utils import *
 from utils import *
 
+
+
+def find_corresponding_label(label_name, batch_size):
+    
+    label_index = dataset.get_onehot_fromvalue(label_name)
+    label_list = np.ones((batch_size,1),dtype = int) * label_index
+    return label_list
+
+
+
 def generate_samples(
     generator, truncation, truncation_latent, batch_size, n_sample, device, args, label_name =None, element = None
 ):
