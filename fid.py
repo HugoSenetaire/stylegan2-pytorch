@@ -15,8 +15,18 @@ from parser_utils import *
 from utils import *
 
 @torch.no_grad()
+
+
+def find_corresponding_label(label_name, batch_size):
+    
+    label_index = dataset.get_onehot(label_name)
+    label_list = np.ones((batch_size,1)) * label_index
+    return label_list
+
+
+
 def extract_feature_from_samples(
-    generator, inception, truncation, truncation_latent, batch_size, n_sample, device, args
+    generator, inception, truncation, truncation_latent, batch_size, n_sample, device, args, label_name =None
 ):
     n_batch = n_sample // batch_size
     resid = n_sample - (n_batch * batch_size)
@@ -25,7 +35,11 @@ def extract_feature_from_samples(
 
     for batch in tqdm(batch_sizes):
         latent = torch.randn(batch, 512, device=device)
-        sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
+        if label_name is None or label_name == 'None':
+            sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
+        else :
+            label_list = find_corresponding_label(label_name, batch_size)
+            sample_label = category_manager(self, batch_size, device, label_list = label_list)
         img, _ = generator([latent],sample_label, truncation=truncation, truncation_latent=truncation_latent)
         feat = inception(img)[0].view(img.shape[0], -1)
         features.append(feat.to('cpu'))
@@ -113,32 +127,34 @@ if __name__ == '__main__':
     inception.eval()
 
     for element in args.ckpt_FID :
-        ckpt = torch.load(args.ckpt)
-        print("element", element)
-        g.load_state_dict(ckpt['g_ema'])
-        g.eval()
+        for category in limit_category :
+            ckpt = torch.load(element)
+            print("element", element)
+            print(category)
+            g.load_state_dict(ckpt['g_ema'])
+            g.eval()
 
-        if args.truncation < 1:
-            with torch.no_grad():
-                mean_latent = g.mean_latent(args.truncation_mean)
+            if args.truncation < 1:
+                with torch.no_grad():
+                    mean_latent = g.mean_latent(args.truncation_mean)
 
-        else:
-            mean_latent = None
+            else:
+                mean_latent = None
 
 
-        features = extract_feature_from_samples(
-            g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args
-        ).numpy()
-        print(f'extracted {features.shape[0]} features')
+            features = extract_feature_from_samples(
+                g, inception, args.truncation, mean_latent, args.batch, args.n_sample, device, args, label_name = category
+            ).numpy()
+            print(f'extracted {features.shape[0]} features')
 
-        sample_mean = np.mean(features, 0)
-        sample_cov = np.cov(features, rowvar=False)
+            sample_mean = np.mean(features, 0)
+            sample_cov = np.cov(features, rowvar=False)
 
-        with open(args.feature_path, 'rb') as f:
-            embeds = pickle.load(f)
-            real_mean = embeds['mean']
-            real_cov = embeds['cov']
+            with open(args.feature_path, 'rb') as f:
+                embeds = pickle.load(f)
+                real_mean = embeds['mean']
+                real_cov = embeds['cov']
 
-        fid = calc_fid(sample_mean, sample_cov, real_mean, real_cov)
+            fid = calc_fid(sample_mean, sample_cov, real_mean, real_cov)
 
-        print('fid:', fid)
+            print('fid:', fid)

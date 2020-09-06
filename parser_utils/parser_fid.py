@@ -12,3 +12,4 @@ def create_parser_fid(parser):
     parser.add_argument('--feature_path', type=str, default=None, required=True, help = 'extracted features from the dataset')
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--ckpt_FID", nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
+    parser.add_argument("--limit_category", nargs='*', help = 'List of element used for inspiration algorithm', type = str, default = ["None"])
