@@ -42,7 +42,7 @@ def extract_features(loader, inception, device):
 
     feature_list = []
 
-    for _,img,_,_,_ in pbar:
+    for img in pbar:
         img = img.to(device)
         feature = inception(img)[0].view(img.shape[0], -1)
         feature_list.append(feature.to('cpu'))
