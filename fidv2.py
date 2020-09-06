@@ -116,6 +116,8 @@ if __name__ == '__main__':
     for element in args.ckpt_FID :
         name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :
+            print(element)
+            print(category)
             
 
             folder_total = os.path.join(os.path.join(args.generated_images,name_element,category))

@@ -62,7 +62,7 @@ def generate_samples(
 
         utils.save_image(
                         img,
-                        os.path.join(f"outputgenerate/{element}/{label_name}/{str(i).zfill(6)}.png"),
+                        os.path.join(f"{args.output_prefix}/{element}/{label_name}/{str(i).zfill(6)}.png"),
                         nrow=1,
                         normalize=True,
                         range=(-1, 1),
@@ -77,6 +77,7 @@ if __name__ == '__main__':
     parser_dataset.create_parser_dataset(parser)
     parser_network.create_parser_network(parser)
     parser_fid.create_parser_fid(parser)
+    parser.add_argument("--output_prefix", type="str")
 
    
     args = parser.parse_args()
@@ -121,8 +122,8 @@ if __name__ == '__main__':
     for element in args.ckpt_FID :
         name_element = element.split("/")[-1].replace(".pt","")
         for category in args.limit_category :
-            if not os.path.exists(os.path.join("outputgenerate",name_element,category)):
-                os.makedirs(os.path.join("outputgenerate",name_element,category))
+            if not os.path.exists(os.path.join(args.output_prefix,name_element,category)):
+                os.makedirs(os.path.join(args.output_prefix,name_element,category))
             ckpt = torch.load(element)
 
 
