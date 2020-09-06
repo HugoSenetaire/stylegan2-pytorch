@@ -28,7 +28,7 @@ import numpy as np
 from tqdm import tqdm
 
 from inception import InceptionV3
-from dataset import Dataset,
+from dataset import Dataset, SimpleDataset
 from utils import *
 from parser_utils import *
 
