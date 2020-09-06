@@ -198,6 +198,12 @@ class Dataset(data.Dataset):
         x,dic_label = self._create_one_hot(data, self.columns,self.dic)
         y,dic_inspiration = self._create_one_hot(data, self.columns_inspirationnal, self.dic_inspirationnal)
 
+
+        print(x)
+        print(img_transform)
+        print(dic_label)
+        print(dic_inspiration)
+        print(mask_transform)
         if len(self.columns)>0:
             if len(self.columns_inspirationnal)>0 :
                 x = torch.cat([x,y])
