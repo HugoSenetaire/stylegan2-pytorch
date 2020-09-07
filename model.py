@@ -584,6 +584,7 @@ class Generator(nn.Module):
         input_is_latent=False,
         noise=None,
         randomize_noise=True,
+        label_in_input = False,
     ):
         if not input_is_latent:
             styles = [self.style(s) for s in styles]
@@ -640,7 +641,7 @@ class Generator(nn.Module):
             latent = torch.cat([latent, latent2], 1)
 
 
-        if self.latent_label_dim>0 :
+        if self.latent_label_dim>0 and not label_in_input :
             if labels is None :
                 print("Error label is None ")
             latent = self.forward_mixlabel(latent,labels)
