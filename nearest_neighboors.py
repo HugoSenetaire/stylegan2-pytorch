@@ -96,7 +96,7 @@ def findNearestNeighboors(inputFeature, testFeature, nbNeighboor = 5):
         testedFeature = testFeature[i]
         print(np.shape(testedFeature))
         print(np.shape(inputFeature))
-        dist = np.subtract(inputFeature, testedFeature)**2
+        dist = np.sum(np.subtract(inputFeature, testedFeature)**2,axis=1)
         closest = np.argsort(dist)[:nbNeighboor]
         dist = np.sort(dist)[:nbNeighboor]
         listeClosest.append(closest)
@@ -171,7 +171,7 @@ if __name__ == '__main__':
         dic[k] = []
         for i,index in enumerate(list_neighboors[k]):
             print(index)
-            print(list_distance[k][i])
+            print(np.shape(list_distance))
             dic[k].append((dataset.df.iloc[index],list_distance[k][i]))
 
     print(dic)
