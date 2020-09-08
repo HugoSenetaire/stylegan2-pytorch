@@ -112,7 +112,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--size', type=int, default=256)
     parser.add_argument('--batch', default=4, type=int, help='batch size')
-    parser.add_argument('--path', metavar='PATH', help='path to the folder picture file')
+    parser.add_argument('--folder', metavar='PATH', help='path to the folder picture file')
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
     parser.add_argument("--multiview", action = "store_true")
