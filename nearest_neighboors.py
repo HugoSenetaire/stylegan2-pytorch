@@ -92,7 +92,7 @@ def extract_features(model, loader, device):
             img = img[1]
         img = img.to(device)
         # feature = cnn.forward(img)
-        feature = model(image)[0].view(img.shape[0], -1).to('cpu')
+        feature = model(img)[0].view(img.shape[0], -1).to('cpu')
         feature_list.append(feature)
 
     features = torch.cat(feature_list, 0).cpu()
