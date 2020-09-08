@@ -80,12 +80,9 @@ def extract_features(cnn, loader, device):
         if isinstance(img,list):
             img = img[1]
         img = img.to(device)
-        print(img)
         feature = cnn.forward(img)
-        print(feature)
         feature = feature.flatten(1)
         feature_list.append(feature.detach())
-        print(feature_list)
 
     features = torch.cat(feature_list, 0).cpu()
 
