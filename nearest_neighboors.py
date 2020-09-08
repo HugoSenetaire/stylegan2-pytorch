@@ -170,11 +170,12 @@ if __name__ == '__main__':
     for k in range(len(list_neighboors)) :
         dic[k] = []
         for i,index in enumerate(list_neighboors[k]):
-            print(index)
-            print(np.shape(list_distance))
             dic[k].append((dataset.df.iloc[index],list_distance[k][i]))
-
-    print(dic)
+    
+    for k in range(len(list_neighboors)):
+        print("==========================")
+        print(k)
+        print(dic[k])
 
 
 
