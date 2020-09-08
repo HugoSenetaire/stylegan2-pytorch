@@ -94,11 +94,13 @@ def findNearestNeighboors(inputFeature, testFeature, nbNeighboor = 5):
     listDistance = []
     for i in range(len(testFeature)):
         testedFeature = testFeature[i]
+        print(np.shape(testedFeature))
+        print(np.shape(inputFeature))
         dist = np.subtract(inputFeature, testedFeature)**2
-    closest = np.argsort(dist)[:nbNeighboor]
-    dist = np.sort(dist)[:nbNeighboor]
-    listeClosest.append(closest)
-    listDistance.append(dist)
+        closest = np.argsort(dist)[:nbNeighboor]
+        dist = np.sort(dist)[:nbNeighboor]
+        listeClosest.append(closest)
+        listDistance.append(dist)
     return listeClosest, listDistance
 
 
