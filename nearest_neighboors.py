@@ -159,19 +159,21 @@ if __name__ == '__main__':
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
     features_test = extract_features(cnn, loader2, device).numpy()
     print(f'extracted {features_test.shape[0]} features')
+    
+    features = extract_features(cnn, loader, device).numpy()
+    
+    print(f'extracted {features.shape[0]} features')
     list_neighboors, list_distance = findNearestNeighboors(features,features_test)
 
-    features = extract_features(cnn, loader, device).numpy()
-    # print(f'extracted {features.shape[0]} features')
 
 
-    # dic ={}
-    # for k in range(len(list_neighboors)) :
-    #     dic[k] = []
-    #     for i,index in enumerate(list_neighboors[k]):
-    #         dic[k].append((dataset.df.iloc[index],list_distance[k][i]))
+    dic ={}
+    for k in range(len(list_neighboors)) :
+        dic[k] = []
+        for i,index in enumerate(list_neighboors[k]):
+            dic[k].append((dataset.df.iloc[index],list_distance[k][i]))
 
-    # print(dic)
+    print(dic)
 
 
 
