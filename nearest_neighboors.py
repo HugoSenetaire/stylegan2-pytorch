@@ -174,7 +174,7 @@ if __name__ == '__main__':
     for k in range(len(list_neighboors)) :
         dic[k] = []
         for i,index in enumerate(list_neighboors[k]):
-            dic[k].append((dataset.df.id_sap.iloc[index],list_distance[k][i]))
+            dic[k].append((dataset.df.image_id.iloc[index],list_distance[k][i]))
     
     for k in range(len(list_neighboors)):
         print("==========================")
