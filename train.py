@@ -2,8 +2,10 @@ import argparse
 import math
 import random
 import os
-
 import numpy as np
+from tqdm import tqdm
+
+
 import torch
 from torch import nn, autograd, optim
 from torch.nn import functional as F
@@ -11,19 +13,22 @@ from torch.utils import data
 import torch.distributed as dist
 from torchvision import transforms, utils
 import torchvision
-from tqdm import tqdm
 
 from utils import *
 from loss import *
+from network import *
+from dataset import *
+from parser import *
+from parser_utils import *
+
+
 try:
     import wandb
 
 except ImportError:
     wandb = None
 
-from model import Generator, Discriminator
-from dataset import Dataset
-from parser import *
+
 from distributed import (
     get_rank,
     synchronize,
@@ -31,8 +36,7 @@ from distributed import (
     reduce_sum,
     get_world_size,
 )
-from non_leaking import augment
-from parser_utils import *
+
 
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
@@ -161,9 +165,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             d_loss = d_logistic_loss(real_pred, fake_pred)
 
         elif args.discriminator_type == "AMGAN":
-            # random_label = create_fake_label_vector(random_label,device)
-            # real_label = add_zero(real_label,device)
-            # d_loss = classification_loss(fake_pred,random_label) + classification_loss(real_pred,real_label)
             fake_label = create_fake_label(random_label,device)
             real_label = real_dic_label[dataset.columns[0]].to(device)
             d_loss = classification_loss(fake_pred,fake_label) + classification_loss(real_pred,real_label)
