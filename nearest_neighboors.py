@@ -96,6 +96,8 @@ def findNearestNeighboors(inputFeature, testFeature, nbNeighboor = 5):
         testedFeature = testFeature[i]
         print(np.shape(testedFeature))
         print(np.shape(inputFeature))
+        print("TEST", np.shape(inputFeature/np.linalg.norm(inputFeature,axis=1)))
+        print("TEST 2",np.shape(testedFeature/np.linalg.norm(testedFeature)))
         # dist = np.sum(np.subtract(inputFeature, testedFeature)**2,axis=1)
         dist = np.dot(inputFeature/np.linalg.norm(inputFeature,axis=1),testedFeature/np.linalg.norm(testedFeature))
         closest = np.argsort(dist)[:nbNeighboor]
