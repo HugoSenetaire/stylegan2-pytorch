@@ -28,7 +28,7 @@ class SimpleDataset(data.Dataset):
         self.folder = path
         self.list_image = []
         for i,element in enumerate(os.listdir(self.folder)) :
-            if element.endswith(".png"):
+            if element.endswith(".png") or element.endswith(".jpg"):
                 self.list_image.append(element)
       
         

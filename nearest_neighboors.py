@@ -80,9 +80,12 @@ def extract_features(cnn, loader, device):
         if isinstance(img,list):
             img = img[1]
         img = img.to(device)
+        print(img)
         feature = cnn.forward(img)
+        print(feature)
         feature = feature.flatten(1)
         feature_list.append(feature.detach())
+        print(feature_list)
 
     features = torch.cat(feature_list, 0).cpu()
 
@@ -151,15 +154,15 @@ if __name__ == '__main__':
     )
     
     
-    features = extract_features(cnn, loader, device).numpy()
-    print(f'extracted {features.shape[0]} features')
-
 
     dset = SimpleDataset(args.generated_dataset, transform=transform, resolution=args.size)
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
     features_test = extract_features(cnn, loader2, device).numpy()
 
     list_neighboors, list_distance = findNearestNeighboors(features,features_test)
+
+    features = extract_features(cnn, loader, device).numpy()
+    print(f'extracted {features.shape[0]} features')
 
 
     dic ={}
