@@ -155,6 +155,7 @@ if __name__ == '__main__':
     
 
     dset = SimpleDataset(args.generated_dataset, transform=transform, resolution=args.size)
+    print(dset.list_image)
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
     features_test = extract_features(cnn, loader2, device).numpy()
     print(f'extracted {features_test.shape[0]} features')
