@@ -22,7 +22,12 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 import copy
 
+from torchvision import transforms
+from torchvision.models import inception_v3, Inception3
+import numpy as np
+from tqdm import tqdm
 
+from inception import InceptionV3
 
 # create a module to normalize input image so we can easily put it in a
 # nn.Sequential
@@ -70,7 +75,7 @@ def create_cnn() :
 
 
 
-def extract_features(cnn, loader, device):
+def extract_features(model, loader, device):
     pbar = tqdm(loader)
 
     feature_list = []
@@ -80,9 +85,9 @@ def extract_features(cnn, loader, device):
         if isinstance(img,list):
             img = img[1]
         img = img.to(device)
-        feature = cnn.forward(img)
-        feature = feature.flatten(1)
-        feature_list.append(feature.detach())
+        # feature = cnn.forward(img)
+        feature = model(image)[0].view(img.shape[0], -1).to('cpu')
+        feature_list.append(feature)
 
     features = torch.cat(feature_list, 0).cpu()
 
@@ -128,10 +133,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print("Start loading inception")
-    cnn = create_cnn().to(device)
-    cnn.normalization.mean =  cnn.normalization.mean.to(device)
-    cnn.normalization.std = cnn.normalization.std.to(device)
+    # cnn = create_cnn().to(device)
+    # cnn.normalization.mean =  cnn.normalization.mean.to(device)
+    # cnn.normalization.std = cnn.normalization.std.to(device)
     
+    print("Start loading inception")
+    inception = load_patched_inception_v3()
+    # inception = None
+    print("Inception loaded")
+    inception = nn.DataParallel(inception).eval().to(device)
+
     print("Data parallel")
     transform = transforms.Compose(
         [   
@@ -160,10 +171,10 @@ if __name__ == '__main__':
     dset = SimpleDataset(args.generated_dataset, transform=transform, resolution=args.size)
     print(dset.list_image)
     loader2 = DataLoader(dset, batch_size=args.batch, num_workers=4)
-    features_test = extract_features(cnn, loader2, device).numpy()
+    features_test = extract_features(inception, loader2, device).numpy()
     print(f'extracted {features_test.shape[0]} features')
     
-    features = extract_features(cnn, loader, device).numpy()
+    features = extract_features(inception, loader, device).numpy()
     
     print(f'extracted {features.shape[0]} features')
     list_neighboors, list_distance = findNearestNeighboors(features,features_test)
