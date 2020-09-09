@@ -73,19 +73,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     print("The weights for the generation are the following :")
     print(sample_dic_inspiration)
 
-    if args.mask :
-        sample_mask = dataset.random_mask(args.n_sample).to(device)
-        utils.save_image(
-                        sample_mask,
-                        os.path.join(args.output_prefix, f"sample_mask.png"),
-                        nrow=int(args.n_sample ** 0.5),
-                        normalize=True,
-                        range=(-1, 1),
-                    )
-        if args.mask_enforcer == "saturation":
-            normalisationLayer = nn.LayerNorm([dataset.image_size,dataset.image_size], elementwise_affine = False).to(device)
-    else :
-        sample_mask = None
+    sample_mask = sample_random_mask(args, args.n_sample, dataset, device, init=True, save_image= True):
 
 
     for idx in pbar:
@@ -98,29 +86,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
-        real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
-        real_label = real_label.to(device)
-        real_img = real_img.to(device)
-        real_mask = real_mask.to(device)
-
-
-        random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
-        if args.mask :
-            random_mask = dataset.random_mask(args.batch)
-            random_mask = random_mask.to(device)
-        else :
-            random_mask = None
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-  
-
-        fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
-        if args.augment:
-            real_img_aug, _ = augment(real_img, ada_aug_p)
-            fake_img, _ = augment(fake_img, ada_aug_p)
-        else:
-            real_img_aug = real_img
-
-        train_discriminator(args, discriminator, fake_img, real_img_aug, random_label, real_label, dataset)
+        train_discriminator(args, discriminator, fake_img, real_img_aug, random_label, real_label, dataset, noise)
         
 
         loss_dict["d"] = d_loss
@@ -195,8 +162,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
         if args.discriminator_type == "bilinear":
             fake_pred = select_index_discriminator(fake_pred,random_label)
-        
-
         if args.discriminator_type == "AMGAN":
             # random_label = add_zero(random_label,device)
             # g_loss = classification_loss(fake_pred,random_label)

@@ -107,10 +107,58 @@ def load_weights(args, generator, discriminator, g_ema, g_optim, d_optim):
 
 
 # NETWORK TRAINING :
+def sample_loader(loader, device):
+    real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
+    real_label = real_label.to(device)
+    real_img = real_img.to(device)
+    real_mask = real_mask.to(device)
 
-def train_discriminator(args, discriminator, fake_img, real_img, random_label, real_label, dataset):
+    return real_label, real_img, real_dic_label, real_inspiration_label, real_mask
+
+
+def sample_random(args, batch, dataset,device):
+    random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
+    random_mask= sample_random_mask(args, batch, dataset,device)
+
+    return random_label, random_dic_label, random_dic_inspiration, random_mask 
+
+def sample_random_mask(args, batch, dataset, device, init = False, save_image =False):
+    if args.mask :
+        random_mask = dataset.random_mask(batch).to(device)
+        if save_image :
+            utils.save_image(
+                            random_mask,
+                            os.path.join(args.output_prefix, f"sample_mask.png"),
+                            nrow=int(batch** 0.5),
+                            normalize=True,
+                            range=(-1, 1),
+                        )
+        if args.mask_enforcer == "saturation" and init:
+            normalisationLayer = nn.LayerNorm([dataset.image_size,dataset.image_size], elementwise_affine = False).to(device)
+    else :
+        random_mask = None
+
+        
+    return random_mask
+
+
+
+def train_discriminator(args, generator, discriminator, dataset, loader, device, noise):
+    real_label, real_img, real_dic_label, real_inspiration_label, real_mask = sample_loader(loader,device)
+    random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, args.batch, dataset, device)
+    
+    fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
+    if args.augment:
+        real_img_aug, _ = augment(real_img, ada_aug_p)
+        fake_img, _ = augment(fake_img, ada_aug_p)
+    else:
+        real_img_aug = real_img
+
+    
     fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
     real_pred, real_classification, real_inspiration = discriminator(real_img, labels = real_label)
+    
+
     if args.discriminator_type == "design":
         d_loss = d_logistic_loss(real_pred, fake_pred)
         if dataset.get_len()>0 :
