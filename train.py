@@ -120,7 +120,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-        train_discriminator(args, fake_img, real_img_aug, random_label, real_label, dataset)
+        train_discriminator(args, discriminator, fake_img, real_img_aug, random_label, real_label, dataset)
         
 
         loss_dict["d"] = d_loss
