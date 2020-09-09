@@ -319,6 +319,6 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
     loss_dict["path_length"] = path_lengths.mean()
 
 
-    loss_reduced = reduce_loss_dict(loss_dict)
+
 
     return g_loss
