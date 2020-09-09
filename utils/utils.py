@@ -230,6 +230,34 @@ def discriminator_regularization(args, discriminator, d_optim, real_img, real_la
     loss_dict["r1"] = r1_loss
 
 
+def generator_regularization(args, dataset, generator, g_optim, device, loss_dict):
+    path_batch_size = max(1, args.batch // args.path_batch_shrink)
+    noise = dataset.mixing_noise(path_batch_size, args.latent, args.mixing, device)
+    random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, path_batch_size, dataset, device)
+    
+
+    fake_img, latents = generator(noise, labels = random_label, return_latents=True, mask = random_mask)
+    
+    path_loss, mean_path_length, path_lengths = g_path_regularize(
+        fake_img, latents, mean_path_length
+    )
+
+    generator.zero_grad()
+    weighted_path_loss = args.path_regularize * args.g_reg_every * path_loss
+    if args.path_batch_shrink:
+        weighted_path_loss += 0 * fake_img[0, 0, 0, 0]
+    weighted_path_loss.backward()
+
+    g_optim.step()
+
+    mean_path_length_avg = (
+        reduce_sum(mean_path_length).item() / get_world_size()
+    )
+    loss_dict["mean_path_length_avg"]=mean_path_length_avg
+    loss_dict["mean_path_length"] = mean_path_length
+    loss_dict["path"] = path_loss
+    loss_dict["path_length"] = path_lengths.mean()
+
 def augmentation_regularization(args, real_pred, loss_dict, ada_augment,ada_aug_p):
     ada_augment += torch.tensor(
         (torch.sign(real_pred).sum().item(), real_pred.shape[0]), device=device
@@ -309,32 +337,35 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
 
 def train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim, mean_path_length, mean_path_length_avg, ada_aug_p) :
     
-    random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
-    if args.mask :
-        random_mask = dataset.random_mask(args.batch)
-        random_mask = random_mask.to(device)
-    else :
-        random_mask = None
+    random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, args.batch, dataset, device)
     noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
+    
+    
     fake_img, _ = generator(noise,labels = random_label, mask = random_mask)
     if args.mask and args.mask_enforcer == "zero_based":
         zero_noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device, zero = True)
         zero_img, _ = generator(zero_noise, labels= random_label, mask = random_mask, noise = 'zero', randomize_noise = False)
-
-
 
     if args.augment:
         fake_img, _ = augment(fake_img, ada_aug_p)
 
     
     fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
+    
     if args.discriminator_type == "bilinear":
         fake_pred = select_index_discriminator(fake_pred,random_label)
     if args.discriminator_type == "AMGAN":
         g_loss = classification_loss(fake_pred, random_dic_label[dataset.columns[0]])
     else :
         g_loss = g_nonsaturating_loss(fake_pred)
-
+    
+    if args.discriminator_type == "design":
+        if dataset.get_len()>0 :
+            for column in dataset.columns :
+                g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
+            for column in dataset.columns_inspirationnal :
+                g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
+        
 
     if args.mask :
         if args.mask_enforcer == "zero_based":
@@ -351,15 +382,6 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
         loss_dict["gmask"] = shape_loss
 
 
-    if args.discriminator_type == "design":
-        if dataset.get_len()>0 :
-            for column in dataset.columns :
-                g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
-            for column in dataset.columns_inspirationnal :
-                g_loss += args.lambda_inspiration_gen * creativity_loss(fake_inspiration[column], random_dic_inspiration[column], device)
-        
-
-
     loss_dict["g"] = g_loss
     generator.zero_grad()
     g_loss.backward()
@@ -368,37 +390,7 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
     g_regularize = i % args.g_reg_every == 0
 
     if g_regularize:
-        path_batch_size = max(1, args.batch // args.path_batch_shrink)
-        noise = dataset.mixing_noise(path_batch_size, args.latent, args.mixing, device)
-        random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(path_batch_size, device, "random", args.inspiration_method)
-        if args.mask :
-            random_mask = dataset.random_mask(path_batch_size)
-            random_mask = random_mask.to(device)
-        else :
-            random_mask = None
-
-        fake_img, latents = generator(noise, labels = random_label, return_latents=True, mask = random_mask)
-        path_loss, mean_path_length, path_lengths = g_path_regularize(
-            fake_img, latents, mean_path_length
-        )
-
-        generator.zero_grad()
-        weighted_path_loss = args.path_regularize * args.g_reg_every * path_loss
-
-        if args.path_batch_shrink:
-            weighted_path_loss += 0 * fake_img[0, 0, 0, 0]
-
-        weighted_path_loss.backward()
-
-        g_optim.step()
-
-        mean_path_length_avg = (
-            reduce_sum(mean_path_length).item() / get_world_size()
-        )
-        loss_dict["mean_path_length_avg"]=mean_path_length_avg
-        loss_dict["mean_path_length"] = mean_path_length
-        loss_dict["path"] = path_loss
-        loss_dict["path_length"] = path_lengths.mean()
+        generator_regularization(args, dataset, generator, g_optim, device, loss_dict)
 
 
 
