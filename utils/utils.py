@@ -352,13 +352,13 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
     
     fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label)
     
+    # Depending on the discriminator type, the loss is different :
     if args.discriminator_type == "bilinear":
         fake_pred = select_index_discriminator(fake_pred,random_label)
     if args.discriminator_type == "AMGAN":
         g_loss = classification_loss(fake_pred, random_dic_label[dataset.columns[0]])
     else :
         g_loss = g_nonsaturating_loss(fake_pred)
-    
     if args.discriminator_type == "design":
         if dataset.get_len()>0 :
             for column in dataset.columns :
@@ -388,11 +388,7 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
     g_optim.step()
 
     g_regularize = i % args.g_reg_every == 0
-
     if g_regularize:
         generator_regularization(args, dataset, generator, g_optim, device, loss_dict, mean_path_length, mean_path_length_avg)
-
-
-
 
     return g_loss
