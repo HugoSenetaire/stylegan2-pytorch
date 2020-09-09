@@ -23,7 +23,7 @@ def generate(args, g_ema, device, mean_latent, dataset):
 
         for i in tqdm(range(args.pics)):
            sample_z = torch.randn(args.n_sample, args.latent, device=device)
-           sample_label, sample_dic_label, sample_dic_inspiration, sample_mask  = sample_random(args,args.n_sample,dataset, devuce)
+           sample_label, sample_dic_label, sample_dic_inspiration, sample_mask  = sample_random(args,args.n_sample,dataset, device)
 
            sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask, truncation=args.truncation, truncation_latent=mean_latent)
            utils.save_image(
