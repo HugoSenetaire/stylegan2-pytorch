@@ -2,6 +2,21 @@ from .model import *
 from .non_leaking import *
 
 
+def accumulate(model1, model2, decay=0.999):
+    par1 = dict(model1.named_parameters())
+    par2 = dict(model2.named_parameters())
+
+    for k in par1.keys():
+        par1[k].data.mul_(decay).add_(par2[k].data, alpha=1 - decay)
+
+
+def calculate_reg_ratio(args):
+    g_reg_ratio = args.g_reg_every / (args.g_reg_every + 1)
+    d_reg_ratio = args.d_reg_every / (args.d_reg_every + 1)
+
+    return g_reg_ratio, d_reg_ratio
+
+
 def create_network(args, dataset, device):
 
     latent_label_dim = dataset.get_len()
@@ -35,12 +50,6 @@ def create_network(args, dataset, device):
     return generator,discriminator,g_ema
 
 
-
-def calculate_reg_ratio(args):
-    g_reg_ratio = args.g_reg_every / (args.g_reg_every + 1)
-    d_reg_ratio = args.d_reg_every / (args.d_reg_every + 1)
-
-    return g_reg_ratio, d_reg_ratio
 
 def create_optimiser(args, generator,discriminator):
     g_reg_ratio, d_reg_ratio = calculate_reg_ratio(args)
