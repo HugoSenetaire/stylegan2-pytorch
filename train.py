@@ -109,7 +109,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             if wandb and args.wandb:
                 wandb.log(loss_reduce_feedback)
 
-            save_checkpoint(i, args, g, d, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask)
+            save_checkpoint(i, args, g_module, d_module, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask)
                 
 
     
