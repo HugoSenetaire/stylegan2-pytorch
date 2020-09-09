@@ -151,7 +151,6 @@ def save_image(i, args, g_ema, sample_z, sample_label, sample_mask):
     with torch.no_grad():
         g_ema.eval()
         sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask)
-        print(sample)
         utils.save_image(
             sample,
             os.path.join(args.output_prefix, f"sample/{str(i).zfill(6)}.png"),
