@@ -3,9 +3,7 @@ import math
 import random
 import os
 
-def create_parser_train(parser):
-    
- 
+def create_parser_generate(parser):
     # Utils parameters :
     parser.add_argument("--wandb", action="store_true", help = "WanDB log")
     parser.add_argument("--local_rank", type=int, default=0, help = "Rank of the gpus used for training : Should not be given when")
