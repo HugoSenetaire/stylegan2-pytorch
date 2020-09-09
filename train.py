@@ -31,7 +31,6 @@ except ImportError:
 
 
 
-
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
     loader = sample_data(loader)
 
@@ -418,140 +417,18 @@ if __name__ == "__main__":
 
     args.start_iter = 0
 
-    transform = transforms.Compose(
-        [   
-            transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
-            transforms.Resize((args.size,args.size)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-        ]
-    )
-    if args.mask is True :
-        transform_mask = transforms.Compose(
-            [
-                transforms.Resize((args.size,args.size)),
-                transforms.ToTensor(),
-                # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-            ]
-        )
-    else :
-        args.mask = False
-        transform_mask = None
-
-
-    print("MASK")
-    print(transform_mask)
-    print(args.mask)
-    dataset = Dataset(args.folder,
-        transform, args.size, 
-        columns = args.labels,
-        columns_inspirationnal = args.labels_inspirationnal,
-        dataset_type = args.dataset_type,
-        multiview = args.multiview,
-        csv_path = args.csv_path,
-        transform_mask=transform_mask
-    )
-
+    dataset = create_dataset(args)
     
-    loader = data.DataLoader(
-        dataset,
-        batch_size=args.batch,
-        sampler=data_sampler(dataset, shuffle=True, distributed=args.distributed),
-        drop_last=True,
-    )
+    loader = create_loader(args, dataset)
 
-    latent_label_dim = dataset.get_len()
-
+    generator, discriminator, g_ema =  create_network(args, dataset, device)
+    g_optim,d_optim = create_optimiser(args, generator, discriminator)
    
-    generator = Generator(
-        args.size, args.latent, args.n_mlp,
-         channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim,
-         mask = args.mask
-    ).to(device)
-
-    discriminator = Discriminator(
-        args.size, channel_multiplier=args.channel_multiplier,
-        latent_label_dim= latent_label_dim,
-         dic_latent_label_dim=dataset.dic_column_dim,
-         dic_inspirationnal_label_dim= dataset.dic_column_dim_inspirationnal,
-         device=device,
-         discriminator_type=args.discriminator_type
-    ).to(device)
-
-    g_ema = Generator(
-        args.size, args.latent, args.n_mlp,
-         channel_multiplier=args.channel_multiplier,
-         latent_label_dim=latent_label_dim,
-         mask = args.mask,
-    ).to(device)
-   
-    g_ema.eval()
-    accumulate(g_ema, generator, 0)
-
-    g_reg_ratio = args.g_reg_every / (args.g_reg_every + 1)
-    d_reg_ratio = args.d_reg_every / (args.d_reg_every + 1)
-
-    g_optim = optim.Adam(
-        generator.parameters(),
-        lr=args.lr * g_reg_ratio,
-        betas=(0 ** g_reg_ratio, 0.99 ** g_reg_ratio),
-    )
-    d_optim = optim.Adam(
-        discriminator.parameters(),
-        lr=args.lr * d_reg_ratio,
-        betas=(0 ** d_reg_ratio, 0.99 ** d_reg_ratio),
-    )
 
     if args.ckpt is not None:
-        print("load model:", args.ckpt)
-
-        ckpt = torch.load(args.ckpt, map_location=lambda storage, loc: storage)
-
-        try:
-            ckpt_name = os.path.basename(args.ckpt)
-            args.start_iter = int(os.path.splitext(ckpt_name)[0])
-
-        except ValueError:
-            pass
-
-        generator.load_state_dict(ckpt["g"])
-        discriminator.load_state_dict(ckpt["d"])
-        g_ema.load_state_dict(ckpt["g_ema"])
-
-        try :
-            g_optim.load_state_dict(ckpt["g_optim"])
-            d_optim.load_state_dict(ckpt["d_optim"])
-        except :
-            g_optim = optim.Adam(
-            generator.parameters(),
-            lr=args.lr * g_reg_ratio,
-            betas=(0 ** g_reg_ratio, 0.99 ** g_reg_ratio),
-            )
-            d_optim = optim.Adam(
-                discriminator.parameters(),
-                lr=args.lr * d_reg_ratio,
-                betas=(0 ** d_reg_ratio, 0.99 ** d_reg_ratio),
-            )
-
+       load_weights(args,generator,discriminator,g_ema,g_optim,d_optim)
     if args.distributed:
-        generator = nn.parallel.DistributedDataParallel(
-            generator,
-            device_ids=[args.local_rank],
-            output_device=args.local_rank,
-            broadcast_buffers=False,
-
-        )
-
-        discriminator = nn.parallel.DistributedDataParallel(
-            discriminator,
-            device_ids=[args.local_rank],
-            output_device=args.local_rank,
-            broadcast_buffers=False,
-        )
-
-
+        create_distributed(args, generator, discriminator)
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
 
