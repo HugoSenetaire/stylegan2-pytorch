@@ -57,7 +57,10 @@ When conditionning on mask, we add the option as the following :
 
 We sample from a folder whose path is FOLDER_PATH + _mask. The name of the mask of an image should be the exact same name of the original image inside the mask folder.
 
+There is two types of mask enforcer one based on saturation and one bsaed on the results obtained with a zero noise. To change the mask enforcer, one should use the following option :
 
+> --mask_enforcer saturation
+> --mask_enforcer zero_based
 
 ### Networks: 
 #### Discriminator type : 
@@ -76,10 +79,10 @@ We can control the size of the latent space and the number of MLP we use to extr
 
 We have also the possibility to change the dimension of the style space with a channel multiplier.
 
-> --channel_multiplier
+> --channel_multiplier MULTIPLIER
 
 The size of the output is controlled by :
- > --size
+ > --size SIZE
 
 ### Training :
 train.py supports Weights & Biases logging. If you want to use it, add --wandb arguments to the script.
