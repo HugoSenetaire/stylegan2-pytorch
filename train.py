@@ -32,11 +32,10 @@ except ImportError:
 
 
 def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_ema, device):
+
+    # Iinitialisation :
     loader = sample_data(loader)
-
     pbar = range(args.iter)
-
-
     if get_rank() == 0:
         pbar = tqdm(pbar, initial=args.start_iter, dynamic_ncols=True, smoothing=0.01)
 
@@ -49,7 +48,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     path_lengths = torch.tensor(0.0, device=device)
     mean_path_length_avg = 0
     loss_dict = {}
-
 
     if args.distributed:
         g_module = generator.module
@@ -65,8 +63,9 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     ada_aug_step = args.ada_target / args.ada_length
     r_t_stat = 0
 
-    sample_z = torch.randn(args.n_sample, args.latent, device=device)
 
+    # Sample Noise, Labels and Mask for feedback
+    sample_z = torch.randn(args.n_sample, args.latent, device=device)
     sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(args.n_sample, device, args.label_method, args.inspiration_method)
     
     print("The labels for the generation are the following :")
@@ -99,22 +98,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
-                print(f"Upscale at {i}")
-                print(f"next upscale at {args.upscale_every*args.upscale_factor}")
-                args.upscale_every = args.upscale_every*args.upscale_factor
-                add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device)
-                if args.mask_enforcer == "saturation":
-                    normalisationLayer = nn.LayerNorm([dataset.image_size,dataset.image_size],elementwise_affine = False).to(device)
-                print(f"New size is {dataset.image_size}")
-                if args.mask :
-                    sample_mask = dataset.random_mask(args.n_sample).to(device)
-                    utils.save_image(
-                                    sample_mask,
-                                    os.path.join(args.output_prefix, f"sample_mask_{i}.png"),
-                                    nrow=int(args.n_sample ** 0.5),
-                                    normalize=True,
-                                    range=(-1, 1),
-                                )
+                progressive_manager(args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask)
 
         real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
 
