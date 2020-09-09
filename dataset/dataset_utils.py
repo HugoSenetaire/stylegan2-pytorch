@@ -1,4 +1,5 @@
 from .dataset import *
+# from .dataset import Dataset
 
 from torchvision import transforms, utils
 from torch.utils import data
@@ -14,15 +15,7 @@ def data_sampler(dataset, shuffle, distributed):
     else:
         return data.SequentialSampler(dataset)
 
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
 
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
 
 
 def create_dataset(args):
