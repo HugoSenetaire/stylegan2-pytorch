@@ -99,6 +99,9 @@ def requires_grad(model, flag=True):
 
 
 
+
+#SAMPLING UTILS :
+
 def sample_data(loader):
     while True:
         for batch in loader:
@@ -106,7 +109,6 @@ def sample_data(loader):
 
 
 
-# NETWORK TRAINING :
 def sample_loader(loader, device):
     real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
     real_label = real_label.to(device)
@@ -141,7 +143,7 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
 
     return random_mask
 
-
+# NETWORK TRAINING :
 
 def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim):
     noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
