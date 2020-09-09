@@ -241,21 +241,7 @@ class Dataset(data.Dataset):
         liste = torch.tensor(liste)
         return liste
     
-    # def get_onehot_fromvalue(self, values):
-    #     if len(self.columns)==0 :
-    #         return None
-    #     if columns is None and (len(self.columns)>0 or len(self.values)>0) :
-    #         raise ValueError("When having multiple conditioning, the dataset should be given information on the column we want the one hot vector from")
-    #     else :
-    #         columns = [self.columns[0]]
-    #         if 
-
-    #     for column,value in zip(columns,value):
-    #         liste.append(self.encoder[column].apply(value)
-    #     liste = torch.tensor(liste)
-    #         liste.append(self.encoder[column].apply(data[column]))
-    #     liste = torch.tensor(liste)
-    #     return liste
+ 
     def get_onehot_fromvalue(self,value):
         if len(self.columns)>1 :
             raise ValueError("This is only to be used in test FID with one column")
