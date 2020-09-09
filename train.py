@@ -120,30 +120,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         else:
             real_img_aug = real_img
 
-        fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
-        real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
-        
-        
-        if args.discriminator_type == "design":
-            d_loss = d_logistic_loss(real_pred, fake_pred)
-            if dataset.get_len()>0 :
-                for column in dataset.columns :
-                    d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
-                for column in dataset.columns_inspirationnal :
-                    d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
-        elif args.discriminator_type == "bilinear" :
-            fake_pred = select_index_discriminator(fake_pred,random_label)
-            real_pred = select_index_discriminator(real_pred, real_label)
-            d_loss = d_logistic_loss(real_pred, fake_pred)
-        elif args.discriminator_type == "AMGAN":
-            fake_label = create_fake_label(random_label,device)
-            real_label = real_dic_label[dataset.columns[0]].to(device)
-            d_loss = classification_loss(fake_pred,fake_label) + classification_loss(real_pred,real_label)
-        
-        
-        
-        
-        
+        train_discriminator(args, fake_img, real_img_aug, random_label, real_label, dataset)
         
 
         loss_dict["d"] = d_loss

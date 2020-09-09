@@ -2,7 +2,10 @@ from .model import *
 from .non_leaking import *
 
 from torch import nn, autograd, optim
+from .loss import *
 
+
+# NETWORK INITIALISATION :
 def accumulate(model1, model2, decay=0.999):
     par1 = dict(model1.named_parameters())
     par2 = dict(model2.named_parameters())
@@ -100,3 +103,28 @@ def load_weights(args, generator, discriminator, g_ema, g_optim, d_optim):
             betas=(0 ** d_reg_ratio, 0.99 ** d_reg_ratio),
         )
 
+
+
+
+# NETWORK TRAINING :
+
+def train_discriminator(args, fake_img, real_img, random_label, real_label, dataset):
+    fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
+    real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
+    if args.discriminator_type == "design":
+        d_loss = d_logistic_loss(real_pred, fake_pred)
+        if dataset.get_len()>0 :
+            for column in dataset.columns :
+                d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
+            for column in dataset.columns_inspirationnal :
+                d_loss += classification_loss(real_inspiration[column], real_inspiration_label[column].to(device))
+    elif args.discriminator_type == "bilinear" :
+        fake_pred = select_index_discriminator(fake_pred,random_label)
+        real_pred = select_index_discriminator(real_pred, real_label)
+        d_loss = d_logistic_loss(real_pred, fake_pred)
+    elif args.discriminator_type == "AMGAN":
+        fake_label = create_fake_label(random_label,device)
+        real_label = real_dic_label[dataset.columns[0]].to(device)
+        d_loss = classification_loss(fake_pred,fake_label) + classification_loss(real_pred,real_label)
+
+    return d_loss, real_pred, fake_pred
