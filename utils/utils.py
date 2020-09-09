@@ -253,7 +253,7 @@ def augmentation_regularization(args, real_pred, loss_dict, ada_augment,ada_aug_
     
     loss_dict["r_t_stat"] = r_t_stat
 
-def calculate_d_loss(args, real_pred, real_classification, real_inspiration, fake_pred, fake_classification, fake_inspiration, loss_dict):
+def calculate_d_loss(args, dataset, real_pred, real_classification, real_inspiration, fake_pred, fake_classification, fake_inspiration, loss_dict):
     if args.discriminator_type == "design":
         d_loss = d_logistic_loss(real_pred, fake_pred)
         if dataset.get_len()>0 :
@@ -292,7 +292,7 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
     fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
     real_pred, real_classification, real_inspiration = discriminator(real_img, labels = real_label)
     
-    d_loss = calculate_d_loss(args, real_pred, real_classification, real_inspiration, fake_pred, fake_classification, fake_inspiration, loss_dict)
+    d_loss = calculate_d_loss(args, dataset, real_pred, real_classification, real_inspiration, fake_pred, fake_classification, fake_inspiration, loss_dict)
     discriminator.zero_grad()
     d_loss.backward()
     d_optim.step()
