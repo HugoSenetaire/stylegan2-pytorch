@@ -147,7 +147,7 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
 
 # FEEDBACK :
 
-def save_image(args, g_ema, sample_z, sampl_label, sample_mask):
+def save_image(args, g_ema, sample_z, sample_label, sample_mask):
     with torch.no_grad():
         g_ema.eval()
         sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask)
