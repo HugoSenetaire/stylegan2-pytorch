@@ -1,2 +1,2 @@
-from distributed import *
-from utils import *
+from .distributed import *
+from .utils import *
