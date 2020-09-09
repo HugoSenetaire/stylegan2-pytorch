@@ -17,6 +17,8 @@ from .dataset import *
 from .distributed import *
 
 
+
+
 def convert_to_greyscale(tensor):
     tensor_greyscale = 0.21 * tensor[:,0,:,:] + 0.72 * tensor[:,1,:,:]  + 0.07 * tensor[:,2,:,:]
     return tensor_greyscale
@@ -139,6 +141,20 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
     return random_mask
 
 # NETWORK TRAINING :
+
+def init_training(device):
+    d_loss_val = 0
+    r1_loss = torch.tensor(0.0, device=device)
+    g_loss_val = 0
+    path_loss = torch.tensor(0.0, device=device)
+    path_lengths = torch.tensor(0.0, device=device)
+    mean_path_length_avg = 0
+    loss_dict = {"path": path_loss,
+     "path_length": path_lengths,
+     "mean_path_length_avg": mean_path_length_avg,
+     }
+    return d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict
+
 
 def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim):
     noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
@@ -315,8 +331,8 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
             reduce_sum(mean_path_length).item() / get_world_size()
         )
 
-    loss_dict["path"] = path_loss
-    loss_dict["path_length"] = path_lengths.mean()
+        loss_dict["path"] = path_loss
+        loss_dict["path_length"] = path_lengths.mean()
 
 
 

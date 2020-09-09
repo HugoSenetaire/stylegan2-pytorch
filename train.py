@@ -37,13 +37,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
     mean_path_length = 0
 
-    d_loss_val = 0
-    r1_loss = torch.tensor(0.0, device=device)
-    g_loss_val = 0
-    path_loss = torch.tensor(0.0, device=device)
-    path_lengths = torch.tensor(0.0, device=device)
-    mean_path_length_avg = 0
-    loss_dict = {}
+    # d_loss_val = 0
+    # r1_loss = torch.tensor(0.0, device=device)
+    # g_loss_val = 0
+    # path_loss = torch.tensor(0.0, device=device)
+    # path_lengths = torch.tensor(0.0, device=device)
+    # mean_path_length_avg = 0
+    # loss_dict = {"path": path_loss, "path_length": path_lengths}
+    d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict = init_training(device)
+
 
     if args.distributed:
         g_module = generator.module
