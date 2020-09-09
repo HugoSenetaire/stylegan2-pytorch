@@ -95,7 +95,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(generator, True)
         requires_grad(discriminator, False)
 
-        g_loss = train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim)
+        g_loss = train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim,mean_path_length, mean_path_length_avg)
 
         accumulate(g_ema, g_module, accum)
 
