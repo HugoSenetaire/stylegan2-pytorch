@@ -225,7 +225,7 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
     return d_loss
 
 
-def train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim, mean_path_length, mean_path_length_avg) :
+def train_generator(i, args, generator, discriminator, g_ema, dataset, loader, device, loss_dict, g_optim, mean_path_length, mean_path_length_avg) :
     
     random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
     if args.mask :
