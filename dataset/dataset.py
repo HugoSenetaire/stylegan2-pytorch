@@ -22,6 +22,8 @@ from torch import nn
 from torch.utils import data
 import torch.nn.functional as F
 
+from .dataset_utils import convert_transparent_to_rgb, convert_rgb_to_transparent
+
 
 class SimpleDataset(data.Dataset):
     def __init__(self, path, transform, resolution=256):
@@ -260,6 +262,30 @@ class Dataset(data.Dataset):
         column = self.columns[0]
         onehot_index = self.encoder[column].apply(value)
         return onehot_index
+
+    def upscale(self):  
+        self.image_size = self.image_size*2
+        transform = transforms.Compose(
+            [   
+                transforms.Lambda(convert_transparent_to_rgb),
+                transforms.RandomHorizontalFlip(),
+                transforms.Resize((self.image_size,self.image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+            ]
+        )
+        self.transform = transform
+        if self.transform_mask is not None :
+            self.transform_mask = transform_mask
+            transform_mask = transforms.Compose(
+                    [
+                        transforms.Resize((self.image_size, self.image_size)),
+                        transforms.ToTensor(),
+                        # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
+                    ]
+                )
+
+    
 
     def get_reverse(self,index):
         if len(self.columns)==0 :

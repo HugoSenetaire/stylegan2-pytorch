@@ -10,15 +10,6 @@ from torch.nn import functional as F
 from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
 
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
-
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
 
 
 

@@ -102,28 +102,9 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     discriminator.add_scale(d_optim,device =device)
 
     g_ema.add_scale(device = device)
-    dataset.image_size = dataset.image_size*2
-    transform = transforms.Compose(
-        [   
-            transforms.Lambda(convert_transparent_to_rgb),
-            transforms.RandomHorizontalFlip(),
-            transforms.Resize((dataset.image_size,dataset.image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-        ]
-    )
-    dataset.transform = transform
-    if dataset.transform_mask is not None :
-        dataset.transform_mask = transform_mask
-        transform_mask = transforms.Compose(
-                [
-                    transforms.Resize((dataset.image_size, dataset.image_size)),
-                    transforms.ToTensor(),
-                    # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True),
-                ]
-            )
 
-    
+    dataset.upscale()
+
 
 
 
