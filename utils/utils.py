@@ -156,6 +156,26 @@ def init_training(device):
     return d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict
 
 
+def reducing_loss(loss_dict):
+    loss_reduced = reduce_loss_dict(loss_dict)
+    loss_reduced_feedback = {}
+    loss_reduced_feedback["Discriminator"] = loss_reduced["d"].mean().item()
+    loss_reduced_feedback["Generator"] = loss_reduced["g"].mean().item()
+
+
+    if args.mask :
+        loss_reduced_feedback["Generator Classic"] = loss_reduced["gclassic"].mean().item()
+        loss_reduced_feedback["Generator mask Loss"] = loss_reduced["gmask"].mean().item()
+
+    loss_reduced_feedback["R1"] = loss_reduced["r1"].mean().item()
+    loss_reduced_feedback["Path Length Regularization"] = loss_reduced["path"].mean().item()
+    loss_reduced_feedback["Real Score"]  = loss_reduced["real_score"].mean().item()
+    loss_reduced_feedback["Fake Score"]  = loss_reduced["fake_score"].mean().item()
+    loss_reduced_feedback["Path Length"] = loss_reduced["path_length"].mean().item()
+
+    return loss_reduced_feedback
+
+
 def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim):
     noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
     real_label, real_img, real_dic_label, real_inspiration_label, real_mask = sample_loader(loader,device)
@@ -317,6 +337,7 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
         path_loss, mean_path_length, path_lengths = g_path_regularize(
             fake_img, latents, mean_path_length
         )
+
         generator.zero_grad()
         weighted_path_loss = args.path_regularize * args.g_reg_every * path_loss
 
@@ -330,7 +351,8 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
         mean_path_length_avg = (
             reduce_sum(mean_path_length).item() / get_world_size()
         )
-
+        loss_dict["mean_path_length_avg"]=mean_path_length_avg
+        loss_dict["mean_path_length"] = mean_path_length
         loss_dict["path"] = path_loss
         loss_dict["path_length"] = path_lengths.mean()
 

@@ -37,13 +37,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
     mean_path_length = 0
 
-    # d_loss_val = 0
-    # r1_loss = torch.tensor(0.0, device=device)
-    # g_loss_val = 0
-    # path_loss = torch.tensor(0.0, device=device)
-    # path_lengths = torch.tensor(0.0, device=device)
-    # mean_path_length_avg = 0
-    # loss_dict = {"path": path_loss, "path_length": path_lengths}
+  
     d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict = init_training(device)
 
 
@@ -96,46 +90,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         g_loss = train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim, mean_path_length, mean_path_length_avg)
 
         accumulate(g_ema, g_module, accum)
-        loss_reduced = reduce_loss_dict(loss_dict)
-        d_loss_val = loss_reduced["d"].mean().item()
-        g_loss_val = loss_reduced["g"].mean().item()
-
-
-        if args.mask :
-            g_classic_loss = loss_reduced["gclassic"].mean().item()
-            g_mask_loss = loss_reduced["gmask"].mean().item()
-
-
-        r1_val = loss_reduced["r1"].mean().item()
-        path_loss_val = loss_reduced["path"].mean().item()
-        real_score_val = loss_reduced["real_score"].mean().item()
-        fake_score_val = loss_reduced["fake_score"].mean().item()
-        path_length_val = loss_reduced["path_length"].mean().item()
+        loss_reduce_feedback = get_total_feedback(loss_dict)
 
         if get_rank() == 0:
             pbar.set_description(
-                (
-                    f"d: {d_loss_val:.4f}; g: {g_loss_val:.4f}; r1: {r1_val:.4f};"
-                    f"path: {path_loss_val:.4f}; mean path: {mean_path_length_avg:.4f};"
-                    f"augment: {ada_aug_p:.4f};"
-                )
+                loss_dict,
             )
 
             if wandb and args.wandb:
-                wandb.log(
-                    {
-                        "Generator": g_loss_val,
-                        "Discriminator": d_loss_val,
-                        "Augment": ada_aug_p,
-                        "Rt": r_t_stat,
-                        "R1": r1_val,
-                        "Path Length Regularization": path_loss_val,
-                        "Mean Path Length": mean_path_length,
-                        "Real Score": real_score_val,
-                        "Fake Score": fake_score_val,
-                        "Path Length": path_length_val,
-                    }
-                )
+                wandb.log(loss_reduce_feedback)
 
             if i % args.save_img_every == 0:
                 with torch.no_grad():
