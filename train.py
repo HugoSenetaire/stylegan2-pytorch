@@ -15,11 +15,6 @@ from torchvision import transforms, utils
 import torchvision
 
 from utils import *
-from loss import *
-from network import *
-from dataset import *
-from parser import *
-from parser_utils import *
 
 
 try:
