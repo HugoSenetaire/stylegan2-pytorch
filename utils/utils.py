@@ -171,7 +171,7 @@ def save_weights(i, args, g, d, g_ema, g_optim, d_optim):
         os.path.join(args.output_prefix,f"checkpoint/{str(i).zfill(6)}.pt"),
     )
 
-def save_checkpoint(i, args, g, d, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask)
+def save_checkpoint(i, args, g, d, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask):
     if i % args.save_img_every == 0:
         save_image(args, g_ema, sample_z, sampl_label, sample_mask)
     if i % args.save_model_every == 0:
