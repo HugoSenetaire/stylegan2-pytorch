@@ -73,7 +73,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     print("The weights for the generation are the following :")
     print(sample_dic_inspiration)
 
-    sample_mask = sample_random_mask(args, args.n_sample, dataset, device, init=True, save_image= True):
+    sample_mask = sample_random_mask(args, args.n_sample, dataset, device, init=True, save_image= True)
 
 
     for idx in pbar:
