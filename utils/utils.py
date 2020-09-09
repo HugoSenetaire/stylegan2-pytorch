@@ -230,7 +230,7 @@ def discriminator_regularization(args, discriminator, d_optim, real_img, real_la
     loss_dict["r1"] = r1_loss
 
 
-def generator_regularization(args, dataset, generator, g_optim, device, loss_dict):
+def generator_regularization(args, dataset, generator, g_optim, device, loss_dict, mean_path_length, mean_path_length_avg):
     path_batch_size = max(1, args.batch // args.path_batch_shrink)
     noise = dataset.mixing_noise(path_batch_size, args.latent, args.mixing, device)
     random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, path_batch_size, dataset, device)
@@ -390,7 +390,7 @@ def train_generator(i, args, generator, discriminator, dataset, loader, device, 
     g_regularize = i % args.g_reg_every == 0
 
     if g_regularize:
-        generator_regularization(args, dataset, generator, g_optim, device, loss_dict)
+        generator_regularization(args, dataset, generator, g_optim, device, loss_dict, mean_path_length, mean_path_length_avg)
 
 
 
