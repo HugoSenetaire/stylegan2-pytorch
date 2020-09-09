@@ -5,7 +5,7 @@ from PIL import Image
 import json
 from tqdm import tqdm
 from math import floor, log2
-from random import random
+import random
 from shutil import rmtree
 from functools import partial
 import multiprocessing
@@ -20,6 +20,7 @@ from torch.utils import data
 import torch.nn.functional as F
 from torchvision import transforms, utils
 from torch.utils import data
+
 
 
 
