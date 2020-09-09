@@ -7,9 +7,7 @@ from torch.utils import data
 import torch.distributed as dist
 from tqdm import tqdm
 from torchvision import utils, transforms
-from model import Generator
 from tqdm import tqdm
-from dataset import Dataset
 
 
 
