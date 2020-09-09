@@ -94,7 +94,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if get_rank() == 0:
             pbar.set_description(
-                loss_reduce_feedback
+                str(loss_reduce_feedback)
             )
             if wandb and args.wandb:
                 wandb.log(loss_reduce_feedback)
