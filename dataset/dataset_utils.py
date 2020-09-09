@@ -3,6 +3,16 @@ from .dataset import *
 from torchvision import transforms, utils
 from torch.utils import data
 
+    
+def data_sampler(dataset, shuffle, distributed):
+    if distributed:
+        return data.distributed.DistributedSampler(dataset, shuffle=shuffle)
+
+    if shuffle:
+        return data.RandomSampler(dataset)
+
+    else:
+        return data.SequentialSampler(dataset)
 
 def convert_rgb_to_transparent(image):
     if image.mode == 'RGB':

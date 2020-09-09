@@ -12,16 +12,6 @@ from torchvision import transforms, utils
 from tqdm import tqdm
 
 
-def convert_rgb_to_transparent(image):
-    if image.mode == 'RGB':
-        return image.convert('RGBA')
-    return image
-
-def convert_transparent_to_rgb(image):
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    return image
-
 def create_label(batch_size,column_size,device):
     # TODO
     # Non nécessaire de le créer à chaque fois , juste mettre en global
@@ -134,16 +124,7 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     dataset.transform_mask = transform_mask
 
 
-    
-def data_sampler(dataset, shuffle, distributed):
-    if distributed:
-        return data.distributed.DistributedSampler(dataset, shuffle=shuffle)
 
-    if shuffle:
-        return data.RandomSampler(dataset)
-
-    else:
-        return data.SequentialSampler(dataset)
 
 
 def requires_grad(model, flag=True):
