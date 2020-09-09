@@ -146,7 +146,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
         if args.discriminator_type == "design":
             d_loss = d_logistic_loss(real_pred, fake_pred)
-            if latent_label_dim>0 :
+            if dataset.latent_label_dim>0 :
                 for column in dataset.columns :
                     d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
                 for column in dataset.columns_inspirationnal :
@@ -265,7 +265,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
         if args.discriminator_type == "design":
-            if latent_label_dim>0 :
+            if dataset.latent_label_dim>0 :
                 for column in dataset.columns :
                     g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
                 for column in dataset.columns_inspirationnal :
