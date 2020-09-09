@@ -1,6 +1,7 @@
 from .model import *
 from .non_leaking import *
 
+from torch import nn, autograd, optim
 
 def accumulate(model1, model2, decay=0.999):
     par1 = dict(model1.named_parameters())
