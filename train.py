@@ -146,7 +146,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
         if args.discriminator_type == "design":
             d_loss = d_logistic_loss(real_pred, fake_pred)
-            if dataset.latent_label_dim>0 :
+            if dataset.get_len()>0 :
                 for column in dataset.columns :
                     d_loss += classification_loss(real_classification[column], real_dic_label[column].to(device))
                 for column in dataset.columns_inspirationnal :
@@ -265,7 +265,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
 
         if args.discriminator_type == "design":
-            if dataset.latent_label_dim>0 :
+            if dataset.get_len()>0 :
                 for column in dataset.columns :
                     g_loss += args.lambda_classif_gen * classification_loss(fake_classification[column], random_dic_label[column])
                 for column in dataset.columns_inspirationnal :
@@ -399,22 +399,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
-    args.distributed = n_gpu > 1
+
+    gpu_config(args)
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample")):
         os.makedirs(os.path.join(args.output_prefix, "sample"))
     if not os.path.exists(os.path.join(args.output_prefix, "checkpoint")):
         os.makedirs(os.path.join(args.output_prefix, "checkpoint"))
 
-    torch.cuda.set_device(args.local_rank)
-    if args.distributed:
-        torch.cuda.set_device(args.local_rank)
-        torch.distributed.init_process_group(backend="nccl", init_method="env://")
-        synchronize()
-    else :
-        torch.cuda.set_device(args.local_rank)
-
+ 
     args.start_iter = 0
 
     dataset = create_dataset(args)
@@ -428,7 +421,7 @@ if __name__ == "__main__":
     if args.ckpt is not None:
        load_weights(args,generator,discriminator,g_ema,g_optim,d_optim)
     if args.distributed:
-        create_distributed(args, generator, discriminator)
+        create_network_distributed(args, generator, discriminator)
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
 

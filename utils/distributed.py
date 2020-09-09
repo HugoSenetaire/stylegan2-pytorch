@@ -126,7 +126,17 @@ def reduce_loss_dict(loss_dict):
     return reduced_losses
 
 
-def create_distributed(args, generator, discriminator):
+def gpu_config(args):
+    n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
+    args.distributed = n_gpu > 1
+    if args.distributed:
+        torch.cuda.set_device(args.local_rank)
+        torch.distributed.init_process_group(backend="nccl", init_method="env://")
+        synchronize()
+    else :
+        torch.cuda.set_device(args.local_rank)
+
+def create_network_distributed(args, generator, discriminator):
     generator = nn.parallel.DistributedDataParallel(
             generator,
             device_ids=[args.local_rank],
