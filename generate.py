@@ -38,11 +38,11 @@ if __name__ == '__main__':
     device = "cuda"
     parser = argparse.ArgumentParser()
     # Dataset parameters 
-    create_parser_dataset(parser)
+    parser_dataset.create_parser_dataset(parser)
     # Network parameters
-    create_parser_network(parser)
+    parser_network.create_parser_network(parser)
     # Generation parameters : 
-    create_parser_generate(parser)
+    parser_generate.create_parser_generate(parser)
 
 
     
