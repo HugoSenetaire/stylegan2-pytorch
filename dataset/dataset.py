@@ -32,6 +32,8 @@ def convert_transparent_to_rgb(image):
         return image.convert('RGB')
     return image
 
+
+
 class SimpleDataset(data.Dataset):
     def __init__(self, path, transform, resolution=256):
         self.folder = path
