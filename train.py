@@ -98,7 +98,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         if args.progressive and i>0 :
             if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
-                progressive_manager(args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask)
+                progressive_manager(i,args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask)
 
         real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
 
