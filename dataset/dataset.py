@@ -2,8 +2,6 @@ from io import BytesIO
 import os
 import lmdb
 from PIL import Image
-from torch.utils import data
-
 import json
 from tqdm import tqdm
 from math import floor, log2
@@ -11,7 +9,6 @@ from random import random
 from shutil import rmtree
 from functools import partial
 import multiprocessing
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -21,6 +18,8 @@ import torch
 from torch import nn
 from torch.utils import data
 import torch.nn.functional as F
+from torchvision import transforms, utils
+from torch.utils import data
 
 
 def convert_rgb_to_transparent(image):
