@@ -1,78 +1,103 @@
 # StyleGAN 2 in PyTorch
 
-Implementation of Analyzing and Improving the Image Quality of StyleGAN (https://arxiv.org/abs/1912.04958) in PyTorch
+Implementation of Analyzing and Improving the Image Quality of StyleGAN (https://arxiv.org/abs/1912.04958) in PyTorch with variation in discriminator and generator.
 
 ## Notice
 
-I have tried to match official implementation as close as possible, but maybe there are some details I missed. So please use this implementation with care.
+My starting point is the implementation https://github.com/rosinality/stylegan2-pytorch but a lot of changes has been made for conditioning.
 
 ## Requirements
 
 I have tested on:
 
-* PyTorch 1.3.1
-* CUDA 10.1/10.2
+* PyTorch 1.4.0
+* CUDA 10.1
 
 ## Usage
 
-First create lmdb datasets:
+### Datasets :
+The class dataset will lead everything for training or generation by telling on what conditions we need to condition.
 
-> python prepare_data.py --out LMDB_PATH --n_worker N_WORKER --size SIZE1,SIZE2,SIZE3,... DATASET_PATH
 
-This will convert images to jpeg and pre-resizes it. This implementation does not use progressive growing, but you can create multiple resolution datasets using size arguments with comma separated lists, for the cases that you want to try another resolutions later.
+#### Initiating Dataset :
+ When creating the dataset, we have to provide a path to the folder image path and a path to a csv with all the information of the image (ie also the condition) :
+ > --folder FOLDER_PATH
+ > --csv_path CSV_PATH
+If the csv_path is not given, we assume that the csv_path is FOLDER_PATH+".csv".
 
-Then you can train model in distributed settings
 
-> python -m torch.distributed.launch --nproc_per_node=N_GPU --master_port=PORT train.py --batch BATCH_SIZE LMDB_PATH
+We distinguish two type of dataset depending on the origin of the dataset. We have two origins :
 
+- Stellar :
+ > --dataset_type stellar
+- Product Library on OVH:
+ > --dataset_type unique 
+ 
+The main difference is that a the Product library dataset only have one image for the different SKUs so the sap_id is enough to retrieve the image from the folder image. On the other end, the stellar dataset have multiple_views so the sap_id or image_id is not enough. We retrieve the name of the image in the folder through the akamai url with which we downloaded the dataset and that should be present in the stellar csv.
+
+#### Conditionning :
+
+When conditionning on categories, we have to give the name of the category (this category must be present in the columns of the csv) and which type of conditioning we want to apply:
+- One hot vector conditioning :
+ > --labels "sap_sub_function" "sap_aesthetic_style"
+- Inspirationnal conditioning (ie randomly generated weights for creativity):
+ > --labels_inspirationnal "sap_sub_function" "sap_aesthetic_style"
+- Both :
+ >  --labels "sap_sub_function" --labels_inspirationnal  "sap_aesthetic_style"
+
+IMPORTANT : Multiple conditionning is only available with the Design Discriminator option. AM GAN and Bilinear must have one label category or one inspirationnal label category.
+
+#### Mask-Conditionning :
+
+When conditionning on mask, we add the option as the following :
+> --mask
+
+We sample from a folder whose path is FOLDER_PATH + _mask. The name of the mask of an image should be the exact same name of the original image inside the mask folder.
+
+
+### Networks: 
+#### Discriminator type :
+We can choose among three discriminators that will change both the architectures and the loss of discriminator. Only the design discriminator allow multiple conditionning :
+Example :
+- bilinear (gets his name from the Temporal evolution with bilinear layer paper):
+ > --discriminator_type bilinear
+- AM-GAN (gets his name from the AMGAN paper) :
+ > --discriminator_type AMGAN
+- design :
+ > --discriminator_type design
+
+
+### Training :
 train.py supports Weights & Biases logging. If you want to use it, add --wandb arguments to the script.
 
-### Convert weight from official checkpoints
+#### Training in a progressive manner :
+We leave the possibility to train GAN in a progressive manner, ie the scale of the output augments at different iterations.
+To do so, one should give the option --progressive when training, should give an original size, a max_size (default = 256 pixels), the number of iteration before the first upscale, a multiplier of the number of iteration for the following upscale.
+Example :
+ > --size 8 --progressive --upscale_every 2000 --upscale_factor 2 --max_size 256 
+With the previous example, we will train for 2000 iterations with a size 8, then 4000 iterations with size 16, then 8000 iterations with size 32 and so on until size 256 is reached.
 
-You need to clone official repositories, (https://github.com/NVlabs/stylegan2) as it is requires for load official checkpoints.
+#### Controlling training :
+We are given control to the different loss, regularisation with lambda_CONTROL_WANTED.
+We can also add augmentation to the training dataset using :
+ > --augment --augment_p AUGMENT_PROBABILITY 
 
-For example, if you cloned repositories in ~/stylegan2 and downloaded stylegan2-ffhq-config-f.pkl, You can convert it like this:
+#### Train in distributed setting :
+You can train model in distributed setting by using the distributed API from torch :
 
-> python convert_weight.py --repo ~/stylegan2 stylegan2-ffhq-config-f.pkl
+> python -m torch.distributed.launch --nproc_per_node=N_GPU --master_port=PORT train.py --OPTION
 
-This will create converted stylegan2-ffhq-config-f.pt file.  
+
 
 ### Generate samples
 
-> python generate.py --sample N_FACES --pics N_PICS --ckpt PATH_CHECKPOINT  
+> python generate.py --dataset_type DATASET_TYPE --csv_path CSV_PATH --folder FOLDER_PATH --labels LABEL_CONDITIONNING --labels_inspirationnal LABEL_INSPIRATION --sample N_ELEMENT --pics N_PICS --ckpt PATH_CHECKPOINT  
+
+Generate N_PICS with N_ELEMENT on each from checkpoint PATH_CHECKPOINT using the repartition of labels and inspirationnal labels created with the dataset option.
 
 You should change your size (--size 256 for example) if you train with another dimension.   
 
-### Project images to latent spaces
 
-> python projector.py --ckpt [CHECKPOINT] --size [GENERATOR_OUTPUT_SIZE] FILE1 FILE2 ...
-
-## Pretrained Checkpoints
-
-[Link](https://drive.google.com/open?id=1PQutd-JboOCOZqmd95XWxWrO8gGEvRcO)
-
-I have trained the 256px model on FFHQ 550k iterations. I got FID about 4.5. Maybe data preprocessing, resolution, training loop could made this difference, but currently I don't know the exact reason of FID differences.
-
-## Samples
-
-![Sample with truncation](doc/sample.png)
-
-Sample from FFHQ. At 110,000 iterations. (trained on 3.52M images)
-
-![MetFaces sample with non-leaking augmentations](doc/sample-metfaces.png)
-
-Sample from MetFaces with Non-leaking augmentations. At 150,000 iterations. (trained on 4.8M images)
-
-
-### Samples from converted weights
-
-![Sample from FFHQ](doc/stylegan2-ffhq-config-f.png)
-
-Sample from FFHQ (1024px)
-
-![Sample from LSUN Church](doc/stylegan2-church-config-f.png)
-
-Sample from LSUN Church (256px)
 
 ## License
 

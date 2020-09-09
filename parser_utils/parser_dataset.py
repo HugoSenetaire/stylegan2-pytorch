@@ -13,4 +13,4 @@ def create_parser_dataset(parser):
     parser.add_argument("--csv_path", type = str, default = None)  
     parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
     parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")  
-
+    parser.add_argument("--mask", action="store_true")

@@ -15,7 +15,6 @@ from dataset import Dataset
 
 from utils import *
 from torch.utils import data
-from loss import *
 
 
 def generate(args, g_ema, device, mean_latent, dataset):

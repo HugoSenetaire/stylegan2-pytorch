@@ -10,5 +10,5 @@ def create_parser_network(parser):
     parser.add_argument("--ckpt", type=str, default=None)
     parser.add_argument("--channel_multiplier", type=int, default=2)
     parser.add_argument("--size", type=int, default=256)
-    parser.add_argument("--mask", action="store_true")
+
     
