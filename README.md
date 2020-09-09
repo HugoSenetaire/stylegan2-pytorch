@@ -92,6 +92,7 @@ We leave the possibility to train GAN in a progressive manner, ie the scale of t
 To do so, one should give the option --progressive when training, should give an original size, a max_size (default = 256 pixels), the number of iteration before the first upscale, a multiplier of the number of iteration for the following upscale.
 Example :
  > --size 8 --progressive --upscale_every 2000 --upscale_factor 2 --max_size 256 
+
 With the previous example, we will train for 2000 iterations with a size 8, then 4000 iterations with size 16, then 8000 iterations with size 32 and so on until size 256 is reached.
 
 #### Controlling training :
