@@ -212,7 +212,7 @@ def init_training(device):
      }
     return d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict
 
-def discriminator_regularization(args, discriminator, real_img, real_label, loss_dict):
+def discriminator_regularization(args, discriminator, d_optim, real_img, real_label, loss_dict):
     real_img.requires_grad = True
     real_pred, real_classification, real_inspiration = discriminator(real_img,labels = real_label)
     if args.discriminator_type == 'AMGAN':
@@ -300,7 +300,7 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
 
     d_regularize = i % args.d_reg_every == 0
     if d_regularize :
-        discriminator_regularization(args, discriminator, real_img, real_label, loss_dict)
+        discriminator_regularization(args, discriminator, d_optim, real_img, real_label, loss_dict)
         
 
     return d_loss
