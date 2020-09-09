@@ -160,7 +160,7 @@ def save_image(args, g_ema, sample_z, sampl_label, sample_mask):
             range=(-1, 1),
         )
 
-def save_weights(i, args, g, d, g_ema, g_optim, d_optim):
+def save_weights(i, args, g_module, d_module, g_ema, g_optim, d_optim):
     torch.save(
         {
             "g": g_module.state_dict(),
@@ -174,7 +174,7 @@ def save_weights(i, args, g, d, g_ema, g_optim, d_optim):
 
 def save_checkpoint(i, args, g, d, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask):
     if i % args.save_img_every == 0:
-        save_image(args, g_ema, sample_z, sampl_label, sample_mask)
+        save_image(args, g_ema, sample_z, sample_label, sample_mask)
     if i % args.save_model_every == 0:
         save_weights(i, args, g, d, g_ema, g_optim, d_optim)
     
