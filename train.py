@@ -94,20 +94,15 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         if i > args.iter:
             print("Done!")
             break
-
-
-        if args.progressive and i>0 :
-            if i%args.upscale_every == 0 and dataset.image_size<args.max_size:
-                progressive_manager(i,args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask)
+        progressive_manager(i,args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask)
+        requires_grad(generator, False)
+        requires_grad(discriminator, True)
 
         real_label, real_img, real_dic_label, real_inspiration_label, real_mask = next(loader)
-
         real_label = real_label.to(device)
         real_img = real_img.to(device)
         real_mask = real_mask.to(device)
-       
-        requires_grad(generator, False)
-        requires_grad(discriminator, True)
+
 
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
         if args.mask :
@@ -115,11 +110,10 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             random_mask = random_mask.to(device)
         else :
             random_mask = None
-        
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
   
-        fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
 
+        fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
         if args.augment:
             real_img_aug, _ = augment(real_img, ada_aug_p)
             fake_img, _ = augment(fake_img, ada_aug_p)
@@ -128,6 +122,8 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
 
         fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
         real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
+        
+        
         if args.discriminator_type == "design":
             d_loss = d_logistic_loss(real_pred, fake_pred)
             if dataset.get_len()>0 :
@@ -139,7 +135,6 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
             fake_pred = select_index_discriminator(fake_pred,random_label)
             real_pred = select_index_discriminator(real_pred, real_label)
             d_loss = d_logistic_loss(real_pred, fake_pred)
-
         elif args.discriminator_type == "AMGAN":
             fake_label = create_fake_label(random_label,device)
             real_label = real_dic_label[dataset.columns[0]].to(device)
