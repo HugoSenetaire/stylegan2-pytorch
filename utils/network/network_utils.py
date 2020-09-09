@@ -2,7 +2,7 @@ from .model import *
 from .non_leaking import *
 
 from torch import nn, autograd, optim
-from .loss import *
+
 
 
 # NETWORK INITIALISATION :
