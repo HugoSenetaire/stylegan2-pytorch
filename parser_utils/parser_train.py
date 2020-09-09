@@ -34,4 +34,4 @@ def create_parser_train(parser):
     parser.add_argument("--output_prefix", type=str, default = None)
     parser.add_argument("--save_img_every", type=int, default = 100)
     parser.add_argument("--save_model_every", type = int, default = 1000)
-    parser.add_argument("--n_sample", type=int, default=64, "Number of sample generated for evaluation during training")
+    parser.add_argument("--n_sample", type=int, default=64, help = "Number of sample generated for evaluation during training")
