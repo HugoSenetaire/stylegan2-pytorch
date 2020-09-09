@@ -90,7 +90,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         g_loss = train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim, mean_path_length, mean_path_length_avg)
 
         accumulate(g_ema, g_module, accum)
-        loss_reduce_feedback = get_total_feedback(loss_dict)
+        loss_reduce_feedback = get_total_feedback(loss_dict, args)
 
         if get_rank() == 0:
             pbar.set_description(
