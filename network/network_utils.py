@@ -138,12 +138,12 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
     else :
         random_mask = None
 
-        
+
     return random_mask
 
 
 
-def train_discriminator(args, generator, discriminator, dataset, loader, device, noise):
+def train_discriminator(args, generator, discriminator, dataset, loader, device):
     real_label, real_img, real_dic_label, real_inspiration_label, real_mask = sample_loader(loader,device)
     random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, args.batch, dataset, device)
     

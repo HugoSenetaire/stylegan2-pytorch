@@ -34,6 +34,8 @@ def convert_transparent_to_rgb(image):
 
 
 
+
+
 class SimpleDataset(data.Dataset):
     def __init__(self, path, transform, resolution=256):
         self.folder = path
@@ -290,6 +292,42 @@ class Dataset(data.Dataset):
             liste.append(self.encoder[column].reverse(index[i]))
             
         return liste
+
+    ### Noise creation :
+
+    def make_noise(batch, latent_dim, n_noise, device):
+    if n_noise == 1:
+        return torch.randn(batch, latent_dim, device=device)
+
+    noises = torch.randn(n_noise, batch, latent_dim, device=device).unbind(0)
+
+    return noises
+
+
+
+    def make_zero_noise(batch, latent_dim, n_noise, device):
+        if n_noise == 1:
+            return torch.zeros(batch, latent_dim, device=device)
+
+        noises = torch.zeros(n_noise, batch, latent_dim, device=device).unbind(0)
+
+        return noises
+
+
+
+    def mixing_noise(batch, latent_dim, prob, device, zero = False):
+        if not zero :
+            if prob > 0 and random.random() < prob:
+                return make_noise(batch, latent_dim, 2, device)
+
+            else:
+                return [make_noise(batch, latent_dim, 1, device)]
+        else :
+            if prob > 0 and random.random() < prob:
+                return make_zero_noise(batch, latent_dim, 2, device)
+
+            else:
+                return [make_zero_noise(batch, latent_dim, 1, device)]    
 
     ### Sampling methods
     
