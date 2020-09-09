@@ -87,7 +87,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(discriminator, True)
 
         noise = mixing_noise(args.batch, args.latent, args.mixing, device)
-        train_discriminator(args, generator, discriminator, dataset, loader, device, noise)
+        d_loss, real_pred, fake_pred = train_discriminator(args, generator, discriminator, dataset, loader, device, noise)
         
 
         loss_dict["d"] = d_loss
