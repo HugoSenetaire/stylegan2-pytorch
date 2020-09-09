@@ -7,9 +7,8 @@ import numpy as np
 from scipy import linalg
 from tqdm import tqdm
 
-from model import Generator
 from calc_inception import load_patched_inception_v3
-from dataset import *
+from feature_extractor import *
 from torchvision import transforms, utils
 from parser_utils import *
 from utils import *

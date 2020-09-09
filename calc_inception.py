@@ -11,8 +11,7 @@ from torchvision.models import inception_v3, Inception3
 import numpy as np
 from tqdm import tqdm
 
-from inception import InceptionV3
-from dataset import Dataset
+from feature_extractor import *
 from utils import *
 from parser_utils import *
 
