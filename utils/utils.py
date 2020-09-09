@@ -11,7 +11,7 @@ import torch.distributed as dist
 from torchvision import transforms, utils
 from tqdm import tqdm
 
-from ..loss import *
+from .loss import *
 
 
 def create_label(batch_size,column_size,device):
