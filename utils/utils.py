@@ -103,7 +103,7 @@ def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     g_ema.add_scale(device = device)
     dataset.upscale()
 
-def progressive_manager(args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask)
+def progressive_manager(args, dataset, generator, discriminator, g_ema, g_optim, d_optim, device, sample_mask):
     print(f"Upscale at {i}")
     print(f"next upscale at {args.upscale_every*args.upscale_factor}")
     args.upscale_every = args.upscale_every*args.upscale_factor
