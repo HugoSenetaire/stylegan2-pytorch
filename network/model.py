@@ -522,19 +522,23 @@ class Generator(nn.Module):
         )
         self.to_rgbs.append(ToRGB(out_channel, self.total_style_dim).to(device))
 
-
-        in_channel_mask = self.channels_mask[self.size]
-        out_channel_mask = self.channels_mask[self.size/2]
-        self.mask_extractor[0] = ConvLayer(1, in_channel_mask, 1).to(device)
-        toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True).to(device)
-        self.mask_extractor.insert(1,toadd_conv)
-
         if optim is not None :
             optim.add_param_group({"params":self.convs[-1].parameters()})
             optim.add_param_group({"params":self.convs[-2].parameters()})
             optim.add_param_group({"params":self.to_rgbs[-1].parameters()})
-            optim.add_param_group({"params":self.mask_extractor[0].parameters()})
-            optim.add_param_group({"params":self.mask_extractor[1].parameters()})
+
+
+        if self.mask :
+            in_channel_mask = self.channels_mask[self.size]
+            out_channel_mask = self.channels_mask[self.size/2]
+            self.mask_extractor[0] = ConvLayer(1, in_channel_mask, 1).to(device)
+            toadd_conv = ConvLayer(in_channel_mask, out_channel_mask, 3, downsample=True).to(device)
+            self.mask_extractor.insert(1,toadd_conv)
+            if optim is not None :
+                optim.add_param_group({"params":self.mask_extractor[0].parameters()})
+                optim.add_param_group({"params":self.mask_extractor[1].parameters()})
+
+     
 
 
         
