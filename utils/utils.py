@@ -143,7 +143,7 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
 
 
 
-def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict):
+def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim):
     noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
     real_label, real_img, real_dic_label, real_inspiration_label, real_mask = sample_loader(loader,device)
     random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, args.batch, dataset, device)
@@ -227,7 +227,7 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
     return d_loss
 
 
-def train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict) :
+def train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim) :
     
         random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(args.batch, device, "random", args.inspiration_method)
         if args.mask :

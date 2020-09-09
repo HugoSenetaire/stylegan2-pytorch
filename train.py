@@ -86,7 +86,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(generator, False)
         requires_grad(discriminator, True)
 
-        d_loss = train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict)
+        d_loss = train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim)
         
 
      
@@ -95,7 +95,7 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
         requires_grad(generator, True)
         requires_grad(discriminator, False)
 
-        g_loss = train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict)
+        g_loss = train_generator(i, args, generator, discriminator, dataset, loader, device, loss_dict, g_optim)
 
         accumulate(g_ema, g_module, accum)
 
