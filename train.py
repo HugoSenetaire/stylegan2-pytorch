@@ -59,13 +59,14 @@ def train(args, loader, dataset, generator, discriminator, g_optim, d_optim, g_e
     sample_z = torch.randn(args.n_sample, args.latent, device=device)
     sample_label, sample_dic_label, sample_dic_inspiration = dataset.sample_manager(args.n_sample, device, args.label_method, args.inspiration_method)
     sample_mask = sample_random_mask(args, args.n_sample, dataset, device, init=True, save_image= True)
-    utils.save_image(
-                                sample_mask,
-                                os.path.join(args.output_prefix, f"sample_mask_{0}.png"),
-                                nrow=int(args.n_sample ** 0.5),
-                                normalize=True,
-                                range=(-1, 1),
-                            )
+    if args.mask :
+        utils.save_image(
+            sample_mask,
+            os.path.join(args.output_prefix, f"sample_mask_{0}.png"),
+            nrow=int(args.n_sample ** 0.5),
+            normalize=True,
+            range=(-1, 1),
+        )
     print("The labels for the generation are the following :")
     print(sample_dic_label)
     print("The weights for the generation are the following :")
