@@ -22,6 +22,7 @@ from torchvision import transforms, utils
 from torch.utils import data
 
 
+
 def convert_rgb_to_transparent(image):
     if image.mode == 'RGB':
         return image.convert('RGBA')
@@ -295,17 +296,17 @@ class Dataset(data.Dataset):
 
     ### Noise creation :
 
-    def make_noise(batch, latent_dim, n_noise, device):
-    if n_noise == 1:
-        return torch.randn(batch, latent_dim, device=device)
+    def make_noise(self,batch, latent_dim, n_noise, device):
+        if n_noise == 1:
+            return torch.randn(batch, latent_dim, device=device)
 
-    noises = torch.randn(n_noise, batch, latent_dim, device=device).unbind(0)
+        noises = torch.randn(n_noise, batch, latent_dim, device=device).unbind(0)
 
-    return noises
+        return noises
 
 
 
-    def make_zero_noise(batch, latent_dim, n_noise, device):
+    def make_zero_noise(self,batch, latent_dim, n_noise, device):
         if n_noise == 1:
             return torch.zeros(batch, latent_dim, device=device)
 
@@ -315,19 +316,19 @@ class Dataset(data.Dataset):
 
 
 
-    def mixing_noise(batch, latent_dim, prob, device, zero = False):
+    def mixing_noise(self,batch, latent_dim, prob, device, zero = False):
         if not zero :
             if prob > 0 and random.random() < prob:
-                return make_noise(batch, latent_dim, 2, device)
+                return self.make_noise(batch, latent_dim, 2, device)
 
             else:
-                return [make_noise(batch, latent_dim, 1, device)]
+                return [self.make_noise(batch, latent_dim, 1, device)]
         else :
             if prob > 0 and random.random() < prob:
-                return make_zero_noise(batch, latent_dim, 2, device)
+                return self.make_zero_noise(batch, latent_dim, 2, device)
 
             else:
-                return [make_zero_noise(batch, latent_dim, 1, device)]    
+                return [self.make_zero_noise(batch, latent_dim, 1, device)]    
 
     ### Sampling methods
     
