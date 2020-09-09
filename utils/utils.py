@@ -213,13 +213,14 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
         else :
             if args.discriminator_type == 'bilinear':
                 real_pred = select_index_discriminator(real_pred, real_label)
-            r1_loss = d_r1_loss(real_pred, real_img)
+                
+        r1_loss = d_r1_loss(real_pred, real_img)
 
         discriminator.zero_grad()
         (args.r1 / 2 * r1_loss * args.d_reg_every + 0 * real_pred[0]).backward()
         d_optim.step()
 
-    loss_dict["r1"] = r1_loss
+        loss_dict["r1"] = r1_loss
 
     return d_loss
 
