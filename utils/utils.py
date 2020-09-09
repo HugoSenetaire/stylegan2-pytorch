@@ -147,7 +147,7 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
 
 # FEEDBACK :
 
-def save_image(args, g_ema, sample_z, sample_label, sample_mask):
+def save_image(i, args, g_ema, sample_z, sample_label, sample_mask):
     with torch.no_grad():
         g_ema.eval()
         sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask)
@@ -174,7 +174,7 @@ def save_weights(i, args, g_module, d_module, g_ema, g_optim, d_optim):
 
 def save_checkpoint(i, args, g, d, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask):
     if i % args.save_img_every == 0:
-        save_image(args, g_ema, sample_z, sample_label, sample_mask)
+        save_image(i, args, g_ema, sample_z, sample_label, sample_mask)
     if i % args.save_model_every == 0:
         save_weights(i, args, g, d, g_ema, g_optim, d_optim)
     
