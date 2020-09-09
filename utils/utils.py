@@ -156,7 +156,7 @@ def init_training(device):
     return d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict
 
 
-def get_total_geedback(loss_dict):
+def get_total_feedback(loss_dict):
     loss_reduced = reduce_loss_dict(loss_dict)
     loss_reduced_feedback = {}
     loss_reduced_feedback["Discriminator"] = loss_reduced["d"].mean().item()
