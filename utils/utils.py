@@ -18,7 +18,7 @@ from .distributed import *
 
 
 
-
+# Operation on tensors :
 def convert_to_greyscale(tensor):
     tensor_greyscale = 0.21 * tensor[:,0,:,:] + 0.72 * tensor[:,1,:,:]  + 0.07 * tensor[:,2,:,:]
     return tensor_greyscale
@@ -62,6 +62,16 @@ def create_fake_label(tensor,device):
     fake_label = torch.ones((batch_size,),dtype=torch.long)*column_size
     return fake_label.to(device)
 
+
+
+def requires_grad(model, flag=True):
+    for p in model.parameters():
+        p.requires_grad = flag
+
+
+
+# Managing progressive transformation :
+
 def add_scale(dataset,generator,discriminator,g_ema,g_optim,d_optim,device):
     generator.add_scale(g_optim,device =device)
     discriminator.add_scale(d_optim,device =device)
@@ -87,12 +97,6 @@ def progressive_manager(i,args, dataset, generator, discriminator, g_ema, g_opti
                                 normalize=True,
                                 range=(-1, 1),
                             )
-
-
-
-def requires_grad(model, flag=True):
-    for p in model.parameters():
-        p.requires_grad = flag
 
 
 
@@ -140,21 +144,39 @@ def sample_random_mask(args, batch, dataset, device, init = False, save_image =F
 
     return random_mask
 
-# NETWORK TRAINING :
 
-def init_training(device):
-    d_loss_val = 0
-    r1_loss = torch.tensor(0.0, device=device)
-    g_loss_val = 0
-    path_loss = torch.tensor(0.0, device=device)
-    path_lengths = torch.tensor(0.0, device=device)
-    mean_path_length_avg = 0
-    loss_dict = {"path": path_loss,
-     "path_length": path_lengths,
-     "mean_path_length_avg": mean_path_length_avg,
-     }
-    return d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict
+# FEEDBACK :
 
+def save_image(args, g_ema, sample_z, sampl_label, sample_mask):
+    with torch.no_grad():
+        g_ema.eval()
+        sample, _ = g_ema([sample_z],labels = sample_label, mask = sample_mask)
+        utils.save_image(
+            sample,
+            os.path.join(args.output_prefix, f"sample/{str(i).zfill(6)}.png"),
+            nrow=int(args.n_sample ** 0.5),
+            normalize=True,
+            range=(-1, 1),
+        )
+
+def save_weights(i, args, g, d, g_ema, g_optim, d_optim):
+    torch.save(
+        {
+            "g": g_module.state_dict(),
+            "d": d_module.state_dict(),
+            "g_ema": g_ema.state_dict(),
+            "g_optim": g_optim.state_dict(),
+            "d_optim": d_optim.state_dict(),
+        },
+        os.path.join(args.output_prefix,f"checkpoint/{str(i).zfill(6)}.pt"),
+    )
+
+def save_checkpoint(i, args, g, d, g_ema, g_optim, d_optim, sample_z, sample_label, sample_mask)
+    if i % args.save_img_every == 0:
+        save_image(args, g_ema, sample_z, sampl_label, sample_mask)
+    if i % args.save_model_every == 0:
+        save_weights(i, args, g, d, g_ema, g_optim, d_optim)
+    
 
 def get_total_feedback(loss_dict, args):
     loss_reduced = reduce_loss_dict(loss_dict)
@@ -174,6 +196,23 @@ def get_total_feedback(loss_dict, args):
     loss_reduced_feedback["Path Length"] = loss_reduced["path_length"].mean().item()
 
     return loss_reduced_feedback
+
+# NETWORK TRAINING :
+
+def init_training(device):
+    d_loss_val = 0
+    r1_loss = torch.tensor(0.0, device=device)
+    g_loss_val = 0
+    path_loss = torch.tensor(0.0, device=device)
+    path_lengths = torch.tensor(0.0, device=device)
+    mean_path_length_avg = 0
+    loss_dict = {"path": path_loss,
+     "path_length": path_lengths,
+     "mean_path_length_avg": mean_path_length_avg,
+     }
+    return d_loss_val, r1_loss, g_loss_val, path_loss, path_lengths, mean_path_length_avg, loss_dict
+
+
 
 
 def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim):
