@@ -10,8 +10,6 @@ from torch.utils import data
 import torch.distributed as dist
 from torchvision import transforms, utils
 from tqdm import tqdm
-
-from dataset import Dataset
 from .utils import *
 
 
