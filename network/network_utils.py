@@ -110,7 +110,7 @@ def load_weights(args, generator, discriminator, g_ema, g_optim, d_optim):
 
 def train_discriminator(args, discriminator, fake_img, real_img, random_label, real_label, dataset):
     fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
-    real_pred, real_classification, real_inspiration = discriminator(real_img_aug, labels = real_label)
+    real_pred, real_classification, real_inspiration = discriminator(real_img, labels = real_label)
     if args.discriminator_type == "design":
         d_loss = d_logistic_loss(real_pred, fake_pred)
         if dataset.get_len()>0 :
