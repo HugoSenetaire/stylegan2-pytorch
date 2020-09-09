@@ -41,29 +41,13 @@ if __name__ == '__main__':
     device = "cuda"
     parser = argparse.ArgumentParser()
     # Dataset parameters 
-    parser.add_argument("path", type=str)
-    parser.add_argument("--dataset_type", type = str, default = "unique", help = "Possible dataset type :unique/stellar")
-    parser.add_argument("--multiview", action = "store_true")
-    parser.add_argument("--labels", nargs='*', help='List of element used for classification', type=str, default = [])
-    parser.add_argument("--labels_inspirationnal", nargs='*', help='List of element used for inspiration algorithm',type=str, default = [])
-    parser.add_argument("--csv_path", type = str, default = None)  
-    parser.add_argument("--inspiration_method", type=str, default = "fullrandom", help = "Possible value is fullrandom/onlyinspiration") 
-    parser.add_argument("--label_method", type=str, default = "listing", help = "Possible value is random/listing")  
-
-
+    create_parser_dataset(parser)
     # Network parameters
-    parser.add_argument("--ckpt", type=str, default=None)
-    parser.add_argument("--size", type=int, default=1024)
-    parser.add_argument("--channel_multiplier", type=int, default=1)
-    parser.add_argument("--truncation", type=float, default = 1.0)
-    parser.add_argument("--truncation_mean", type=int, default = 4096)
+    create_parser_network(parser)
 
-    # Utils parameters :
-    parser.add_argument("--wandb", action="store_true")
-    parser.add_argument("--local_rank", type=int, default=0)
-    parser.add_argument("--output_prefix", type=str, default = None)
-    parser.add_argument("--n_sample", type=int, default=1)
-    parser.add_argument("--pics", type=int, default = 10)
+    create_parser_generate(parser)
+
+
     
 
     args = parser.parse_args()

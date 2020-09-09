@@ -16,13 +16,16 @@ I have tested on:
 ## Usage
 
 ### Datasets :
-The class dataset will lead everything for training or generation by telling on what conditions we need to condition.
+The class dataset will lead everything for training or generation by telling on what category we need to condition.
 
 
 #### Initiating Dataset :
- When creating the dataset, we have to provide a path to the folder image path and a path to a csv with all the information of the image (ie also the condition) :
+When creating the dataset object, we have to provide a path to the folder image path and a path to a csv with all the information of the image (ie also the condition) :
+
  > --folder FOLDER_PATH
  > --csv_path CSV_PATH
+
+
 If the csv_path is not given, we assume that the csv_path is FOLDER_PATH+".csv".
 
 
@@ -55,8 +58,9 @@ When conditionning on mask, we add the option as the following :
 We sample from a folder whose path is FOLDER_PATH + _mask. The name of the mask of an image should be the exact same name of the original image inside the mask folder.
 
 
+
 ### Networks: 
-#### Discriminator type :
+#### Discriminator type : 
 We can choose among three discriminators that will change both the architectures and the loss of discriminator. Only the design discriminator allow multiple conditionning :
 Example :
 - bilinear (gets his name from the Temporal evolution with bilinear layer paper):
@@ -66,6 +70,16 @@ Example :
 - design :
  > --discriminator_type design
 
+#### Latent space :
+We can control the size of the latent space and the number of MLP we use to extract $w$ from $z$ with the two following option.
+> --n_mlp NB_LAYER_MLP --latent DIMENSION_OF_LATENT
+
+We have also the possibility to change the dimension of the style space with a channel multiplier.
+
+> --channel_multiplier
+
+The size of the output is controlled by :
+ > --size
 
 ### Training :
 train.py supports Weights & Biases logging. If you want to use it, add --wandb arguments to the script.
@@ -87,6 +101,19 @@ You can train model in distributed setting by using the distributed API from tor
 
 > python -m torch.distributed.launch --nproc_per_node=N_GPU --master_port=PORT train.py --OPTION
 
+#### Image and Checkpoint :
+
+To control where we should save image and checkpoint, we use the following option :
+
+> --output_prefix PATH_OUTPUT
+
+Samples will be save in PATH_OUTPUT/sample while checkpoint will be save in PATH_OUTPUT/checkpoint.
+
+When loading weights from a checkpoint, we should use the following option :
+
+>--ckpt PATH_OUTPUT/checkpoint/CKPT_FILE
+
+IMPORTANT : When loading from weights, we have to create the exact same network as the checkpoint it is taken from; ie we should have same conditionning and when using progressive, we should give a initial size that is equal to the size when the state was saved. 
 
 
 ### Generate samples
@@ -96,8 +123,6 @@ You can train model in distributed setting by using the distributed API from tor
 Generate N_PICS with N_ELEMENT on each from checkpoint PATH_CHECKPOINT using the repartition of labels and inspirationnal labels created with the dataset option.
 
 You should change your size (--size 256 for example) if you train with another dimension.   
-
-
 
 ## License
 
