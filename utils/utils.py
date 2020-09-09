@@ -253,23 +253,7 @@ def augmentation_regularization(args, real_pred, loss_dict, ada_augment,ada_aug_
     
     loss_dict["r_t_stat"] = r_t_stat
 
-def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim, ada_augment, ada_aug_p):
-    noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
-    real_label, real_img, real_dic_label, real_inspiration_label, real_mask = sample_loader(loader,device)
-    random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, args.batch, dataset, device)
-    
-    fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
-    if args.augment:
-        real_img_aug, _ = augment(real_img, ada_aug_p)
-        fake_img, _ = augment(fake_img, ada_aug_p)
-    else:
-        real_img_aug = real_img
-
-    
-    fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
-    real_pred, real_classification, real_inspiration = discriminator(real_img, labels = real_label)
-    
-
+def calculate_d_loss(args, real_pred, real_classification, real_inspiration, fake_pred, fake_classification, fake_inspiration, loss_dict):
     if args.discriminator_type == "design":
         d_loss = d_logistic_loss(real_pred, fake_pred)
         if dataset.get_len()>0 :
@@ -289,12 +273,30 @@ def train_discriminator(i, args, generator, discriminator, dataset, loader, devi
     loss_dict["d"] = d_loss
     loss_dict["real_score"] = real_pred.mean()
     loss_dict["fake_score"] = fake_pred.mean()
+    
+    return d_loss
 
+def train_discriminator(i, args, generator, discriminator, dataset, loader, device, loss_dict, d_optim, ada_augment, ada_aug_p):
+    noise = dataset.mixing_noise(args.batch, args.latent, args.mixing, device)
+    real_label, real_img, real_dic_label, real_inspiration_label, real_mask = sample_loader(loader,device)
+    random_label, random_dic_label, random_dic_inspiration, random_mask = sample_random(args, args.batch, dataset, device)
+    
+    fake_img, _ = generator(noise,labels= random_label, mask = random_mask)
+    if args.augment:
+        real_img_aug, _ = augment(real_img, ada_aug_p)
+        fake_img, _ = augment(fake_img, ada_aug_p)
+    else:
+        real_img_aug = real_img
+
+    
+    fake_pred, fake_classification, fake_inspiration = discriminator(fake_img,labels = random_label) 
+    real_pred, real_classification, real_inspiration = discriminator(real_img, labels = real_label)
+    
+    d_loss = calculate_d_loss(args, real_pred, real_classification, real_inspiration, fake_pred, fake_classification, fake_inspiration, loss_dict)
     discriminator.zero_grad()
     d_loss.backward()
     d_optim.step()
 
-    
     if args.augment and args.augment_p == 0:
         augmentation_regularization(args, real_pred, loss_dict, ada_augment, ada_aug_p)
 
