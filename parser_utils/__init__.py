@@ -5,3 +5,4 @@ from . import parser_train
 from . import parser_inspiration 
 from . import parser_fid
 from . import parser_generate
+from . import parser_calc_inception
