@@ -29,7 +29,7 @@ def generate(args, g_ema, device, mean_latent, dataset):
            utils.save_image(
             sample,
             os.path.join(args.output_prefix, f'sample_generate/{str(i).zfill(6)}.png'),
-            nrow=args.n_sample ** 0.5,
+            nrow=int(args.n_sample ** 0.5),
             normalize=True,
             range=(-1, 1),
         )
