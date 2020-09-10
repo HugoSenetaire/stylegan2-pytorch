@@ -411,7 +411,7 @@ class Dataset(data.Dataset):
             for i,column in enumerate(self.columns_inspirationnal):
                 possibleLen = len(self.dic_inspirationnal[column])
                 if np.random.randint(2)>0 :
-                    nbFuzzy = np.random.randint(2) 
+                    nbFuzzy = np.random.randint(2,3) 
                 else :
                     nbFuzzy = 1
                 fuzzyTaken = np.random.choice(4, nbFuzzy, replace=False)
