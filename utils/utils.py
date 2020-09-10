@@ -120,7 +120,7 @@ def sample_loader(loader, device):
 
 
 def sample_random(args, batch, dataset,device):
-    random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(batch, device, "random", args.inspiration_method)
+    random_label, random_dic_label, random_dic_inspiration = dataset.sample_manager(batch, device, args.label_method, args.inspiration_method)
     random_mask= sample_random_mask(args, batch, dataset,device)
 
     return random_label, random_dic_label, random_dic_inspiration, random_mask 
