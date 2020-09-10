@@ -4,7 +4,7 @@ import os
 import torch
 from torch import distributed as dist
 from torch.utils.data.sampler import Sampler
-
+from torch import nn
 
 def get_rank():
     if not dist.is_available():
