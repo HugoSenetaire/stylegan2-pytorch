@@ -411,10 +411,10 @@ class Dataset(data.Dataset):
             for i,column in enumerate(self.columns_inspirationnal):
                 possibleLen = len(self.dic_inspirationnal[column])
                 if np.random.randint(2)>0 :
-                    nbFuzzy = np.random.randint(2,3) 
+                    nbFuzzy = np.random.randint(1,possibleLen+1) 
                 else :
                     nbFuzzy = 1
-                fuzzyTaken = np.random.choice(4, nbFuzzy, replace=False)
+                fuzzyTaken = np.random.choice(possibleLen, nbFuzzy, replace=False)
                 aux_weights = np.zeros((possibleLen,))
                 for taken in fuzzyTaken :
                     aux_weights[taken] = 1./nbFuzzy
