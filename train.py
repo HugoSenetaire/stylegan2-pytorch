@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     # gpu_config(args)
-     if args.distributed:
+    if args.distributed:
         torch.cuda.set_device(args.local_rank)
         torch.distributed.init_process_group(backend="nccl", init_method="env://")
         synchronize()
