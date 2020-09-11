@@ -253,7 +253,7 @@ def generator_regularization(args, dataset, generator, g_optim, device, loss_dic
     mean_path_length_avg = (
         reduce_sum(mean_path_length).item() / get_world_size()
     )
-    loss_dict["mean_path_length_avg"]=torch.tensor(mean_path_length_avg, device)
+    loss_dict["mean_path_length_avg"]=torch.tensor(mean_path_length_avg).to(device)
     loss_dict["mean_path_length"] = mean_path_length
     loss_dict["path"] = path_loss
     loss_dict["path_length"] = path_lengths.mean()
