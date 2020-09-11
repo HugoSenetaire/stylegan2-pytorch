@@ -145,6 +145,8 @@ if __name__ == "__main__":
     if args.ckpt is not None:
        load_weights(args,generator,discriminator,g_ema,g_optim,d_optim)
     if args.distributed:
+        print("IS DISTRIBUTED")
+        print(args.distributed)
         create_network_distributed(args, generator, discriminator)
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
