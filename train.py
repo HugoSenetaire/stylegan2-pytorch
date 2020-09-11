@@ -129,17 +129,15 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
-    args.distributed = n_gpu > 1
-
-    print("IS DISTRIBUTED")
-    print(args.distributed)
-    if args.distributed:
-        torch.cuda.set_device(args.local_rank)
-        torch.distributed.init_process_group(backend="nccl", init_method="env://")
-        synchronize()
-    else :
-        torch.cuda.set_device(args.local_rank)
+    gpu_config(args)
+    # n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
+    # args.distributed = n_gpu > 1
+    # if args.distributed:
+    #     torch.cuda.set_device(args.local_rank)
+    #     torch.distributed.init_process_group(backend="nccl", init_method="env://")
+    #     synchronize()
+    # else :
+    #     torch.cuda.set_device(args.local_rank)
 
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample")):
@@ -156,8 +154,6 @@ if __name__ == "__main__":
     if args.ckpt is not None:
        load_weights(args,generator,discriminator,g_ema,g_optim,d_optim)
     if args.distributed:
-        print("IS DISTRIBUTED")
-        print(args.distributed)
         generator, discriminator = create_network_distributed(args, generator, discriminator)
     if get_rank() == 0 and wandb is not None and args.wandb:
         wandb.init(project="stylegan 2")
