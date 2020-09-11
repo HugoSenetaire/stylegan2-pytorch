@@ -1,2 +1,2 @@
-from create_feature_extractor import *
-from inception import *
+from .create_feature_extractor import *
+from .inception import *
