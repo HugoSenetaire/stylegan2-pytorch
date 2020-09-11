@@ -3,4 +3,4 @@ def create_parser_calc_inception(parser):
     parser.add_argument('--n_sample', type=int, default=50000)
     parser.add_argument('--flip', action='store_true')
     parser.add_argument('--limit_category', nargs='*', help = 'List of element used for inspiration algorithm', type = str, default = ["None"])
-    parser.add_argument('--size')
+    parser.add_argument('--size', type=int, default=256)
