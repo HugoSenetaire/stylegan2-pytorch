@@ -130,15 +130,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     gpu_config(args)
-    # n_gpu = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
-    # args.distributed = n_gpu > 1
-    # if args.distributed:
-    #     torch.cuda.set_device(args.local_rank)
-    #     torch.distributed.init_process_group(backend="nccl", init_method="env://")
-    #     synchronize()
-    # else :
-    #     torch.cuda.set_device(args.local_rank)
-
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample")):
         os.makedirs(os.path.join(args.output_prefix, "sample"))

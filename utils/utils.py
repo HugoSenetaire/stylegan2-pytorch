@@ -200,12 +200,12 @@ def get_total_feedback(loss_dict, args):
 # NETWORK TRAINING :
 
 def init_training(device):
-    d_loss_val = 0
+    d_loss_val = torch.tensor(0.0, device=device)
     r1_loss = torch.tensor(0.0, device=device)
-    g_loss_val = 0
+    g_loss_val =torch.tensor(0.0, device=device)
     path_loss = torch.tensor(0.0, device=device)
     path_lengths = torch.tensor(0.0, device=device)
-    mean_path_length_avg = 0
+    mean_path_length_avg = torch.tensor(0.0, device=device)
     loss_dict = {"path": path_loss,
      "path_length": path_lengths,
      "mean_path_length_avg": mean_path_length_avg,
