@@ -114,6 +114,8 @@ def reduce_loss_dict(loss_dict):
         for k in sorted(loss_dict.keys()):
             keys.append(k)
             losses.append(loss_dict[k])
+            print(loss_dict[k])
+        print(losses)
         losses = torch.stack(losses, 0)
         dist.reduce(losses, dst=0)
 
