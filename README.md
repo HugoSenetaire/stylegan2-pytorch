@@ -128,7 +128,61 @@ Generate N_PICS with N_ELEMENT on each from checkpoint PATH_CHECKPOINT using the
 
 You should change your size (--size 256 for example) if you train with another dimension.   
 
+
+## Few examples :
+
+ > python -m torch.distributed.launch --nproc_per_node=2 --master_port=29500 train.py --folder ~/image --csv_path ~/image_filtered.csv  --output_prefix ~/outputClassifinspirationnalform --batch 32 --size 256 --channel_multiplier 1 --dataset_type "stellar" --labels_inspirationnal "sap_sub_family"  --ckpt ~/outputClassifinspirationnalform/checkpoint/046000.pt --augment --augment_p 0.2
+
+Train a model with 2 Gpus from a dataset Stellar with augmentation using a pretrained checkpoint. The sap_sub_family is an inspirationnal label
+
+ > python generate.py --folder ~/image --csv_path ~/image_filtered.csv --output_prefix ~/outputClassifinspirationnalform --n_sample 1 --pics 100 --channel_multiplier 1 --dataset_type "stellar" --labels_inspirationnal "sap_sub_family" --ckpt ~/outputClassifinspirationnalform/checkpoint/046000.pt
+
+The generation associated for the previous training. We have  100 images generated with 1 sample on each.
+
+>python calc_inception.py --folder ~/image \
+--size 512 \
+--labels "sap_sub_family" \
+--limit_category  "SHOULDER BAGS" "None" "BACKPACKS" "HANDBAGS" \
+--dataset_type stellar \
+--csv_path ~/image_filtered.csv
+
+Calculation of the features from the inception for the same generation. We have features separated in categories.
+
+>python generate_for_inception.py --feature_path inception_city_bags_image.pkl --size 1024 --n_sample 2000 --discriminator_type bilinear --channel_multiplier 1 --batch 8 --folder ~/image --csv_path ~/image_filtered.csv --labels "sap_sub_family" --local_rank 0 --output_prefix ~/outputGenerateFID --ckpt_FID ~/outputClassif/checkpoint/130000.pt ~/outputClassif/checkpoint/140000.pt ~/outputClassif/checkpoint/150000.pt --limit_category "None" "BACKPACKS" "HANDBAGS" 
+
+Generate samples for the FID for different label in the conditionning and different checkpoint.
+
+
+python fidv2.py \
+> --feature_path inception_image.pkl \
+> --size 512 \
+> --n_sample 2500 \
+> --discriminator_type bilinear \
+> --channel_multiplier 1 \
+> --batch 1 \
+> --folder ~/image \
+> --generated_images ~/outputGenerateFID/ \
+> --labels "sap_sub_family" \
+> --local_rank 0 \
+> --ckpt_FID /srv/data/goinfre/hsenetaire/neoStyleGANdummy2/checkpoint/130000.pt \
+> --limit_category "SHOULDER BAGS" "None" "BACKPACKS" "HANDBAGS"
+
+Calculate the FID for the previously generated image and features from the original dataset.
+
+### Another example on the other dataset
+
+> python train.py --folder /srv/data/goinfre/hsenetaire/city_bags_image \
+--output_prefix /srv/data/goinfre/hsenetaire/neoStyleGANdummy2/ \
+--batch 8 --size 256 --channel_multiplier 1 \
+--discriminator_type design \
+--labels "sap_sub_function" \
+--local_rank 1 \
+--mask 
+
+Train with a mask conditionning from a dataset unique. Mask are located at /srv/data/goinfre/hsenetaire/city_bags_image_mask and csv is /srv/data/goinfre/hsenetaire/city_bags_image.csv
+
 ## License
+
 
 Model details and custom CUDA kernel codes are from official repostiories: https://github.com/NVlabs/stylegan2
 
