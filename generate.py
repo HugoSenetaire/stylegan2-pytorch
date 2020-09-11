@@ -48,9 +48,6 @@ if __name__ == '__main__':
     
 
     args = parser.parse_args()
-    args.latent = 512
-    args.n_mlp = 8
-
 
     if not os.path.exists(os.path.join(args.output_prefix, "sample_generate")):
         os.makedirs(os.path.join(args.output_prefix, "sample_generate"))
