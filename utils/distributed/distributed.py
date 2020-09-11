@@ -151,3 +151,4 @@ def create_network_distributed(args, generator, discriminator):
             output_device=args.local_rank,
             broadcast_buffers=False,
         )
+    return generator, discriminator
